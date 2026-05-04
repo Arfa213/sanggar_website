@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{PendaftaranTari, Kehadiran, Event, Tarian};
+use App\Models\{PendaftaranTari, Kehadiran, Event, Tarian, User};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
@@ -59,5 +61,42 @@ class DashboardController extends Controller
             'eventMendatang', 'tarianRekomendasi', 'absensiTerakhir',
             'totalKehadiranAll', 'totalHadirAll'
         ));
+    }
+
+    public function editProfile()
+    {
+        $user = Auth::user();
+        return view('pages.member_profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:users,email,' . $user->id,
+            'no_hp'    => 'nullable|string|max:20',
+            'alamat'   => 'nullable|string|max:500',
+            'foto'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $data = $request->only(['name', 'email', 'no_hp', 'alamat']);
+
+        if ($request->hasFile('foto')) {
+            if ($user->foto && Storage::disk('public')->exists($user->foto)) {
+                Storage::disk('public')->delete($user->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('profil_anggota', 'public');
+        }
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return back()->with('success', 'Profil berhasil diperbarui!');
     }
 }

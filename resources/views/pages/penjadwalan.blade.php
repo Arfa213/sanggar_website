@@ -62,8 +62,21 @@
     </div>
     @endif
 
+    {{-- HEADER DAFTAR TARIAN & PENCARIAN --}}
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
+        <div>
+            <h3 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--dark);">Pilihan Kelas Tari</h3>
+            <p style="color:var(--muted);font-size:.9rem;">Temukan tarian yang ingin kamu pelajari.</p>
+        </div>
+        <div style="position:relative; width:100%; max-width:300px;">
+            <svg style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#9CA3AF;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchInput" placeholder="Cari tarian..." 
+                style="width:100%; padding:12px 16px 12px 40px; border:1.5px solid var(--border); border-radius:50px; font-size:.9rem; outline:none; background:#fff; transition:border .3s;">
+        </div>
+    </div>
+
     {{-- DAFTAR TARIAN TERSEDIA --}}
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px">
+    <div id="tarianGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px">
         @foreach($tarianTersedia as $t)
         @php
             $sudahDaftar = $pendaftaran->where('tarian_id', $t->id)->count() > 0;
@@ -91,50 +104,26 @@
                 </div>
             </div>
 
-            <div style="padding:18px">
-                <h4 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:4px">{{ $t->nama }}</h4>
-                <p style="font-size:.8rem;color:var(--muted);margin-bottom:4px">📍 {{ $t->asal }}</p>
+            <div style="padding:18px; display:flex; flex-direction:column; flex:1;">
+                <h4 class="tarian-title" style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:4px">{{ $t->nama }}</h4>
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:4px">📍 <span class="tarian-asal">{{ $t->asal }}</span></p>
                 @if($t->durasi)
                 <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">⏱ Durasi: {{ $t->durasi }}</p>
                 @endif
-                <p style="font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:16px">
+                <p style="font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:20px;flex:1;">
                     {{ Str::limit($t->deskripsi, 100) }}
                 </p>
 
                 @if(!$sudahDaftar)
-                {{-- Form daftar --}}
-                <form method="POST" action="{{ route('penjadwalan.daftar') }}" id="form-{{ $t->id }}">
-                    @csrf
-                    <input type="hidden" name="tarian_id" value="{{ $t->id }}">
-
-                    <div style="margin-bottom:12px">
-                        <label style="font-size:.8rem;font-weight:700;color:var(--dark);display:block;margin-bottom:6px">Pilih Jadwal Latihan <span style="color:#C65D2E">*</span></label>
-                        <select name="jadwal_id" required
-                            style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;background:#FAF8F6;outline:none;appearance:none">
-                            <option value="">-- Pilih hari & jam --</option>
-                            @foreach($jadwalTarian as $j)
-                            <option value="{{ $j->id }}" {{ request('jadwal_id') == $j->id ? 'selected' : '' }}>
-                                {{ $j->hari }} · {{ $j->jam_mulai }}–{{ $j->jam_selesai }} · {{ $j->tempat }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div style="margin-bottom:16px">
-                        <label style="font-size:.8rem;font-weight:700;color:var(--dark);display:block;margin-bottom:6px">Catatan (opsional)</label>
-                        <input type="text" name="catatan" placeholder="Misal: saya pemula"
-                            style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.85rem;background:#FAF8F6;outline:none">
-                    </div>
-
-                    <button type="submit"
-                        style="width:100%;background:var(--primary);color:#fff;font-family:var(--font-body);font-size:.9rem;font-weight:700;padding:12px;border-radius:50px;border:none;cursor:pointer;transition:background .2s"
-                        onmouseover="this.style.background='#A34A22'" onmouseout="this.style.background='#C65D2E'">
-                        Daftar Kelas Ini →
-                    </button>
-                </form>
+                <button type="button" onclick="openDaftarModal({{ $t->id }}, '{{ addslashes($t->nama) }}')"
+                    style="width:100%;background:var(--primary);color:#fff;font-family:var(--font-body);font-size:.9rem;font-weight:700;padding:12px;border-radius:50px;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(198,93,46,.2);"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(198,93,46,.3)';" 
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(198,93,46,.2)';">
+                    Daftar Kelas Ini →
+                </button>
                 @else
-                <div style="text-align:center;padding:10px;background:var(--bg-soft);border-radius:10px">
-                    <p style="font-size:.85rem;color:var(--muted)">Kamu sudah terdaftar di kelas ini</p>
+                <div style="text-align:center;padding:12px;background:var(--bg-soft);border-radius:50px;border:1px solid var(--border);">
+                    <p style="font-size:.85rem;font-weight:600;color:var(--muted);margin:0;">✓ Terdaftar</p>
                 </div>
                 @endif
             </div>
@@ -145,7 +134,109 @@
 </div>
 </section>
 
+{{-- MODAL PENDAFTARAN --}}
+<div id="daftarModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity .3s;">
+    <div style="background:#fff; border-radius:24px; width:100%; max-width:480px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,.2); transform:translateY(20px); transition:transform .3s;" id="daftarModalContent">
+        <div style="padding:24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#FAF8F6;">
+            <div>
+                <span style="color:var(--primary); font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Pendaftaran Kelas</span>
+                <h3 id="modalTariTitle" style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:var(--dark); margin-top:4px;">Nama Tarian</h3>
+            </div>
+            <button onclick="closeDaftarModal()" style="background:none; border:none; font-size:1.5rem; color:var(--muted); cursor:pointer;">✕</button>
+        </div>
+        
+        <form method="POST" action="{{ route('penjadwalan.daftar') }}" style="padding:24px;">
+            @csrf
+            <input type="hidden" name="tarian_id" id="modalTariId" value="">
+
+            <div style="margin-bottom:20px">
+                <label style="font-size:.85rem;font-weight:700;color:var(--dark);display:block;margin-bottom:8px">Pilih Jadwal Latihan <span style="color:#C65D2E">*</span></label>
+                <div style="position:relative;">
+                    <select name="jadwal_id" required
+                        style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:.9rem;background:#fff;outline:none;appearance:none;cursor:pointer;">
+                        <option value="">-- Pilih hari & jam --</option>
+                        @foreach($jadwalLatihan as $j)
+                        <option value="{{ $j->id }}">
+                            {{ $j->hari }} · {{ $j->jam_mulai }}–{{ $j->jam_selesai }}
+                        </option>
+                        @endforeach
+                    </select>
+                    <svg style="position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <p style="font-size:.75rem; color:var(--muted); margin-top:6px;">Pilih jadwal yang paling sesuai dengan waktu luangmu.</p>
+            </div>
+
+            <div style="margin-bottom:30px">
+                <label style="font-size:.85rem;font-weight:700;color:var(--dark);display:block;margin-bottom:8px">Catatan (opsional)</label>
+                <textarea name="catatan" placeholder="Misal: Saya pemula dan belum pernah menari sebelumnya..." rows="3"
+                    style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:.9rem;background:#fff;outline:none;resize:vertical;"></textarea>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button type="button" onclick="closeDaftarModal()"
+                    style="flex:1; background:var(--bg-soft); color:var(--text); font-weight:700; padding:14px; border-radius:50px; border:1px solid var(--border); cursor:pointer;">
+                    Batal
+                </button>
+                <button type="submit"
+                    style="flex:2; background:var(--primary); color:#fff; font-weight:700; padding:14px; border-radius:50px; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(198,93,46,.3);">
+                    Konfirmasi Pendaftaran
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+// --- LIVE SEARCH LOGIC ---
+const searchInput = document.getElementById('searchInput');
+if(searchInput) {
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const cards = document.querySelectorAll('#tarianGrid > div');
+        
+        cards.forEach(card => {
+            const title = card.querySelector('.tarian-title').textContent.toLowerCase();
+            const asal = card.querySelector('.tarian-asal').textContent.toLowerCase();
+            if(title.includes(query) || asal.includes(query)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+}
+
+// --- MODAL LOGIC ---
+const modal = document.getElementById('daftarModal');
+const modalContent = document.getElementById('daftarModalContent');
+
+function openDaftarModal(tariId, tariNama) {
+    document.getElementById('modalTariId').value = tariId;
+    document.getElementById('modalTariTitle').textContent = tariNama;
+    
+    modal.style.display = 'flex';
+    // Small delay to allow display:flex to apply before animating opacity
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modalContent.style.transform = 'translateY(0)';
+    }, 10);
+}
+
+function closeDaftarModal() {
+    modal.style.opacity = '0';
+    modalContent.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+// Close modal when clicking outside
+modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+        closeDaftarModal();
+    }
+});
+
 // Auto-select tarian jika ada query param
 const tarianParam = new URLSearchParams(window.location.search).get('tarian');
 if (tarianParam) {

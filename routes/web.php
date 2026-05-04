@@ -47,6 +47,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/penjadwalan/daftar',        [PenjadwalanController::class, 'daftar'])->name('penjadwalan.daftar');
     Route::post('/penjadwalan/batalkan/{id}', [PenjadwalanController::class, 'batalkan'])->name('penjadwalan.batalkan');
     Route::get('/penjadwalan/riwayat',        [PenjadwalanController::class, 'riwayatKehadiran'])->name('penjadwalan.kehadiran');
+    
+    // Member Profile
+    Route::get('/my-profile',                 [DashboardController::class, 'editProfile'])->name('member.profile');
+    Route::post('/my-profile/update',         [DashboardController::class, 'updateProfile'])->name('member.profile.update');
 });
 
 // ── CHATBOT (public — semua bisa akses) ───────────────────────

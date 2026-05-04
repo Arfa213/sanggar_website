@@ -3,7 +3,7 @@
 @section('content')
 
 <section style="padding-top:calc(var(--nav-h) + 32px);padding-bottom:60px;background:var(--bg-soft);min-height:100vh">
-<div class="container" style="max-width:800px">
+<div class="container">
 
     <div style="margin-bottom:28px">
         <span class="badge">Rekap Pribadi</span>
