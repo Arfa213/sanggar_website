@@ -21,8 +21,14 @@ class KehadiranController extends Controller
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
+        // Sesi yang sudah diinput hari ini
+        $sesiHariIni = Kehadiran::with(['jadwal', 'tarian'])
+            ->whereDate('tanggal', $today)
+            ->select('jadwal_id', 'tarian_id')
+            ->distinct()
+            ->get();
 
-        return view('admin.kehadiran.index', compact('jadwal', 'tarian', 'statsHariIni', 'today'));
+        return view('admin.kehadiran.index', compact('jadwal', 'tarian', 'statsHariIni', 'today', 'sesiHariIni'));
     }
 
     // ── Input kehadiran per jadwal + tanggal ──────────────────
@@ -47,11 +53,16 @@ class KehadiranController extends Controller
             ->whereDate('tanggal', $request->tanggal)
             ->pluck('status', 'user_id');
 
+        $keteranganExisting = Kehadiran::where('jadwal_id', $request->jadwal_id)
+            ->where('tarian_id', $request->tarian_id)
+            ->whereDate('tanggal', $request->tanggal)
+            ->pluck('keterangan', 'user_id');
+
         $jadwal = JadwalLatihan::findOrFail($request->jadwal_id);
         $tarian = Tarian::findOrFail($request->tarian_id);
 
         return view('admin.kehadiran.input', compact(
-            'peserta', 'existing', 'jadwal', 'tarian', 'request'
+            'peserta', 'existing', 'keteranganExisting', 'jadwal', 'tarian', 'request'
         ));
     }
 
@@ -102,8 +113,8 @@ class KehadiranController extends Controller
         if ($tarian_id) $query->where('tarian_id', $tarian_id);
 
         $kehadiran = $query->orderBy('tanggal')->paginate(50);
-        $jadwal    = JadwalLatihan::where('aktif', true)->get();
-        $tarian    = Tarian::where('aktif', true)->get();
+        $jadwalList    = JadwalLatihan::where('aktif', true)->get();
+        $tarianList    = Tarian::where('aktif', true)->get();
 
         // Rekap per anggota
         $rekap = $query->get()
@@ -121,6 +132,6 @@ class KehadiranController extends Controller
             })->values();
 
         return view('admin.kehadiran.laporan',
-            compact('kehadiran', 'rekap', 'jadwal', 'tarian', 'bulan', 'jadwal_id', 'tarian_id'));
+            compact('kehadiran', 'rekap', 'jadwalList', 'tarianList', 'bulan', 'jadwal_id', 'tarian_id'));
     }
 }

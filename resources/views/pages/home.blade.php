@@ -99,248 +99,173 @@
 </section>
 
 {{-- DIGITAL ARCHIVE --}}
-<section class="archive-section">
+<section class="archive-section" style="padding: 60px 0; overflow: hidden; background: var(--bg-soft);">
     <div class="container">
         <span class="badge">Digital Archive</span>
         <div class="archive-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <h2 style="font-family: var(--font-display); font-size: 1.75rem; font-weight: 700; color: var(--dark);">Arsip Digital</h2>
             <a href="{{ route('digital-archive') }}" class="btn-lihat-sm">Lihat Semua →</a>
         </div>
+    </div>
 
-        <!-- Archive Carousel -->
-        <div class="archive-carousel" style="position: relative; overflow: hidden; border-radius: var(--radius);">
-            <div class="archive-track" style="display: flex; transition: transform 0.5s ease-in-out;">
-                @php $archiveFotos = $galeri->where('seksi','digital_archive'); @endphp
-                @if($archiveFotos->count())
-                    @foreach($archiveFotos as $foto)
-                    <div class="archive-slide" style="min-width: 200px; max-width: 200px; margin: 0 8px; flex-shrink: 0; aspect-ratio: 1/1;">
-                        <a href="{{ route('digital-archive') }}" class="archive-card" style="display: block; width: 100%; height: 100%; border-radius: var(--radius-sm); overflow: hidden;">
-                            <img src="{{ asset('storage/'.$foto->file) }}"
-                                 alt="{{ $foto->judul ?? 'Arsip Digital' }}"
-                                 style="width:100%;height:100%;object-fit:cover; transition: transform 0.3s;">
-                        </a>
-                    </div>
+    <!-- Infinite Marquee Carousel (Pure CSS) -->
+    <div class="marquee-container" style="position: relative; width: 100vw; margin-left: calc(-50vw + 50%); overflow: hidden; padding: 10px 0;">
+        <style>
+            @keyframes smoothMarquee {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(calc(-50% - 8px)); }
+            }
+            .marquee-track {
+                display: flex;
+                gap: 16px;
+                width: max-content;
+                animation: smoothMarquee 30s linear infinite;
+            }
+            .marquee-track:hover {
+                animation-play-state: paused;
+            }
+            .marquee-item {
+                width: 260px;
+                height: 260px;
+                border-radius: 16px;
+                overflow: hidden;
+                flex-shrink: 0;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+                transition: transform 0.3s ease;
+            }
+            .marquee-item:hover {
+                transform: translateY(-5px);
+            }
+        </style>
+        
+        <div class="marquee-track">
+            @php 
+                $archiveFotos = $galeri->where('seksi','digital_archive'); 
+                // Jika foto kurang dari 6, kita perbanyak sementara agar efek marquee-nya tidak putus
+                $displayFotos = collect();
+                if($archiveFotos->count() > 0) {
+                    while($displayFotos->count() < 10) {
+                        $displayFotos = $displayFotos->concat($archiveFotos);
+                    }
+                }
+            @endphp
+
+            @if($displayFotos->count())
+                {{-- Loop 2x untuk ilusi infinite scrolling tanpa patah --}}
+                @for($k=0; $k<2; $k++)
+                    @foreach($displayFotos->take(8) as $foto)
+                    <a href="{{ route('digital-archive') }}" class="marquee-item">
+                        <img src="{{ asset('storage/'.$foto->file) }}"
+                             alt="{{ $foto->judul ?? 'Arsip Digital' }}"
+                             style="width:100%;height:100%;object-fit:cover;">
+                    </a>
                     @endforeach
-                @else
-                    @for($i = 0; $i < 4; $i++)
-                    <div class="archive-slide" style="min-width: 200px; max-width: 200px; margin: 0 8px; flex-shrink: 0; aspect-ratio: 1/1;">
-                        <a href="{{ route('digital-archive') }}" class="archive-card" style="display: flex; width: 100%; height: 100%; border-radius: var(--radius-sm); overflow: hidden; align-items: center; justify-content: center; background: var(--primary-pale);">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        </a>
-                    </div>
-                    @endfor
-                @endif
-            </div>
-
-            <!-- Archive Navigation - Always show if more than 1 photo -->
-            @if($archiveFotos->count() > 1)
-            <button class="archive-nav-btn prev" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: var(--shadow-sm);">‹</button>
-            <button class="archive-nav-btn next" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: var(--shadow-sm);">›</button>
+                @endfor
+            @else
+                @for($k=0; $k<12; $k++)
+                <a href="{{ route('digital-archive') }}" class="marquee-item" style="display:flex;align-items:center;justify-content:center;background:var(--primary-pale);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </a>
+                @endfor
             @endif
         </div>
-
-        <!-- Archive Indicators -->
-        @if($archiveFotos->count() > 1)
-        <div class="archive-indicators" style="display: flex; justify-content: center; gap: 8px; margin-top: 20px;">
-        </div>
-        @endif
     </div>
 </section>
 
-{{-- DOKUMENTASI --}}
-<section class="dokumentasi">
+{{-- DOKUMENTASI (BENTO GRID) --}}
+<section class="dokumentasi" style="padding: 60px 0;">
     <div class="container">
         <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
-            <h2 class="section-title" style="margin-bottom: 0;">Dokumentasi Kegiatan</h2>
-            <a href="{{ route('galeri.frontend.index', 'dokumentasi') }}" class="btn-lihat-sm" style="display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: white; padding: 10px 20px; border-radius: var(--radius-pill); text-decoration: none; font-weight: 500; transition: all 0.3s;">
-                Lihat Lainnya
+            <div>
+                <span class="badge" style="margin-bottom:8px; display:inline-block;">Kegiatan Terbaru</span>
+                <h2 class="section-title" style="margin-bottom: 0; font-family: var(--font-display); font-weight: 700; color: var(--dark);">Dokumentasi Kegiatan</h2>
+            </div>
+            <a href="{{ route('galeri.frontend.index', 'dokumentasi') }}" class="btn-lihat-sm" style="display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; font-weight: 600; transition: all 0.3s; box-shadow: 0 4px 12px rgba(198,93,46,0.2);">
+                Lihat Semua Galeri
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </a>
         </div>
 
-        <!-- Dokumentasi Carousel -->
-        <div class="dok-carousel" style="position: relative; overflow: hidden; border-radius: var(--radius);">
-            <div class="dok-track" style="display: flex; transition: transform 0.5s ease-in-out;">
-                @php
-                    $dokFotos = isset($galeri)
-                        ? $galeri->where('seksi', 'dokumentasi')->where('tipe', 'foto')->where('aktif', true)
-                        : (isset($grouped['dokumentasi'])
-                            ? $grouped['dokumentasi']->where('tipe', 'foto')->where('aktif', true)
-                            : collect());
-                @endphp
+        <style>
+            .bento-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                grid-template-rows: repeat(2, 220px);
+                gap: 16px;
+            }
+            .bento-item {
+                border-radius: 20px;
+                overflow: hidden;
+                position: relative;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .bento-item:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+            }
+            .bento-item img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.5s ease;
+            }
+            .bento-item:hover img {
+                transform: scale(1.05);
+            }
+            /* Bento Layout Assignments */
+            .bento-1 { grid-column: span 2; grid-row: span 2; }
+            .bento-2 { grid-column: span 1; grid-row: span 1; }
+            .bento-3 { grid-column: span 1; grid-row: span 1; }
+            .bento-4 { grid-column: span 2; grid-row: span 1; }
 
-                @if($dokFotos->count())
-                    @foreach($dokFotos as $foto)
-                    <div class="dok-card carousel-slide" style="min-width: 200px; max-width: 200px; margin: 0 8px; flex-shrink: 0; aspect-ratio: 1/1;">
-                        @if($foto->tipe === 'foto')
-                            <img src="{{ asset('storage/' . $foto->file) }}"
-                                 alt="{{ $foto->judul ?? 'Dokumentasi' }}"
-                                 style="width:100%; height:100%; object-fit:cover; display:block; border-radius: var(--radius-sm);">
-                        @else
-                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--dark); color:white; border-radius: var(--radius-sm);">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <polygon points="23 7 16 12 23 17 23 7"/>
-                                    <rect x="1" y="5" width="15" height="14" rx="2"/>
-                                </svg>
-                                <span style="margin-left:8px;">Video</span>
-                            </div>
-                        @endif
-                    </div>
-                    @endforeach
-                @else
-                    @for($i = 0; $i < 4; $i++)
-                    <div class="dok-card carousel-slide" style="min-width: 200px; max-width: 200px; margin: 0 8px; flex-shrink: 0; aspect-ratio: 1/1;">
-                        <div class="img-placeholder dok-placeholder" style="background: var(--primary-pale); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5">
-                                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                <polyline points="21 15 16 10 5 21"/>
-                            </svg>
-                        </div>
-                    </div>
-                    @endfor
-                @endif
-            </div>
+            /* Mobile Responsiveness */
+            @media (max-width: 768px) {
+                .bento-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                    grid-template-rows: auto;
+                    grid-auto-rows: 200px;
+                }
+                .bento-1 { grid-column: span 2; grid-row: span 1; }
+                .bento-4 { grid-column: span 2; grid-row: span 1; }
+            }
+        </style>
 
-            <!-- Navigation Buttons - Always show if more than 1 photo -->
-            @if($dokFotos->count() > 1)
-            <button class="dok-nav-btn prev" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: var(--shadow-sm);">‹</button>
-            <button class="dok-nav-btn next" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: var(--shadow-sm);">›</button>
+        <div class="bento-grid">
+            @php
+                $dokFotos = isset($galeri)
+                    ? $galeri->where('seksi', 'dokumentasi')->where('tipe', 'foto')->where('aktif', true)->values()
+                    : collect();
+            @endphp
+
+            @if($dokFotos->count() >= 4)
+                <a href="{{ route('galeri.frontend.index', 'dokumentasi') }}" class="bento-item bento-1">
+                    <img src="{{ asset('storage/' . $dokFotos[0]->file) }}" alt="Dokumentasi 1">
+                </a>
+                <a href="{{ route('galeri.frontend.index', 'dokumentasi') }}" class="bento-item bento-2">
+                    <img src="{{ asset('storage/' . $dokFotos[1]->file) }}" alt="Dokumentasi 2">
+                </a>
+                <a href="{{ route('galeri.frontend.index', 'dokumentasi') }}" class="bento-item bento-3">
+                    <img src="{{ asset('storage/' . $dokFotos[2]->file) }}" alt="Dokumentasi 3">
+                </a>
+                <a href="{{ route('galeri.frontend.index', 'dokumentasi') }}" class="bento-item bento-4">
+                    <img src="{{ asset('storage/' . $dokFotos[3]->file) }}" alt="Dokumentasi 4">
+                </a>
+            @else
+                {{-- Fallback placeholders if less than 4 photos --}}
+                @for($i = 1; $i <= 4; $i++)
+                <div class="bento-item bento-{{ $i }}" style="background: var(--primary-pale); display: flex; align-items: center; justify-content: center;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                </div>
+                @endfor
             @endif
         </div>
-
-        <!-- Indicators -->
-        @if($dokFotos->count() > 1)
-        <div class="dok-indicators" style="display: flex; justify-content: center; gap: 8px; margin-top: 20px;">
-        </div>
-        @endif
     </div>
 </section>
-
-<script>
-    // Continuous Carousel - slides 1 photo at a time through all photos
-    function initCarousel(trackSelector, navPrevSelector, navNextSelector, indicatorContainerSelector, autoSlideInterval = 4000) {
-        const track = document.querySelector(trackSelector);
-        if (!track) return;
-
-        const slides = Array.from(track.children);
-        const nextButton = document.querySelector(navNextSelector);
-        const prevButton = document.querySelector(navPrevSelector);
-        const indicatorContainer = document.querySelector(indicatorContainerSelector);
-
-        if (slides.length === 0) return;
-
-        let currentIndex = 0;
-        const totalSlides = slides.length;
-        let autoTimer = null;
-
-        // Create indicators
-        function createIndicators() {
-            if (!indicatorContainer) return;
-            indicatorContainer.innerHTML = '';
-            for (let i = 0; i < totalSlides; i++) {
-                const dot = document.createElement('button');
-                dot.style.cssText = `width: 8px; height: 8px; border-radius: 50%; border: none; background: ${i === 0 ? 'var(--primary)' : 'var(--border)'}; cursor: pointer; transition: all 0.3s; padding: 0;`;
-                dot.addEventListener('click', () => moveToSlide(i));
-                indicatorContainer.appendChild(dot);
-            }
-        }
-        createIndicators();
-
-        function updateIndicators() {
-            if (!indicatorContainer) return;
-            const dots = indicatorContainer.children;
-            for (let i = 0; i < dots.length; i++) {
-                dots[i].style.background = i === currentIndex ? 'var(--primary)' : 'var(--border)';
-                dots[i].style.transform = i === currentIndex ? 'scale(1.3)' : 'scale(1)';
-            }
-        }
-
-        function updateButtons() {
-            if (prevButton) {
-                prevButton.style.opacity = '1';
-                prevButton.style.pointerEvents = 'auto';
-            }
-            if (nextButton) {
-                nextButton.style.opacity = '1';
-                nextButton.style.pointerEvents = 'auto';
-            }
-        }
-
-        function moveToSlide(index) {
-            currentIndex = index;
-            const slideWidth = 200 + 16; // 200px width + 16px margin
-            const amount = -currentIndex * slideWidth;
-            track.style.transform = `translateX(${amount}px)`;
-            updateButtons();
-            updateIndicators();
-        }
-
-        function nextSlide() {
-            if (currentIndex < totalSlides - 1) {
-                moveToSlide(currentIndex + 1);
-            } else {
-                moveToSlide(0); // Loop back to start
-            }
-        }
-
-        function prevSlide() {
-            if (currentIndex > 0) {
-                moveToSlide(currentIndex - 1);
-            } else {
-                moveToSlide(totalSlides - 1); // Go to last slide
-            }
-        }
-
-        function startAutoSlide() {
-            stopAutoSlide();
-            autoTimer = setInterval(nextSlide, autoSlideInterval);
-        }
-
-        function stopAutoSlide() {
-            if (autoTimer) {
-                clearInterval(autoTimer);
-                autoTimer = null;
-            }
-        }
-
-        if (nextButton) {
-            nextButton.addEventListener('click', () => {
-                nextSlide();
-                startAutoSlide();
-            });
-        }
-
-        if (prevButton) {
-            prevButton.addEventListener('click', () => {
-                prevSlide();
-                startAutoSlide();
-            });
-        }
-
-        // Pause on hover
-        const carouselEl = track.parentElement;
-        carouselEl.addEventListener('mouseenter', stopAutoSlide);
-        carouselEl.addEventListener('mouseleave', startAutoSlide);
-
-        let resizeTimer;
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                moveToSlide(currentIndex);
-            }, 150);
-        });
-
-        moveToSlide(0);
-        startAutoSlide();
-    }
-
-    // Initialize both carousels
-    document.addEventListener('DOMContentLoaded', function() {
-        initCarousel('.archive-track', '.archive-nav-btn.prev', '.archive-nav-btn.next', '.archive-indicators', 4000);
-        initCarousel('.dok-track', '.dok-nav-btn.prev', '.dok-nav-btn.next', '.dok-indicators', 4000);
-    });
-</script>
 
 
 {{-- CTA --}}

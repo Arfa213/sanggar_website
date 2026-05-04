@@ -349,9 +349,13 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
             Kembali ke Website
         </a>
-        <form method="POST" action="{{ route('logout') }}">
+        {{-- Form logout dengan mekanisme refresh CSRF token --}}
+        <form method="POST" action="{{ route('logout') }}" id="logoutForm">
             @csrf
-            <button type="submit" class="m-nav-item" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;color:rgba(255,255,255,.55);font-family:var(--font-body);font-size:.825rem;font-weight:600;">
+            <button type="button"
+                onclick="submitLogout()"
+                class="m-nav-item"
+                style="width:100%;background:none;border:none;cursor:pointer;text-align:left;color:rgba(255,255,255,.55);font-family:var(--font-body);font-size:.825rem;font-weight:600;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Keluar
             </button>
@@ -413,6 +417,32 @@ function closeSidebar() {
     document.getElementById('mOverlay').classList.remove('show');
 }
 setTimeout(() => document.getElementById('mFlash')?.remove(), 4000);
+
+// Refresh CSRF token sebelum submit logout (mencegah 419 Page Expired)
+function submitLogout() {
+    const form = document.getElementById('logoutForm');
+    const btn  = form.querySelector('button');
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+
+    // Ambil CSRF token terbaru dari meta tag (sudah di-set saat halaman dimuat)
+    const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    // Update hidden input CSRF di dalam form
+    const csrfInput = form.querySelector('input[name="_token"]');
+    if (csrfInput) csrfInput.value = token;
+
+    form.submit();
+}
+
+// Cegah bfcache: reload halaman jika user kembali via tombol Back browser
+// Ini mencegah CSRF token lama (dari cache) digunakan untuk logout
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        // Halaman di-restore dari bfcache — reload untuk dapat token baru
+        window.location.reload();
+    }
+});
 </script>
 @stack('scripts')
 </body>
