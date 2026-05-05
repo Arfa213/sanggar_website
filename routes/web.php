@@ -83,25 +83,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/event/create',        [AdminEvent::class, 'create'])->name('event.create');
     Route::post('/event',              [AdminEvent::class, 'store'])->name('event.store');
     Route::get('/event/{id}/edit',     [AdminEvent::class, 'edit'])->name('event.edit');
-    Route::post('/event/{id}',         [AdminEvent::class, 'update'])->name('event.update');
-    Route::post('/event/{id}/delete',  [AdminEvent::class, 'destroy'])->name('event.destroy');
+    Route::put('/event/{id}',          [AdminEvent::class, 'update'])->name('event.update');
+    Route::delete('/event/{id}/delete',[AdminEvent::class, 'destroy'])->name('event.destroy');
 
     // Tarian
     Route::get('/tarian',              [AdminTarian::class, 'index'])->name('tarian.index');
     Route::get('/tarian/create',       [AdminTarian::class, 'create'])->name('tarian.create');
     Route::post('/tarian',             [AdminTarian::class, 'store'])->name('tarian.store');
     Route::get('/tarian/{id}/edit',    [AdminTarian::class, 'edit'])->name('tarian.edit');
-    Route::put('/tarian/{id}',        [AdminTarian::class, 'update'])->name('tarian.update');
-    Route::post('/tarian/{id}/delete', [AdminTarian::class, 'destroy'])->name('tarian.destroy');
+    Route::put('/tarian/{id}',         [AdminTarian::class, 'update'])->name('tarian.update');
+    Route::delete('/tarian/{id}/delete',[AdminTarian::class, 'destroy'])->name('tarian.destroy');
 
     // Anggota
     Route::get('/anggota',              [AdminAnggota::class, 'index'])->name('anggota.index');
     Route::get('/anggota/create',       [AdminAnggota::class, 'create'])->name('anggota.create');
     Route::post('/anggota',             [AdminAnggota::class, 'store'])->name('anggota.store');
     Route::get('/anggota/{id}/edit',    [AdminAnggota::class, 'edit'])->name('anggota.edit');
-    Route::post('/anggota/{id}',        [AdminAnggota::class, 'update'])->name('anggota.update');
-    Route::post('/anggota/{id}/delete',  [AdminAnggota::class, 'destroy'])->name('anggota.destroy');
-    Route::post('/anggota/{id}/toggle',  [AdminAnggota::class, 'toggleStatus'])->name('anggota.toggle');
+    Route::put('/anggota/{id}',         [AdminAnggota::class, 'update'])->name('anggota.update');
+    Route::delete('/anggota/{id}/delete',[AdminAnggota::class, 'destroy'])->name('anggota.destroy');
+    Route::patch('/anggota/{id}/toggle', [AdminAnggota::class, 'toggleStatus'])->name('anggota.toggle');
 
     // Galeri
     Route::get('/galeri',              [AdminGaleri::class, 'index'])->name('galeri.index');
