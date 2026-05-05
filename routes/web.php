@@ -54,8 +54,8 @@ Route::middleware('auth')->group(function () {
 });
 
 // ── CHATBOT (public — semua bisa akses) ───────────────────────
-Route::post('/chatbot/chat', [GeminiController::class, 'chat'])->name('chatbot.chat');
-Route::post('/chatbot/clear', [GeminiController::class, 'clear'])->name('chatbot.clear');
+Route::post('/chatbot/chat', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
+Route::post('/chatbot/clear', [App\Http\Controllers\ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
 
 // ── ADMIN ─────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

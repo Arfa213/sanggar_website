@@ -29,7 +29,7 @@ class GeminiService
     $apiKey = env('GEMINI_API_KEY');
     
     // SESUAIKAN DENGAN DAFTAR TADI: gemini-2.5-flash
-    $modelName = "gemini-2.0-flash"; 
+    $modelName = "gemini-2.5-flash"; 
     
     $url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelName}:generateContent?key=" . $apiKey;
 
