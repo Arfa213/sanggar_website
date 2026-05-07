@@ -33,8 +33,15 @@
 
             <div class="navbar-actions">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="btn-masuk">
-                        {{ Auth::user()->name }}
+                    <a href="{{ route('dashboard') }}" class="btn-masuk" style="display:flex;align-items:center;gap:10px;padding:5px 15px 5px 5px">
+                        @if(Auth::user()->foto)
+                            <img src="{{ asset('storage/'.Auth::user()->foto) }}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-pale)">
+                        @else
+                            <div style="width:32px;height:32px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+                        <span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ explode(' ', Auth::user()->name)[0] }}</span>
                     </a>
                     @if(Auth::user()->role === 'admin')
                     <a href="{{ route('admin.dashboard') }}" class="btn-daftar">Admin Panel</a>

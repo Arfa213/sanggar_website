@@ -72,12 +72,12 @@
                 <img src="{{ asset('storage/'.$aboutFoto->file) }}"
                      alt="Tentang {{ $profil->nama_sanggar }}"
                      class="about-placeholder"
-                     style="object-fit:cover;width:100%;height:420px;border-radius:var(--radius)">
+                     style="object-fit:cover;width:100%;border-radius:var(--radius)">
             @elseif($profil->foto_sejarah)
                 <img src="{{ asset('storage/'.$profil->foto_sejarah) }}"
                      alt="Tentang {{ $profil->nama_sanggar }}"
                      class="about-placeholder"
-                     style="object-fit:cover;width:100%;height:420px;border-radius:var(--radius)">
+                     style="object-fit:cover;width:100%;border-radius:var(--radius)">
             @else
                 <div class="img-placeholder about-placeholder">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>

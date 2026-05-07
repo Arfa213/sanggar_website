@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AnggotaController extends Controller
 {
@@ -36,8 +37,9 @@ class AnggotaController extends Controller
             'no_hp'    => 'nullable|string|max:30',
             'password' => 'required|min:8|confirmed',
             'status'   => 'required|in:aktif,nonaktif',
+            'foto'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
-        User::create([
+        $data = [
             'name'     => $request->name,
             'email'    => $request->email,
             'alamat'   => $request->alamat,
@@ -45,7 +47,13 @@ class AnggotaController extends Controller
             'password' => Hash::make($request->password),
             'role'     => 'anggota',
             'status'   => $request->status,
-        ]);
+        ];
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('profil_anggota', 'public');
+        }
+
+        User::create($data);
         return redirect()->route('admin.anggota.index')->with('success', 'Anggota berhasil ditambahkan!');
     }
 
@@ -68,9 +76,18 @@ class AnggotaController extends Controller
             'no_hp'    => 'nullable|string|max:30',
             'status'   => 'required|in:aktif,nonaktif',
             'password' => 'nullable|min:8|confirmed',
+            'foto'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
         $data = $request->only('name','email','alamat','no_hp','status');
         if ($request->filled('password')) $data['password'] = Hash::make($request->password);
+
+        if ($request->hasFile('foto')) {
+            if ($anggota->foto && Storage::disk('public')->exists($anggota->foto)) {
+                Storage::disk('public')->delete($anggota->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('profil_anggota', 'public');
+        }
+
         $anggota->update($data);
         return redirect()->route('admin.anggota.index')->with('success', 'Data anggota berhasil diperbarui!');
     }

@@ -20,10 +20,10 @@
                         @if($user->foto)
                             <img src="{{ asset('storage/'.$user->foto) }}" alt="Foto" style="width:100%; height:100%; object-fit:cover;" id="fotoPreview">
                         @else
-                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--primary); color:#fff; font-size:2.5rem; font-weight:800; font-family:var(--font-display);">
+                            <div id="fotoPlaceholder" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--primary); color:#fff; font-size:2.5rem; font-weight:800; font-family:var(--font-display);">
                                 {{ strtoupper(substr($user->name, 0, 1)) }}
                             </div>
-                            <img src="" alt="Preview" style="width:100%; height:100%; object-fit:cover; display:none; position:absolute; top:0; left:0;" id="fotoPreview">
+                            <img src="" alt="Preview" style="width:100%; height:100%; object-fit:cover; display:none; position:absolute; top:0; left:0;" id="fotoPreviewNew">
                         @endif
                     </div>
                     <div>
@@ -102,9 +102,20 @@ function previewImage(input) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
         reader.onload = function(e) {
-            const preview = document.getElementById('fotoPreview');
-            preview.src = e.target.result;
-            preview.style.display = 'block';
+            const previewExisting = document.getElementById('fotoPreview');
+            const previewNew = document.getElementById('fotoPreviewNew');
+            const placeholder = document.getElementById('fotoPlaceholder');
+            
+            if (previewExisting) {
+                previewExisting.src = e.target.result;
+            }
+            if (previewNew) {
+                previewNew.src = e.target.result;
+                previewNew.style.display = 'block';
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
         }
         reader.readAsDataURL(input.files[0]);
     }

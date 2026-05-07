@@ -108,7 +108,11 @@
         </div>
         <div class="topbar-right">
             <div class="topbar-user">
-                <div class="user-avatar">{{ strtoupper(substr(Auth::user()->name,0,1)) }}</div>
+                @if(Auth::user()->foto)
+                    <img src="{{ asset('storage/'.Auth::user()->foto) }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--border)">
+                @else
+                    <div class="user-avatar">{{ strtoupper(substr(Auth::user()->name,0,1)) }}</div>
+                @endif
                 <div class="user-info">
                     <span class="user-name">{{ Auth::user()->name }}</span>
                     <span class="user-role">Administrator</span>

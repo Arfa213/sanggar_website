@@ -4,10 +4,19 @@
 @section('content')
 
 {{-- WELCOME HEADER --}}
-<div class="m-page-header">
-    <div class="m-badge">Member Area</div>
-    <h1>Halo, {{ explode(' ', $user->name)[0] }}! 👋</h1>
-    <p>Selamat datang di dashboard anggota Sanggar Mulya Bhakti.</p>
+<div class="m-page-header" style="display:flex;align-items:center;gap:20px;margin-bottom:30px">
+    @if($user->foto)
+        <img src="{{ asset('storage/'.$user->foto) }}" style="width:80px;height:80px;border-radius:20px;object-fit:cover;box-shadow:var(--shadow-md);border:3px solid #fff">
+    @else
+        <div style="width:80px;height:80px;background:var(--primary);color:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900;box-shadow:var(--shadow-md);border:3px solid #fff;font-family:'Playfair Display',serif">
+            {{ strtoupper(substr($user->name, 0, 1)) }}
+        </div>
+    @endif
+    <div>
+        <div class="m-badge">Member Area</div>
+        <h1 style="margin-top:4px">Halo, {{ explode(' ', $user->name)[0] }}! 👋</h1>
+        <p>Selamat datang di dashboard anggota Sanggar Mulya Bhakti.</p>
+    </div>
 </div>
 
 {{-- STAT CARDS --}}

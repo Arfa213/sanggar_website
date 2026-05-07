@@ -11,9 +11,44 @@
 
 <div style="max-width:640px">
 <form method="POST"
-      action="{{ $mode==='create' ? route('admin.anggota.store') : route('admin.anggota.update',$anggota->id) }}">
+      action="{{ $mode==='create' ? route('admin.anggota.store') : route('admin.anggota.update',$anggota->id) }}"
+      enctype="multipart/form-data">
 @csrf
 @if($mode==='edit') @method('PUT') @endif
+
+<div class="card" style="margin-bottom:16px">
+    <div class="card-header"><span class="card-title">Foto Profil</span></div>
+    <div class="card-body" style="display:flex;align-items:center;gap:20px">
+        <div style="width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--border)">
+            @if($anggota->foto)
+                <img src="{{ asset('storage/'.$anggota->foto) }}" style="width:100%;height:100%;object-fit:cover" id="previewFoto">
+            @else
+                <div id="placeholderFoto" style="font-size:2rem;font-weight:900;color:var(--muted)">?</div>
+                <img src="" id="previewFoto" style="width:100%;height:100%;object-fit:cover;display:none">
+            @endif
+        </div>
+        <div style="flex:1">
+            <input type="file" name="foto" class="form-control" accept="image/*" onchange="previewImage(this)">
+            <p style="font-size:.75rem;color:var(--muted);margin-top:4px">Rekomendasi: Persegi 1:1, Max 2MB</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('previewFoto');
+            const placeholder = document.getElementById('placeholderFoto');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            if(placeholder) placeholder.style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 
 <div class="card">
     <div class="card-header"><span class="card-title">Data Anggota</span></div>

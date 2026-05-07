@@ -38,7 +38,11 @@
                 <tr>
                     <td>
                         <div style="display:flex;align-items:center;gap:10px">
-                            <div class="user-avatar" style="width:34px;height:34px;font-size:.8rem;flex-shrink:0">{{ strtoupper(substr($a->name,0,1)) }}</div>
+                            @if($a->foto)
+                                <img src="{{ asset('storage/'.$a->foto) }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid var(--border)">
+                            @else
+                                <div class="user-avatar" style="width:34px;height:34px;font-size:.8rem;flex-shrink:0">{{ strtoupper(substr($a->name,0,1)) }}</div>
+                            @endif
                             <span style="font-weight:600">{{ $a->name }}</span>
                         </div>
                     </td>

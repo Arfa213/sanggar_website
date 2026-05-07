@@ -78,13 +78,14 @@ class DashboardController extends Controller
             'email'    => 'required|email|max:255|unique:users,email,' . $user->id,
             'no_hp'    => 'nullable|string|max:20',
             'alamat'   => 'nullable|string|max:500',
-            'foto'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 
         $data = $request->only(['name', 'email', 'no_hp', 'alamat']);
 
         if ($request->hasFile('foto')) {
+            // Hapus foto lama jika ada
             if ($user->foto && Storage::disk('public')->exists($user->foto)) {
                 Storage::disk('public')->delete($user->foto);
             }
@@ -95,7 +96,8 @@ class DashboardController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        $user->update($data);
+        // Gunakan model binding atau instance dari DB untuk memastikan update berhasil
+        User::where('id', $user->id)->update($data);
 
         return back()->with('success', 'Profil berhasil diperbarui!');
     }
