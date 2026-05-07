@@ -21,6 +21,13 @@ class AnggotaController extends Controller
         return view('admin.anggota.index', compact('anggota'));
     }
 
+    public function downloadPdf()
+    {
+        $anggota = User::where('role', 'anggota')->orderBy('name')->get();
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.anggota.pdf', compact('anggota'));
+        return $pdf->download('Data-Anggota-SMB-' . now()->format('Y-m-d') . '.pdf');
+    }
+
     public function create()
     {
         $anggota = new User;

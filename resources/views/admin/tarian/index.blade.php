@@ -7,7 +7,10 @@
         <h1>Arsip Digital Tarian</h1>
         <p>Kelola koleksi tarian tradisional Indramayu yang ditampilkan di website.</p>
     </div>
-    <a href="{{ route('admin.tarian.create') }}" class="btn btn-primary">+ Tambah Tarian</a>
+    <div class="page-header-actions">
+        <a href="{{ route('admin.tarian.pdf') }}" class="btn btn-secondary" target="_blank">🖨 Cetak PDF</a>
+        <a href="{{ route('admin.tarian.create') }}" class="btn btn-primary">+ Tambah Tarian</a>
+    </div>
 </div>
 
 <div class="card">
@@ -37,7 +40,7 @@
                         <a href="{{ route('admin.tarian.edit',$t->id) }}" class="btn btn-secondary btn-sm">Edit</a>
                         <form method="POST" action="{{ route('admin.tarian.destroy',$t->id) }}" style="display:inline">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" data-confirm="Hapus tarian '{{ $t->nama }}'?">Hapus</button>
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus tarian \'{{ $t->nama }}\'? Tindakan ini tidak dapat dibatalkan.')">Hapus</button>
                         </form>
                     </td>
                 </tr>

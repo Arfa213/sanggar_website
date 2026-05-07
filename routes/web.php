@@ -87,6 +87,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/event/{id}/delete',[AdminEvent::class, 'destroy'])->name('event.destroy');
 
     // Tarian
+    Route::get('/tarian/pdf',          [AdminTarian::class, 'downloadPdf'])->name('tarian.pdf');
     Route::get('/tarian',              [AdminTarian::class, 'index'])->name('tarian.index');
     Route::get('/tarian/create',       [AdminTarian::class, 'create'])->name('tarian.create');
     Route::post('/tarian',             [AdminTarian::class, 'store'])->name('tarian.store');
@@ -95,6 +96,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/tarian/{id}/delete',[AdminTarian::class, 'destroy'])->name('tarian.destroy');
 
     // Anggota
+    Route::get('/anggota/pdf',          [AdminAnggota::class, 'downloadPdf'])->name('anggota.pdf');
     Route::get('/anggota',              [AdminAnggota::class, 'index'])->name('anggota.index');
     Route::get('/anggota/create',       [AdminAnggota::class, 'create'])->name('anggota.create');
     Route::post('/anggota',             [AdminAnggota::class, 'store'])->name('anggota.store');

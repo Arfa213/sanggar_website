@@ -59,8 +59,8 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1565C0" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
         <div>
-            <div style="font-size:1.6rem;font-weight:900;color:#1565C0;font-family:'Playfair Display',serif;line-height:1">{{ $totalLatihan }}</div>
-            <div style="font-size:.75rem;color:#7A7A7A;margin-top:2px">Total Sesi Bulan Ini</div>
+            <div style="font-size:1.6rem;font-weight:900;color:#1565C0;font-family:'Playfair Display',serif;line-height:1">{{ $totalHadirAll }}</div>
+            <div style="font-size:.75rem;color:#7A7A7A;margin-top:2px">Total Kehadiran</div>
         </div>
     </div>
 
@@ -88,7 +88,7 @@
         @if($jadwalAktif->isEmpty())
         <div style="padding:40px;text-align:center">
             <div style="width:64px;height:64px;background:#FDF0EA;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <p style="font-weight:600;color:#1A1A1A;margin-bottom:4px">Belum ada kelas terdaftar</p>
             <p style="font-size:.825rem;color:#7A7A7A;margin-bottom:16px">Pilih tarian yang ingin kamu pelajari dan daftarkan diri!</p>
@@ -256,7 +256,7 @@
                style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:#FAFAF8;border:1px solid #F0EBE5;border-radius:10px;text-decoration:none;transition:all .15s"
                onmouseover="this.style.borderColor='#C65D2E'" onmouseout="this.style.borderColor='#F0EBE5'">
                 <div style="width:34px;height:34px;background:#FDF0EA;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
                 <div>
                     <div style="font-size:.825rem;font-weight:700;color:#1A1A1A">Daftar Kelas Baru</div>

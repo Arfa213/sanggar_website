@@ -22,6 +22,7 @@
 </section>
 
 {{-- FILTER --}}
+@if($stats['total'] > 1)
 <div class="filter-bar" id="filterBar">
     <div class="container filter-bar__inner">
         <button class="filter-btn active" data-filter="semua">Semua</button>
@@ -32,6 +33,7 @@
         <button class="filter-btn" data-filter="kompetisi">🏆 Kompetisi</button>
     </div>
 </div>
+@endif
 
 {{-- EVENT UNGGULAN --}}
 @if($featured->count())
@@ -91,7 +93,7 @@
             <h2 class="section-heading">Semua Event</h2>
         </div>
 
-        @if($byYear->count())
+        @if($stats['total'] > 1 && $byYear->count())
         <div class="timeline" id="eventTimeline">
             @php $catColor=['internasional'=>'event-cat--internasional','nasional'=>'event-cat--nasional','festival'=>'event-cat--festival','pentas'=>'event-cat--pentas','kompetisi'=>'event-cat--kompetisi']; @endphp
             @foreach($byYear->sortKeysDesc() as $tahun => $evList)

@@ -66,7 +66,12 @@ class DashboardController extends Controller
     public function editProfile()
     {
         $user = Auth::user();
-        return view('pages.member_profile', compact('user'));
+        $riwayatTarian = PendaftaranTari::with(['tarian', 'jadwal'])
+            ->where('user_id', $user->id)
+            ->orderByDesc('tanggal_daftar')
+            ->get();
+
+        return view('pages.member_profile', compact('user', 'riwayatTarian'));
     }
 
     public function updateProfile(Request $request)

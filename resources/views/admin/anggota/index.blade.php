@@ -7,7 +7,10 @@
         <h1>Kelola Anggota</h1>
         <p>Daftar seluruh anggota yang terdaftar di Sanggar Mulya Bhakti.</p>
     </div>
-    <a href="{{ route('admin.anggota.create') }}" class="btn btn-primary">+ Tambah Anggota</a>
+    <div class="page-header-actions">
+        <a href="{{ route('admin.anggota.pdf') }}" class="btn btn-secondary" target="_blank">🖨 Cetak PDF</a>
+        <a href="{{ route('admin.anggota.create') }}" class="btn btn-primary">+ Tambah Anggota</a>
+    </div>
 </div>
 
 {{-- FILTER --}}
@@ -53,7 +56,11 @@
                     <td>
                         <form method="POST" action="{{ route('admin.anggota.toggle',$a->id) }}" style="display:inline">
                             @csrf @method('PATCH')
-                            <button type="submit" class="chip {{ $a->status==='aktif' ? 'chip--green' : 'chip--gray' }}" style="border:none;cursor:pointer" title="Klik untuk toggle status">
+                            <button type="submit" 
+                                class="chip {{ $a->status==='aktif' ? 'chip--green' : 'chip--gray' }}" 
+                                style="border:none;cursor:pointer" 
+                                title="Klik untuk toggle status"
+                                onclick="return {{ $a->status==='aktif' ? 'confirm(\'Nonaktifkan akun ' . $a->name . '? Anggota ini tidak akan bisa masuk ke dashboard sampai diaktifkan kembali.\')' : 'true' }}">
                                 {{ $a->status==='aktif' ? '● Aktif' : '○ Non-aktif' }}
                             </button>
                         </form>
@@ -62,7 +69,7 @@
                         <a href="{{ route('admin.anggota.edit',$a->id) }}" class="btn btn-secondary btn-sm">Edit</a>
                         <form method="POST" action="{{ route('admin.anggota.destroy',$a->id) }}" style="display:inline">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" data-confirm="Hapus anggota {{ $a->name }}? Tindakan ini tidak dapat dibatalkan.">Hapus</button>
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Hapus anggota {{ $a->name }}? Tindakan ini tidak dapat dibatalkan.')">Hapus</button>
                         </form>
                     </td>
                 </tr>

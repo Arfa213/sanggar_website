@@ -78,7 +78,9 @@
                     <p><strong>Klik atau seret</strong> foto ke sini</p>
                 </div>
                 <div class="file-preview" style="{{ $tarian->foto ? '' : 'display:none' }}">
-                    <img src="{{ $tarian->foto ? asset('storage/'.$tarian->foto) : '' }}" alt="" style="width:100%;border-radius:8px;margin-top:12px">
+                    <div style="position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; border-radius:12px; border:1px solid var(--border); background:var(--bg); margin-top:12px;">
+                        <img src="{{ $tarian->foto ? asset('storage/'.$tarian->foto) : '' }}" alt="Pratinjau" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
                 </div>
             </div>
         </div>

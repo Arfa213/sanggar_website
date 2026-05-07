@@ -21,7 +21,7 @@
         <div class="auth-form-wrap">
             <span class="badge">Selamat Datang</span>
             <h1 class="auth-title">Masuk</h1>
-            <p class="auth-desc">Masuk ke akun Anda untuk mengakses dashboard anggota</p>
+            <p class="auth-desc">Masuk ke akun Anda untuk mengakses dashboard</p>
 
             <div class="auth-card">
 

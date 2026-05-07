@@ -14,6 +14,13 @@ class TarianController extends Controller
         return view('admin.tarian.index', compact('tarian'));
     }
 
+    public function downloadPdf()
+    {
+        $tarian = Tarian::orderBy('nama')->get();
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.tarian.pdf', compact('tarian'));
+        return $pdf->download('Data-Tarian-SMB-' . now()->format('Y-m-d') . '.pdf');
+    }
+
     public function create()
     {
         $tarian = new Tarian;

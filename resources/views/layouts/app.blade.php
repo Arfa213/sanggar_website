@@ -11,6 +11,17 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pages.css') }}">
+    <style>
+        /* Navbar Dropdown CSS */
+        .nav-user-dropdown:hover .nav-user-menu {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: translateY(0) !important;
+        }
+        .nav-user-btn:hover {
+            background: var(--primary-pale) !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -26,30 +37,60 @@
                 <li><a href="{{ route('profile') }}"        class="{{ request()->routeIs('profile')         ? 'active' : '' }}">Profil</a></li>
                 <li><a href="{{ route('event') }}"          class="{{ request()->routeIs('event')           ? 'active' : '' }}">Event</a></li>
                 <li><a href="{{ route('digital-archive') }}" class="{{ request()->routeIs('digital-archive') ? 'active' : '' }}">Arsip Digital</a></li>
-                @auth
-                <li><a href="{{ route('penjadwalan') }}"   class="{{ request()->routeIs('penjadwalan*')    ? 'active' : '' }}">Jadwal</a></li>
-                @endauth
             </ul>
 
             <div class="navbar-actions">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="btn-masuk" style="display:flex;align-items:center;gap:10px;padding:5px 15px 5px 5px">
-                        @if(Auth::user()->foto)
-                            <img src="{{ asset('storage/'.Auth::user()->foto) }}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-pale)">
-                        @else
-                            <div style="width:32px;height:32px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    {{-- DROPDOWN USER --}}
+                    <div class="nav-user-dropdown" style="position:relative; margin-left: 10px;">
+                        <button class="nav-user-btn" style="background:none; border:none; display:flex; align-items:center; gap:12px; cursor:pointer; padding:6px 12px; border-radius:50px; transition:all .2s;">
+                            @if(Auth::user()->foto)
+                                <img src="{{ asset('storage/'.Auth::user()->foto) }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-pale)">
+                            @else
+                                <div style="width:34px;height:34px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </div>
+                            @endif
+                            <div style="text-align:left; line-height:1.2;">
+                                <div style="font-size:.875rem; font-weight:700; color:var(--dark);">{{ explode(' ', Auth::user()->name)[0] }}</div>
+                                <div style="font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; font-weight:700;">{{ Auth::user()->role }}</div>
                             </div>
-                        @endif
-                        <span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ explode(' ', Auth::user()->name)[0] }}</span>
-                    </a>
-                    @if(Auth::user()->role === 'admin')
-                    <a href="{{ route('admin.dashboard') }}" class="btn-daftar">Admin Panel</a>
-                    @endif
-                    <form method="POST" action="{{ route('logout') }}" style="display:inline">
-                        @csrf
-                        <button type="submit" class="btn-daftar" style="border:none;cursor:pointer;background:transparent">Keluar</button>
-                    </form>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left:4px; opacity:.4;"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+
+                        {{-- DROPDOWN MENU --}}
+                        <div class="nav-user-menu" style="position:absolute; top:100%; right:0; width:220px; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,0.12); margin-top:10px; opacity:0; visibility:hidden; transform:translateY(10px); transition:all .25s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index:1000; overflow:hidden;">
+                            <div style="padding:16px; background: #FAF8F6; border-bottom:1px solid var(--border);">
+                                <div style="font-size:.85rem; font-weight:800; color:var(--dark);">{{ Auth::user()->name }}</div>
+                                <div style="font-size:.72rem; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis;">{{ Auth::user()->email }}</div>
+                            </div>
+                            <div style="padding:8px 0;">
+                                <a href="{{ route('dashboard') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                    Dashboard Member
+                                </a>
+                                @if(Auth::user()->role === 'admin')
+                                <a href="{{ route('admin.dashboard') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    Admin Panel
+                                </a>
+                                @endif
+                                <a href="{{ route('member.profile') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    Pengaturan Profil
+                                </a>
+                            </div>
+                            <div style="padding:8px 0; border-top:1px solid var(--border); background: #FFF5F5;">
+                                <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Apakah Anda yakin ingin keluar?')">
+                                    @csrf
+                                    <button type="submit" style="width:100%; display:flex; align-items:center; gap:12px; padding:10px 16px; border:none; background:none; color:#DC2626; font-size:.875rem; font-weight:800; cursor:pointer; text-align:left; transition:all .2s;" onmouseover="this.style.background='rgba(220,38,38,0.05)'" onmouseout="this.style.background='none'">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                        Keluar Akun
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 @else
                     <a href="{{ route('login') }}"    class="btn-masuk">Masuk</a>
                     <a href="{{ route('register') }}" class="btn-daftar">Daftar Anggota</a>
@@ -71,7 +112,6 @@
             <li><a href="{{ route('digital-archive') }}">Arsip Digital</a></li>
             @auth
             <li><a href="{{ route('dashboard') }}">Dashboard Saya</a></li>
-            <li><a href="{{ route('penjadwalan') }}">Jadwal Latihan</a></li>
             @if(Auth::user()->role === 'admin')
             <li><a href="{{ route('admin.dashboard') }}">Admin Panel</a></li>
             @endif
@@ -125,7 +165,6 @@
                     <li><a href="{{ route('digital-archive') }}">Arsip Digital</a></li>
                     @auth
                     <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li><a href="{{ route('penjadwalan') }}">Jadwal Latihan</a></li>
                     @else
                     <li><a href="{{ route('register') }}">Daftar Anggota</a></li>
                     @endauth
@@ -170,6 +209,26 @@
         document.getElementById('flash-success')?.remove();
         document.getElementById('flash-error')?.remove();
     }, 4000);
+
+    // Toggle Dropdown on Click (Mobile Support)
+    document.addEventListener('click', function(event) {
+        const dropdown = document.querySelector('.nav-user-dropdown');
+        if (!dropdown) return;
+        
+        const btn = dropdown.querySelector('.nav-user-btn');
+        const menu = dropdown.querySelector('.nav-user-menu');
+        
+        if (btn.contains(event.target)) {
+            const isVisible = menu.style.visibility === 'visible';
+            menu.style.opacity = isVisible ? '0' : '1';
+            menu.style.visibility = isVisible ? 'hidden' : 'visible';
+            menu.style.transform = isVisible ? 'translateY(10px)' : 'translateY(0)';
+        } else if (!menu.contains(event.target)) {
+            menu.style.opacity = '0';
+            menu.style.visibility = 'hidden';
+            menu.style.transform = 'translateY(10px)';
+        }
+    });
     </script>
 </body>
 </html>
