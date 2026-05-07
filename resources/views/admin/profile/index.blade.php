@@ -97,18 +97,20 @@
                 <input type="number" name="jumlah_penghargaan" class="form-control" value="{{ old('jumlah_penghargaan',$profil->jumlah_penghargaan) }}">
             </div>
             <div class="form-group">
-                <label>Foto Profil</label>
+                <label>Foto Profil (Logo/Avatar)</label>
                 @if($profil->foto_profil)
                     <img src="{{ asset('storage/'.$profil->foto_profil) }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;display:block;margin-bottom:8px">
                 @endif
                 <input type="file" name="foto_profil" class="form-control" accept="image/*">
+                <span class="hint" style="font-size:.75rem;margin-top:4px;display:block;color:var(--primary)">Akan muncul sebagai logo sanggar di sidebar dan navigasi.</span>
             </div>
             <div class="form-group">
-                <label>Foto Sejarah</label>
+                <label>Foto Sejarah (Background/Hero Profil)</label>
                 @if($profil->foto_sejarah)
                     <img src="{{ asset('storage/'.$profil->foto_sejarah) }}" style="width:120px;height:80px;object-fit:cover;display:block;margin-bottom:8px;border-radius:8px">
                 @endif
                 <input type="file" name="foto_sejarah" class="form-control" accept="image/*">
+                <span class="hint" style="font-size:.75rem;margin-top:4px;display:block;color:var(--primary)">Akan muncul di halaman profil sanggar pada bagian sejarah.</span>
             </div>
         </div>
         <div style="margin-top:20px">

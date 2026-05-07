@@ -10,45 +10,61 @@
 </div>
 
 {{-- UPLOAD FORM --}}
-<div class="card" style="margin-bottom:24px">
-    <div class="card-header"><span class="card-title">Upload Media Baru</span></div>
-    <div class="card-body">
-        <form method="POST" action="{{ route('admin.galeri.store') }}" enctype="multipart/form-data">
-        @csrf
-        @if($errors->any())
-        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px;margin-bottom:16px;color:#DC2626;font-size:.875rem">
-            @foreach($errors->all() as $e)<p>{{ $e }}</p>@endforeach
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:24px">
+    <div class="card">
+        <div class="card-header"><span class="card-title">Upload Media Baru</span></div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('admin.galeri.store') }}" enctype="multipart/form-data">
+            @csrf
+            @if($errors->any())
+            <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px;margin-bottom:16px;color:#DC2626;font-size:.875rem">
+                @foreach($errors->all() as $e)<p>{{ $e }}</p>@endforeach
+            </div>
+            @endif
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group">
+                    <label>Seksi / Bagian Tampilan <span class="required">*</span></label>
+                    <select name="seksi" class="form-control" required>
+                        <option value="hero">🌟 Hero / Banner Utama (Header)</option>
+                        <option value="digital_archive">🎭 Digital Archive (Dokumentasi Seni)</option>
+                        <option value="dokumentasi">📸 Dokumentasi (Kegiatan Sanggar)</option>
+                        <option value="about">ℹ️ Tentang Kami (Profil)</option>
+                    </select>
+                    <span class="hint" style="font-size:.75rem;margin-top:4px;display:block;color:var(--primary)">Pilih di mana media ini akan muncul.</span>
+                </div>
+                <div class="form-group">
+                    <label>Tipe Media</label>
+                    <select name="tipe" class="form-control">
+                        <option value="foto">🖼 Foto / Gambar</option>
+                        <option value="video">🎬 Video (MP4)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column:span 2">
+                    <label>Judul Media (Opsional)</label>
+                    <input type="text" name="judul" class="form-control" placeholder="Contoh: Penampilan Tari Topeng 2024">
+                </div>
+                <div class="form-group" style="grid-column:span 2">
+                    <label>File Media <span class="required">*</span></label>
+                    <input type="file" name="file" class="form-control" accept="image/*,video/mp4" required>
+                    <span class="hint">Foto: JPG/PNG/WebP max 10MB | Video: MP4 max 20MB</span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:16px">Unggah ke Galeri ↑</button>
+            </form>
         </div>
-        @endif
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr auto;gap:14px;align-items:end">
-            <div class="form-group">
-                <label>Seksi <span class="required">*</span></label>
-                <select name="seksi" class="form-control">
-                    <option value="dokumentasi">📸 Dokumentasi Kegiatan</option>
-                    <option value="digital_archive">🎭 Digital Archive</option>
-                    <option value="hero">🌟 Hero / Banner</option>
-                    <option value="about">ℹ️ Tentang Kami</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Tipe</label>
-                <select name="tipe" class="form-control">
-                    <option value="foto">🖼 Foto</option>
-                    <option value="video">🎬 Video</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Judul (opsional)</label>
-                <input type="text" name="judul" class="form-control" placeholder="Nama foto/video">
-            </div>
-            <div class="form-group">
-                <label>File <span class="required">*</span></label>
-                <input type="file" name="file" class="form-control" accept="image/*,video/mp4" required>
-                <span class="hint">Foto: JPG/PNG/WebP max 10MB | Video: MP4 max 20MB</span>
-            </div>
-            <button type="submit" class="btn btn-primary" style="white-space:nowrap">Upload ↑</button>
+    </div>
+
+    <div class="card" style="background: linear-gradient(to bottom, #FFFBF9, #FFF8F6);">
+        <div class="card-header"><span class="card-title">💡 Panduan Seksi</span></div>
+        <div class="card-body" style="font-size:.85rem;line-height:1.5">
+            <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px">
+                <li><strong>🌟 Hero / Banner</strong>: Gambar besar yang muncul di paling atas halaman utama (Beranda).</li>
+                <li><strong>🎭 Digital Archive</strong>: Dokumentasi khusus untuk arsip seni, tarian, dan sejarah tradisional.</li>
+                <li><strong>📸 Dokumentasi</strong>: Foto atau video kegiatan sehari-hari, latihan, atau event umum sanggar.</li>
+                <li><strong>ℹ️ Tentang Kami</strong>: Gambar yang ditampilkan pada bagian profil atau sejarah sanggar.</li>
+            </ul>
         </div>
-        </form>
     </div>
 </div>
 
