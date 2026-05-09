@@ -47,7 +47,11 @@
             </a>
             <a href="{{ route('admin.tarian.index') }}" class="nav-item {{ request()->routeIs('admin.tarian*') ? 'active' : '' }}">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                Arsip Digital
+                Arsip Tarian
+            </a>
+            <a href="{{ route('admin.topeng.index') }}" class="nav-item {{ request()->routeIs('admin.topeng*') ? 'active' : '' }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/><path d="M12 14c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"/></svg>
+                Koleksi Topeng
             </a>
             <a href="{{ route('admin.galeri.index') }}" class="nav-item {{ request()->routeIs('admin.galeri*') ? 'active' : '' }}">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>

@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\{
     AnggotaController        as AdminAnggota,
     GaleriController         as AdminGaleri,
     KehadiranController      as AdminKehadiran,
+    TopengController         as AdminTopeng,
 };
 
 // ── PUBLIC ────────────────────────────────────────────────────
@@ -94,6 +95,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/tarian/{id}/edit',    [AdminTarian::class, 'edit'])->name('tarian.edit');
     Route::put('/tarian/{id}',         [AdminTarian::class, 'update'])->name('tarian.update');
     Route::delete('/tarian/{id}/delete',[AdminTarian::class, 'destroy'])->name('tarian.destroy');
+
+    // Topeng
+    Route::get('/topeng',              [AdminTopeng::class, 'index'])->name('topeng.index');
+    Route::get('/topeng/create',       [AdminTopeng::class, 'create'])->name('topeng.create');
+    Route::post('/topeng',             [AdminTopeng::class, 'store'])->name('topeng.store');
+    Route::get('/topeng/{id}/edit',    [AdminTopeng::class, 'edit'])->name('topeng.edit');
+    Route::put('/topeng/{id}',         [AdminTopeng::class, 'update'])->name('topeng.update');
+    Route::delete('/topeng/{id}/delete',[AdminTopeng::class, 'destroy'])->name('topeng.destroy');
 
     // Anggota
     Route::get('/anggota/pdf',          [AdminAnggota::class, 'downloadPdf'])->name('anggota.pdf');

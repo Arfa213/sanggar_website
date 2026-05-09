@@ -98,6 +98,64 @@
     </div>
 </section>
 
+{{-- KOLEKSI TOPENG (3D EFFECT) --}}
+<section class="topeng-section" style="padding: 80px 0; background: linear-gradient(to bottom, var(--white), var(--bg-soft)); overflow: hidden;">
+    <div class="container">
+        <div class="section-header" style="text-align: center; margin-bottom: 50px;">
+            <span class="badge">Koleksi Tradisional</span>
+            <h2 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; color: var(--dark); margin-top: 10px;">Pancawanda: 5 Karakter Topeng</h2>
+            <p style="color: var(--muted); max-width: 600px; margin: 15px auto 0;">Mengenal lima watak manusia melalui warna dan rupa topeng tradisional Indramayu.</p>
+        </div>
+
+        <div class="topeng-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; perspective: 1000px;">
+            @foreach($topeng as $t)
+            <div class="topeng-card-3d" style="position: relative; height: 350px; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer;">
+                <div class="topeng-card-inner" style="position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.8s; transform-style: preserve-3d;">
+                    
+                    {{-- FRONT --}}
+                    <div class="topeng-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: white; box-shadow: 0 15px 35px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid rgba(0,0,0,0.03);">
+                        <div class="topeng-img-wrap" style="width: 160px; height: 160px; margin-bottom: 20px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); transition: transform 0.5s;">
+                            @if($t->foto)
+                                <img src="{{ asset('storage/'.$t->foto) }}" alt="{{ $t->nama }}" style="width: 100%; height: 100%; object-fit: contain;">
+                            @else
+                                <div style="width: 100%; height: 100%; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </div>
+                            @endif
+                        </div>
+                        <h3 style="font-family: var(--font-display); font-size: 1.4rem; margin-bottom: 5px; color: var(--dark);">{{ $t->nama }}</h3>
+                        <span class="badge" style="background: rgba(0,0,0,0.05); color: var(--dark); border: none;">{{ $t->warna }}</span>
+                    </div>
+
+                    {{-- BACK --}}
+                    <div class="topeng-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: var(--primary); color: white; transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center;">
+                        <h4 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">{{ $t->karakter }}</h4>
+                        <p style="font-size: 0.9rem; line-height: 1.6; opacity: 0.9;">{{ $t->filosofi ?? $t->deskripsi }}</p>
+                        <div style="margin-top: 20px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Watak {{ $t->nama }}</div>
+                    </div>
+
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+
+    <style>
+        .topeng-card-3d:hover .topeng-card-inner {
+            transform: rotateY(180deg);
+        }
+        .topeng-card-3d:hover .topeng-img-wrap {
+            transform: scale(1.1) translateZ(50px);
+        }
+        @media (max-width: 768px) {
+            .topeng-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .topeng-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</section>
+
 {{-- DIGITAL ARCHIVE --}}
 <section class="archive-section" style="padding: 60px 0; overflow: hidden; background: var(--bg-soft);">
     <div class="container">

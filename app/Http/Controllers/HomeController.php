@@ -1,12 +1,12 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\{SanggarProfile, Galeri};
+use App\Models\{SanggarProfile, Galeri, Topeng};
 
 class HomeController extends Controller {
     public function index() {
         $profil = SanggarProfile::getInstance();
-        // Ambil SEMUA galeri aktif, dikelompokkan di blade pakai ->where()
         $galeri = Galeri::aktif()->get();
-        return view('pages.home', compact('profil', 'galeri'));
+        $topeng = Topeng::aktif()->orderBy('urutan')->get();
+        return view('pages.home', compact('profil', 'galeri', 'topeng'));
     }
 }
