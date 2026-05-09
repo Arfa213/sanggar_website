@@ -143,13 +143,8 @@
             'video'     => $t->youtube_embed_url,
         ];
     });
-@endphp
 
-    // Data Tarian
-    const tarianData = @json($tarianJson);
-
-    // Data Topeng
-    const topengData = @json($topeng->values()->map(function($tp) {
+    $topengJson = $topeng->values()->map(function($tp) {
         return [
             'nama'      => $tp->nama,
             'warna'     => $tp->warna,
@@ -158,7 +153,14 @@
             'deskripsi' => $tp->deskripsi,
             'foto'      => $tp->foto ? asset('storage/'.$tp->foto) : null,
         ];
-    }));
+    });
+@endphp
+
+    // Data Tarian
+    const tarianData = @json($tarianJson);
+
+    // Data Topeng
+    const topengData = @json($topengJson);
 
 
 function openModal(type, idx) {
