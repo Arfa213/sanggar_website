@@ -21,8 +21,7 @@
 {{-- FILTER --}}
 <div class="filter-bar">
     <div class="container filter-bar__inner">
-        <button class="filter-btn active" data-filter="semua">Semua</button>
-        <button class="filter-btn" data-filter="topeng">🎭 Topeng</button>
+        <button class="filter-btn active" data-filter="semua">Semua Tarian</button>
         <button class="filter-btn" data-filter="sakral">🌿 Sakral</button>
         <button class="filter-btn" data-filter="hiburan">🎭 Hiburan</button>
         <button class="filter-btn" data-filter="penyambutan">🌺 Penyambutan</button>
@@ -40,9 +39,8 @@
             <p class="section-sub">Setiap gerakan menyimpan cerita, setiap tarian adalah doa dari leluhur.</p>
         </div>
 
-        @if($tarian->count() || $topeng->count())
+        @if($tarian->count())
         <div class="tarian-grid" id="tarianGrid">
-            {{-- Loop Tarian --}}
             @foreach($tarian as $idx => $t)
             @php $catColor=['sakral'=>'event-cat--sakral','hiburan'=>'event-cat--hiburan','penyambutan'=>'event-cat--penyambutan','ritual'=>'event-cat--ritual','perang'=>'event-cat--perang']; @endphp
             <div class="tari-card {{ $t->unggulan ? 'tari-card--featured' : '' }}"
@@ -83,12 +81,28 @@
                 </div>
             </div>
             @endforeach
+        </div>
+        @else
+        <div style="text-align:center;padding:40px 20px;color:var(--muted)">
+            <p>Belum ada data tarian.</p>
+        </div>
+        @endif
+    </div>
+</section>
 
-            {{-- Loop Topeng --}}
+{{-- TOPENG --}}
+<section class="section" style="background: var(--bg-soft);">
+    <div class="container">
+        <div class="section-header">
+            <span class="badge">Koleksi Topeng</span>
+            <h2 class="section-heading">Topeng Tradisional (Pancawanda)</h2>
+            <p class="section-sub">Mengenal karakter manusia melalui rupa dan warna topeng.</p>
+        </div>
+
+        @if($topeng->count())
+        <div class="tarian-grid">
             @foreach($topeng as $idx => $tp)
-            <div class="tari-card"
-                 data-cat="topeng"
-                 data-nama="{{ strtolower($tp->nama) }}">
+            <div class="tari-card" data-nama="{{ strtolower($tp->nama) }}">
                 <div class="tari-thumb" style="position:relative">
                     @if($tp->foto)
                         <img src="{{ asset('storage/'.$tp->foto) }}" alt="{{ $tp->nama }}"
@@ -105,15 +119,14 @@
                     <h3 class="tari-nama">{{ $tp->nama }}</h3>
                     <p class="tari-asal">🎨 Warna: {{ $tp->warna }}</p>
                     <p class="tari-desc"><strong>Watak:</strong> {{ $tp->karakter }}</p>
-                    <p class="tari-desc" style="margin-top:5px">{{ Str::limit($tp->filosofi ?? $tp->deskripsi, 100) }}</p>
                     <button class="btn-detail" onclick="openModal('topeng', {{ $idx }})">Lihat Selengkapnya →</button>
                 </div>
             </div>
             @endforeach
         </div>
         @else
-        <div style="text-align:center;padding:60px 20px;color:var(--muted)">
-            <p>Belum ada data tarian. Silakan tambahkan melalui panel admin.</p>
+        <div style="text-align:center;padding:40px 20px;color:var(--muted)">
+            <p>Belum ada data topeng.</p>
         </div>
         @endif
     </div>
@@ -241,7 +254,8 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const f = btn.dataset.filter;
-        document.querySelectorAll('.tari-card').forEach(c => {
+        // Filter tarianGrid saja
+        document.querySelectorAll('#tarianGrid .tari-card').forEach(c => {
             c.style.display = (f === 'semua' || c.dataset.cat === f) ? '' : 'none';
         });
     });
