@@ -2,160 +2,125 @@
 
 @section('title', 'Daftar Anggota')
 
-@section('content')
+@@section('content')
 <section class="auth-page">
-    <div class="container auth-container auth-container--single">
-
-        <div class="auth-form-wrap auth-form-wrap--wide">
-            <div class="auth-card">
-                <span class="badge">Pendaftaran</span>
-                <h1 class="auth-title">Daftar Anggota</h1>
-                <p class="auth-desc">Bergabunglah dengan komunitas pencinta seni tradisional Sanggar Mulya Bhakti.</p>
-
-                @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
-
-                @if(session('error'))
-                    <div class="alert alert-error">{{ session('error') }}</div>
-                @endif
-
-                @if($errors->any())
-                    <div class="alert alert-error">
-                        @foreach($errors->all() as $error)
-                            <p style="margin-bottom: 4px;">• {{ $error }}</p>
-                        @endforeach
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('register.post') }}">
-                    @csrf
-
-                    <div class="form-group">
-                        <label for="name">Nama Lengkap <span style="color: var(--primary);">*</span></label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            class="form-input @error('name') is-error @enderror"
-                            placeholder="Nama sesuai identitas"
-                            value="{{ old('name') }}"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">Alamat Email <span style="color: var(--primary);">*</span></label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            class="form-input @error('email') is-error @enderror"
-                            placeholder="nama@email.com"
-                            value="{{ old('email') }}"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="alamat">Alamat Domisili <span style="color: var(--primary);">*</span></label>
-                        <textarea
-                            id="alamat"
-                            name="alamat"
-                            class="form-input form-textarea @error('alamat') is-error @enderror"
-                            placeholder="Jl. Raya Indramayu No..."
-                            rows="2"
-                            required
-                        >{{ old('alamat') }}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Buat Password <span style="color: var(--primary);">*</span></label>
-                        <div class="input-password-wrap">
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                class="form-input @error('password') is-error @enderror"
-                                placeholder="8+ Karakter (A-z, 0-9)"
-                                required
-                                minlength="8"
-                                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
-                                oninput="checkPasswordStrength(this.value)"
-                            >
-                            <button type="button" class="toggle-pw" aria-label="Tampilkan password" onclick="togglePassword('password', this)">
-                                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                            </button>
-                        </div>
-                        
-                        <div class="password-requirements" id="pwRequirements" style="margin-top: 12px; padding: 15px; background: rgba(0,0,0,0.02); border-radius: 12px; font-size: 0.8rem; border: 1px solid rgba(0,0,0,0.03);">
-                            <p style="font-weight: 700; color: var(--dark); margin-bottom: 10px;">Ketentuan Password:</p>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                <div id="req-length" style="display:flex;align-items:center;gap:6px;color:#999 transition: color 0.3s;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
-                                    8+ Karakter
-                                </div>
-                                <div id="req-upper" style="display:flex;align-items:center;gap:6px;color:#999; transition: color 0.3s;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
-                                    Huruf Besar
-                                </div>
-                                <div id="req-lower" style="display:flex;align-items:center;gap:6px;color:#999; transition: color 0.3s;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
-                                    Huruf Kecil
-                                </div>
-                                <div id="req-number" style="display:flex;align-items:center;gap:6px;color:#999; transition: color 0.3s;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
-                                    Angka (0-9)
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 30px;">
-                        <label for="password_confirmation">Ulangi Password <span style="color: var(--primary);">*</span></label>
-                        <div class="input-password-wrap">
-                            <input
-                                type="password"
-                                id="password_confirmation"
-                                name="password_confirmation"
-                                class="form-input"
-                                placeholder="Konfirmasi password Anda"
-                                required
-                                oninput="checkPasswordMatch()"
-                            >
-                        </div>
-                        <div id="pwMatch" style="margin-top: 8px; font-size: 0.8rem; color: #999; display: none; font-weight: 600;"></div>
-                    </div>
-
-                    <button type="submit" class="btn-submit">Daftar Sekarang</button>
-
-                    <p class="form-switch">
-                        Sudah punya akun?
-                        <a href="{{ route('login') }}">Masuk di sini</a>
-                    </p>
-                </form>
+    <div class="auth-container" style="max-width: 550px;">
+        
+        <div class="auth-header">
+            <div class="auth-logo" style="background: var(--dark);">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
             </div>
+            <h1 class="auth-title">Daftar Anggota</h1>
+            <p class="auth-desc">Bergabunglah menjadi bagian dari pelestari seni Sanggar Mulya Bhakti.</p>
         </div>
 
+        @if(session('success'))
+            <div class="alert" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert alert-error">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>Terjadi kesalahan pada input Anda.</span>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('register.post') }}">
+            @csrf
+
+            <div class="form-group">
+                <label class="form-label">Nama Lengkap</label>
+                <input
+                    type="text"
+                    name="name"
+                    class="form-input"
+                    placeholder="Masukkan nama sesuai identitas"
+                    value="{{ old('name') }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Alamat Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    class="form-input"
+                    placeholder="nama@email.com"
+                    value="{{ old('email') }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Alamat Domisili</label>
+                <textarea
+                    name="alamat"
+                    class="form-input"
+                    placeholder="Contoh: Jl. Raya Indramayu No. 123"
+                    rows="2"
+                    required
+                >{{ old('alamat') }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Buat Password</label>
+                <div class="input-password-wrap">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        placeholder="Minimal 8 karakter"
+                        required
+                        oninput="checkPasswordStrength(this.value)"
+                    >
+                    <button type="button" class="toggle-pw" onclick="togglePassword('password', this)">
+                        <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+                
+                <div class="password-requirements" id="pwRequirements" style="margin-top: 12px; padding: 12px; background: #f9f9f9; border-radius: 12px; font-size: 0.75rem; border: 1px solid #eee;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div id="req-length" style="display:flex;align-items:center;gap:5px;color:#999"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/></svg> 8+ Karakter</div>
+                        <div id="req-upper" style="display:flex;align-items:center;gap:5px;color:#999"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/></svg> Huruf Besar</div>
+                        <div id="req-lower" style="display:flex;align-items:center;gap:5px;color:#999"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/></svg> Huruf Kecil</div>
+                        <div id="req-number" style="display:flex;align-items:center;gap:5px;color:#999"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/></svg> Angka</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 32px;">
+                <label class="form-label">Konfirmasi Password</label>
+                <input
+                    type="password"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    class="form-input"
+                    placeholder="Ulangi password"
+                    required
+                    oninput="checkPasswordMatch()"
+                >
+                <div id="pwMatch" style="margin-top: 8px; font-size: 0.75rem; font-weight: 700; display: none;"></div>
+            </div>
+
+            <button type="submit" class="btn-submit">Daftar Menjadi Anggota</button>
+
+            <p class="form-switch">
+                Sudah memiliki akun?
+                <a href="{{ route('login') }}">Masuk di sini</a>
+            </p>
+        </form>
     </div>
 </section>
 
 <script>
 function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
-    const eyeOpen = btn.querySelector('.eye-open');
-    const eyeClosed = btn.querySelector('.eye-closed');
-
-    if (input.type === 'password') {
-        input.type = 'text';
-        eyeOpen.style.display = 'none';
-        eyeClosed.style.display = 'block';
-    } else {
-        input.type = 'password';
-        eyeOpen.style.display = 'block';
-        eyeClosed.style.display = 'none';
-    }
+    input.type = input.type === 'password' ? 'text' : 'password';
 }
 
 function checkPasswordStrength(pw) {
@@ -165,19 +130,10 @@ function checkPasswordStrength(pw) {
         'req-lower': /[a-z]/.test(pw),
         'req-number': /\d/.test(pw)
     };
-
-    const icons = {
-        true: { svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>', color: '#22C55E' },
-        false: { svg: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>', color: '#999' }
-    };
-
     for (const [id, met] of Object.entries(checks)) {
         const el = document.getElementById(id);
-        if (el) {
-            el.innerHTML = icons[met].svg + el.innerText;
-            el.style.color = icons[met].color;
-            el.style.fontWeight = met ? '700' : '500';
-        }
+        el.style.color = met ? '#16a34a' : '#999';
+        el.querySelector('svg').style.stroke = met ? '#16a34a' : '#999';
     }
 }
 
@@ -185,16 +141,11 @@ function checkPasswordMatch() {
     const pw = document.getElementById('password');
     const confirm = document.getElementById('password_confirmation');
     const msg = document.getElementById('pwMatch');
-
     if (confirm.value.length > 0) {
         msg.style.display = 'block';
-        if (pw.value === confirm.value) {
-            msg.textContent = '✓ Password cocok';
-            msg.style.color = '#22C55E';
-        } else {
-            msg.textContent = 'Konfirmasi password belum sama';
-            msg.style.color = '#EF4444';
-        }
+        const match = pw.value === confirm.value;
+        msg.textContent = match ? '✓ Password cocok' : 'Konfirmasi password berbeda';
+        msg.style.color = match ? '#16a34a' : '#dc2626';
     } else {
         msg.style.display = 'none';
     }
