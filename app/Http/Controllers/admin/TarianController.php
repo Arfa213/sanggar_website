@@ -68,18 +68,22 @@ class TarianController extends Controller
 
     private function validateTarian(Request $request): array
     {
-        return $request->validate([
-            'nama'      => 'required|string|max:255',
-            'asal'      => 'required|string|max:255',
-            'kategori'  => 'required|in:sakral,hiburan,penyambutan,ritual,perang',
-            'deskripsi' => 'required|string',
-            'fungsi'    => 'nullable|string|max:255',
-            'kostum'    => 'nullable|string|max:255',
-            'durasi'    => 'nullable|string|max:100',
-            'video_url' => 'nullable|url|max:500',
-            'unggulan'  => 'nullable|boolean',
-            'aktif'     => 'nullable|boolean',
-            'foto'      => 'nullable|image|max:3072',
+        $validated = $request->validate([
+            'nama'            => 'required|string|max:255',
+            'asal'            => 'required|string|max:255',
+            'kategori'        => 'required|in:sakral,hiburan,penyambutan,ritual,perang',
+            'jenis_kegiatan'  => 'required|in:tari,gamelan,drama,srimpi',
+            'deskripsi'       => 'required|string',
+            'fungsi'          => 'nullable|string|max:255',
+            'kostum'          => 'nullable|string|max:255',
+            'durasi'          => 'nullable|string|max:100',
+            'video_url'       => 'nullable|url|max:500',
+            'unggulan'        => 'nullable|boolean',
+            'aktif'           => 'nullable|boolean',
+            'foto'            => 'nullable|image|max:3072',
         ]);
+        $validated['unggulan'] = $request->boolean('unggulan');
+        $validated['aktif']    = $request->boolean('aktif');
+        return $validated;
     }
 }

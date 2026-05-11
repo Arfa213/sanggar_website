@@ -17,11 +17,15 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>Foto</th><th>Nama Tarian</th><th>Asal</th><th>Kategori</th><th>Video</th><th>Unggulan</th><th>Status</th><th>Aksi</th></tr>
+                <tr><th>Foto</th><th>Nama Tarian</th><th>Asal</th><th>Jenis</th><th>Kategori</th><th>Video</th><th>Unggulan</th><th>Status</th><th>Aksi</th></tr>
             </thead>
             <tbody>
                 @forelse($tarian as $t)
-                @php $catColor=['sakral'=>'chip--green','hiburan'=>'chip--blue','penyambutan'=>'chip--purple','ritual'=>'chip--orange','perang'=>'chip--red']; @endphp
+                @php
+                    $catColor=['sakral'=>'chip--green','hiburan'=>'chip--blue','penyambutan'=>'chip--purple','ritual'=>'chip--orange','perang'=>'chip--red'];
+                    $jenisColor=['tari'=>'chip--orange','gamelan'=>'chip--purple','drama'=>'chip--blue','srimpi'=>'chip--green'];
+                    $jenisIcon=['tari'=>'🩰','gamelan'=>'🥁','drama'=>'🎭','srimpi'=>'🌸'];
+                @endphp
                 <tr>
                     <td>
                         @if($t->foto)
@@ -32,6 +36,7 @@
                     </td>
                     <td style="font-weight:600">{{ $t->nama }}</td>
                     <td style="font-size:.85rem">{{ $t->asal }}</td>
+                    <td><span class="chip {{ $jenisColor[$t->jenis_kegiatan ?? 'tari'] ?? 'chip--gray' }}">{{ ($jenisIcon[$t->jenis_kegiatan ?? 'tari'] ?? '') }} {{ ucfirst($t->jenis_kegiatan ?? 'tari') }}</span></td>
                     <td><span class="chip {{ $catColor[$t->kategori] ?? 'chip--gray' }}">{{ ucfirst($t->kategori) }}</span></td>
                     <td>@if($t->video_url)<span class="chip chip--green">▶ Ada</span>@else<span class="chip chip--gray">-</span>@endif</td>
                     <td><span class="chip {{ $t->unggulan ? 'chip--orange' : 'chip--gray' }}">{{ $t->unggulan ? '★ Ya' : 'Tidak' }}</span></td>

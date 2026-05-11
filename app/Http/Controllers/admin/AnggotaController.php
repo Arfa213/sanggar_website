@@ -17,15 +17,76 @@ class AnggotaController extends Controller
             $query->where(fn($w) => $w->where('name','like',"%$q%")->orWhere('email','like',"%$q%"));
         }
         if ($request->filled('status')) $query->where('status', $request->status);
+        if ($request->filled('tipe'))   $query->where('tipe_anggota', $request->tipe);
+
         $anggota = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
         return view('admin.anggota.index', compact('anggota'));
     }
 
-    public function downloadPdf()
+    // ── Export PDF semua anggota ──────────────────────────────────
+    public function downloadPdf(Request $request)
     {
-        $anggota = User::where('role', 'anggota')->orderBy('name')->get();
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.anggota.pdf', compact('anggota'));
-        return $pdf->download('Data-Anggota-SMB-' . now()->format('Y-m-d') . '.pdf');
+        $tipe = $request->tipe ?? 'semua';
+        $query = User::where('role', 'anggota')->orderBy('name');
+        if ($tipe !== 'semua') $query->where('tipe_anggota', $tipe);
+        $anggota = $query->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.anggota.pdf', compact('anggota', 'tipe'));
+        $label = match($tipe) {
+            'pengunjung' => 'Pengunjung',
+            'private'    => 'Private',
+            default      => 'Semua',
+        };
+        return $pdf->download("Data-Anggota-{$label}-SMB-" . now()->format('Y-m-d') . '.pdf');
+    }
+
+    // ── Export Excel pengunjung ───────────────────────────────────
+    public function downloadExcel(Request $request)
+    {
+        $tipe = $request->tipe ?? 'pengunjung';
+        $query = User::where('role', 'anggota')->orderBy('name');
+        if ($tipe !== 'semua') $query->where('tipe_anggota', $tipe);
+        $anggota = $query->get();
+
+        $label = match($tipe) {
+            'pengunjung' => 'Pengunjung',
+            'private'    => 'Private',
+            'anggota_tetap' => 'Anggota-Tetap',
+            default      => 'Semua',
+        };
+        $filename = "Data-{$label}-SMB-" . now()->format('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($anggota, $tipe) {
+            $handle = fopen('php://output', 'w');
+            // BOM untuk Excel agar bisa baca UTF-8
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            // Header kolom
+            fputcsv($handle, ['No', 'Nama', 'Email', 'No. HP', 'Alamat', 'Tipe', 'Status', 'Terdaftar', 'Tanggal Keluar', 'Catatan']);
+
+            foreach ($anggota as $i => $a) {
+                fputcsv($handle, [
+                    $i + 1,
+                    $a->name,
+                    $a->email,
+                    $a->no_hp ?? '-',
+                    $a->alamat ?? '-',
+                    $a->tipe_anggota_label,
+                    ucfirst($a->status),
+                    $a->created_at->format('d/m/Y'),
+                    $a->tanggal_keluar ? \Carbon\Carbon::parse($a->tanggal_keluar)->format('d/m/Y') : '-',
+                    $a->catatan_keanggotaan ?? '-',
+                ]);
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function create()
@@ -38,22 +99,29 @@ class AnggotaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'alamat'   => 'nullable|string',
-            'no_hp'    => 'nullable|string|max:30',
-            'password' => 'required|min:8|confirmed',
-            'status'   => 'required|in:aktif,nonaktif',
-            'foto'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'name'                 => 'required|string|max:255',
+            'email'                => 'required|email|unique:users,email',
+            'alamat'               => 'nullable|string',
+            'no_hp'                => 'nullable|string|max:30',
+            'password'             => 'required|min:8|confirmed',
+            'status'               => 'required|in:aktif,nonaktif',
+            'tipe_anggota'         => 'required|in:anggota_tetap,pengunjung,private',
+            'tanggal_keluar'       => 'nullable|date',
+            'catatan_keanggotaan'  => 'nullable|string|max:500',
+            'foto'                 => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
+
         $data = [
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'alamat'   => $request->alamat,
-            'no_hp'    => $request->no_hp,
-            'password' => Hash::make($request->password),
-            'role'     => 'anggota',
-            'status'   => $request->status,
+            'name'                => $request->name,
+            'email'               => $request->email,
+            'alamat'              => $request->alamat,
+            'no_hp'               => $request->no_hp,
+            'password'            => Hash::make($request->password),
+            'role'                => 'anggota',
+            'status'              => $request->status,
+            'tipe_anggota'        => $request->tipe_anggota,
+            'tanggal_keluar'      => $request->tanggal_keluar,
+            'catatan_keanggotaan' => $request->catatan_keanggotaan,
         ];
 
         if ($request->hasFile('foto')) {
@@ -76,16 +144,21 @@ class AnggotaController extends Controller
     {
         $anggota = User::findOrFail($id);
         abort_if($anggota->role === 'admin', 403);
+
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email,'.$anggota->id,
-            'alamat'   => 'nullable|string',
-            'no_hp'    => 'nullable|string|max:30',
-            'status'   => 'required|in:aktif,nonaktif',
-            'password' => 'nullable|min:8|confirmed',
-            'foto'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'name'                => 'required|string|max:255',
+            'email'               => 'required|email|unique:users,email,'.$anggota->id,
+            'alamat'              => 'nullable|string',
+            'no_hp'               => 'nullable|string|max:30',
+            'status'              => 'required|in:aktif,nonaktif',
+            'tipe_anggota'        => 'required|in:anggota_tetap,pengunjung,private',
+            'tanggal_keluar'      => 'nullable|date',
+            'catatan_keanggotaan' => 'nullable|string|max:500',
+            'password'            => 'nullable|min:8|confirmed',
+            'foto'                => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
-        $data = $request->only('name','email','alamat','no_hp','status');
+
+        $data = $request->only('name','email','alamat','no_hp','status','tipe_anggota','tanggal_keluar','catatan_keanggotaan');
         if ($request->filled('password')) $data['password'] = Hash::make($request->password);
 
         if ($request->hasFile('foto')) {

@@ -43,6 +43,14 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>Jenis Kegiatan <span class="required">*</span></label>
+                        <select name="jenis_kegiatan" class="form-control" required>
+                            @foreach(['tari'=>'🩰 Tari','gamelan'=>'🥁 Gamelan','drama'=>'🎭 Drama','srimpi'=>'🌸 Srimpi'] as $val => $label)
+                            <option value="{{ $val }}" {{ old('jenis_kegiatan',$tarian->jenis_kegiatan ?? 'tari')===$val?'selected':'' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Durasi</label>
                         <input type="text" name="durasi" class="form-control" value="{{ old('durasi',$tarian->durasi) }}" placeholder="15–30 menit">
                     </div>

@@ -7,7 +7,7 @@ class Tarian extends Model {
     use HasFactory;
     protected $table = 'tarian';
     protected $fillable = [
-        'nama','asal','kategori','deskripsi','fungsi',
+        'nama','asal','kategori','jenis_kegiatan','deskripsi','fungsi',
         'kostum','durasi','foto','video_url','unggulan','urutan','aktif',
     ];
     protected $casts = [

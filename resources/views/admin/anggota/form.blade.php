@@ -9,7 +9,7 @@
     <a href="{{ route('admin.anggota.index') }}" class="btn btn-secondary">← Kembali</a>
 </div>
 
-<div style="max-width:640px">
+<div style="max-width:680px">
 <form method="POST"
       action="{{ $mode==='create' ? route('admin.anggota.store') : route('admin.anggota.update',$anggota->id) }}"
       enctype="multipart/form-data">
@@ -48,6 +48,12 @@ function previewImage(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+function togglePrivateFields() {
+    const tipe = document.getElementById('tipe_anggota').value;
+    const privateFields = document.getElementById('private-fields');
+    privateFields.style.display = (tipe === 'private' || tipe === 'pengunjung') ? 'block' : 'none';
+}
 </script>
 
 <div class="card">
@@ -75,13 +81,47 @@ function previewImage(input) {
             <label>Alamat</label>
             <textarea name="alamat" class="form-control" rows="3">{{ old('alamat',$anggota->alamat) }}</textarea>
         </div>
-        <div class="form-group" style="margin-bottom:16px">
-            <label>Status</label>
-            <select name="status" class="form-control">
-                <option value="aktif"    {{ old('status',$anggota->status)==='aktif'    ? 'selected' : '' }}>Aktif</option>
-                <option value="nonaktif" {{ old('status',$anggota->status)==='nonaktif' ? 'selected' : '' }}>Non-aktif</option>
-            </select>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div class="form-group">
+                <label>Tipe Keanggotaan <span class="required">*</span></label>
+                <select name="tipe_anggota" id="tipe_anggota" class="form-control" onchange="togglePrivateFields()">
+                    <option value="anggota_tetap" {{ old('tipe_anggota',$anggota->tipe_anggota ?? 'anggota_tetap')==='anggota_tetap' ? 'selected' : '' }}>🎭 Anggota Tetap</option>
+                    <option value="pengunjung"    {{ old('tipe_anggota',$anggota->tipe_anggota)==='pengunjung' ? 'selected' : '' }}>👁 Pengunjung</option>
+                    <option value="private"       {{ old('tipe_anggota',$anggota->tipe_anggota)==='private' ? 'selected' : '' }}>🎯 Kelas Private</option>
+                </select>
+                <p style="font-size:.75rem;color:var(--muted);margin-top:4px">
+                    <strong>Anggota Tetap</strong>: Bergabung jangka panjang.<br>
+                    <strong>Pengunjung</strong>: Hanya untuk pendataan kunjungan.<br>
+                    <strong>Private</strong>: Belajar tari tertentu, keluar saat selesai.
+                </p>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" class="form-control">
+                    <option value="aktif"    {{ old('status',$anggota->status)==='aktif'    ? 'selected' : '' }}>Aktif</option>
+                    <option value="nonaktif" {{ old('status',$anggota->status)==='nonaktif' ? 'selected' : '' }}>Non-aktif</option>
+                </select>
+            </div>
         </div>
+
+        {{-- Field khusus pengunjung & private --}}
+        <div id="private-fields" style="display:{{ in_array(old('tipe_anggota',$anggota->tipe_anggota ?? ''), ['private','pengunjung']) ? 'block' : 'none' }}">
+            <div style="background:#FDF8F5;border-radius:12px;border:1px solid #F5EAE2;padding:16px;margin-bottom:16px">
+                <p style="font-size:.8rem;font-weight:700;color:#C65D2E;margin-bottom:12px">📋 Info Keanggotaan Sementara</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                    <div class="form-group">
+                        <label>Tanggal Keluar (Rencana)</label>
+                        <input type="date" name="tanggal_keluar" class="form-control" value="{{ old('tanggal_keluar',$anggota->tanggal_keluar ? $anggota->tanggal_keluar->format('Y-m-d') : '') }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Catatan Keanggotaan</label>
+                        <input type="text" name="catatan_keanggotaan" class="form-control" value="{{ old('catatan_keanggotaan',$anggota->catatan_keanggotaan) }}" placeholder="Mis: Belajar Tari Topeng saja">
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="form-group" style="margin-bottom:16px">
             <label>Password {{ $mode==='edit' ? '(kosongkan jika tidak diubah)' : '' }} <span class="required">{{ $mode==='create' ? '*' : '' }}</span></label>
             <input type="password" name="password" class="form-control" {{ $mode==='create' ? 'required' : '' }} placeholder="Minimal 8 karakter">

@@ -105,14 +105,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/topeng/{id}/delete',[AdminTopeng::class, 'destroy'])->name('topeng.destroy');
 
     // Anggota
-    Route::get('/anggota/pdf',          [AdminAnggota::class, 'downloadPdf'])->name('anggota.pdf');
-    Route::get('/anggota',              [AdminAnggota::class, 'index'])->name('anggota.index');
-    Route::get('/anggota/create',       [AdminAnggota::class, 'create'])->name('anggota.create');
-    Route::post('/anggota',             [AdminAnggota::class, 'store'])->name('anggota.store');
-    Route::get('/anggota/{id}/edit',    [AdminAnggota::class, 'edit'])->name('anggota.edit');
-    Route::put('/anggota/{id}',         [AdminAnggota::class, 'update'])->name('anggota.update');
-    Route::delete('/anggota/{id}/delete',[AdminAnggota::class, 'destroy'])->name('anggota.destroy');
-    Route::patch('/anggota/{id}/toggle', [AdminAnggota::class, 'toggleStatus'])->name('anggota.toggle');
+    Route::get('/anggota/pdf',            [AdminAnggota::class, 'downloadPdf'])->name('anggota.pdf');
+    Route::get('/anggota/excel',           [AdminAnggota::class, 'downloadExcel'])->name('anggota.excel');
+    Route::get('/anggota',                [AdminAnggota::class, 'index'])->name('anggota.index');
+    Route::get('/anggota/create',         [AdminAnggota::class, 'create'])->name('anggota.create');
+    Route::post('/anggota',               [AdminAnggota::class, 'store'])->name('anggota.store');
+    Route::get('/anggota/{id}/edit',      [AdminAnggota::class, 'edit'])->name('anggota.edit');
+    Route::put('/anggota/{id}',           [AdminAnggota::class, 'update'])->name('anggota.update');
+    Route::delete('/anggota/{id}/delete', [AdminAnggota::class, 'destroy'])->name('anggota.destroy');
+    Route::patch('/anggota/{id}/toggle',  [AdminAnggota::class, 'toggleStatus'])->name('anggota.toggle');
 
     // Galeri
     Route::get('/galeri',              [AdminGaleri::class, 'index'])->name('galeri.index');
@@ -123,8 +124,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/galeri/{id}',      [AdminGaleri::class, 'destroy'])->name('galeri.destroy');
 
     // Kehadiran
-    Route::get('/kehadiran',           [AdminKehadiran::class, 'index'])->name('kehadiran.index');
-    Route::post('/kehadiran/input',    [AdminKehadiran::class, 'inputKehadiran'])->name('kehadiran.input');
-    Route::post('/kehadiran/simpan',   [AdminKehadiran::class, 'simpanKehadiran'])->name('kehadiran.simpan');
-    Route::get('/kehadiran/laporan',   [AdminKehadiran::class, 'laporan'])->name('kehadiran.laporan');
+    Route::get('/kehadiran',                    [AdminKehadiran::class, 'index'])->name('kehadiran.index');
+    Route::post('/kehadiran/buat-sesi',         [AdminKehadiran::class, 'buatSesi'])->name('kehadiran.buat-sesi');
+    Route::get('/kehadiran/sesi/{id}',          [AdminKehadiran::class, 'tampilSesi'])->name('kehadiran.sesi');
+    Route::post('/kehadiran/sesi/{id}/tutup',   [AdminKehadiran::class, 'tutupSesi'])->name('kehadiran.tutup-sesi');
+    Route::post('/kehadiran/input',             [AdminKehadiran::class, 'inputKehadiran'])->name('kehadiran.input');
+    Route::post('/kehadiran/simpan',            [AdminKehadiran::class, 'simpanKehadiran'])->name('kehadiran.simpan');
+    Route::get('/kehadiran/laporan',            [AdminKehadiran::class, 'laporan'])->name('kehadiran.laporan');
 });
+
+// ── BARCODE SCAN (public/anggota) ────────────────────────────────────
+Route::get('/hadir/{token}',  [AdminKehadiran::class, 'scanBarcode'])->name('kehadiran.scan');
+Route::post('/hadir/{token}', [AdminKehadiran::class, 'prosesBarcode'])->name('kehadiran.proses');
