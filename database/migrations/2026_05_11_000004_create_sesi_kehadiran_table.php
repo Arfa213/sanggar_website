@@ -3,21 +3,23 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+// Menggantikan sesi_kehadiran: QR permanen per kelas (jadwal+tarian combo)
 return new class extends Migration {
     public function up(): void {
-        Schema::create('sesi_kehadiran', function (Blueprint $table) {
+        Schema::create('kelas_barcode', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('jadwal_id')->constrained('jadwal_latihan')->onDelete('cascade');
+            $table->foreignId('jadwal_id')->nullable()->constrained('jadwal_latihan')->onDelete('cascade');
             $table->foreignId('tarian_id')->constrained('tarian')->onDelete('cascade');
-            $table->date('tanggal');
-            $table->string('barcode_token', 64)->unique();
+            $table->string('barcode_token', 64)->unique(); 
             $table->boolean('aktif')->default(true);
-            $table->timestamp('expires_at')->nullable();
             $table->string('dibuat_oleh')->nullable();
             $table->timestamps();
+
+            // QR permanen sekarang unik per tarian saja (jika jadwal tidak diisi)
+            $table->unique('tarian_id', 'tarian_barcode_unique');
         });
     }
     public function down(): void {
-        Schema::dropIfExists('sesi_kehadiran');
+        Schema::dropIfExists('kelas_barcode');
     }
 };

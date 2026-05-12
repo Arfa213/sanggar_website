@@ -3,220 +3,193 @@
 
 @section('content')
 
-@if(session('success'))
-<div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:12px;padding:14px 20px;margin-bottom:20px;color:#15803D;display:flex;align-items:center;gap:10px">
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-    {{ session('success') }}
-</div>
-@endif
-
-<div class="page-header">
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px">
     <div class="page-header-text">
-        <h1>Kelola Kehadiran</h1>
-        <p>Buat sesi barcode atau input manual kehadiran anggota.</p>
+        <h1 style="font-family:var(--font-display);font-size:2rem;font-weight:900">Kelola Kehadiran</h1>
+        <p style="color:var(--muted);font-size:.875rem">Cetak QR Code permanen atau input absensi manual.</p>
     </div>
-    <a href="{{ route('admin.kehadiran.laporan') }}" class="btn btn-secondary">
+    <a href="{{ route('admin.kehadiran.laporan') }}" class="btn btn-secondary" style="background:var(--dark);color:#fff;text-decoration:none;padding:10px 20px;border-radius:50px;font-weight:700;font-size:.875rem;display:flex;align-items:center;gap:8px">
         📊 Lihat Laporan
     </a>
 </div>
 
 {{-- STATISTIK HARI INI --}}
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
-    <div style="background:#fff;border-radius:14px;border:1px solid #F0EBE5;padding:20px;display:flex;align-items:center;gap:16px">
-        <div style="width:44px;height:44px;background:#E8F5E9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem">✓</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px">
+    <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:20px;display:flex;align-items:center;gap:16px">
+        <div style="width:40px;height:40px;background:#E8F5E9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem">✓</div>
         <div>
-            <div style="font-size:1.75rem;font-weight:900;color:#2E7D32">{{ $statsHariIni['hadir'] ?? 0 }}</div>
-            <div style="font-size:.8rem;color:#7A7A7A">Hadir Hari Ini</div>
+            <div style="font-size:1.5rem;font-weight:900;color:#2E7D32">{{ $statsHariIni['hadir'] ?? 0 }}</div>
+            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;font-weight:700">Hadir</div>
         </div>
     </div>
-    <div style="background:#fff;border-radius:14px;border:1px solid #F0EBE5;padding:20px;display:flex;align-items:center;gap:16px">
-        <div style="width:44px;height:44px;background:#FFF3E0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem">~</div>
+    <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:20px;display:flex;align-items:center;gap:16px">
+        <div style="width:40px;height:40px;background:#FFF3E0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem">~</div>
         <div>
-            <div style="font-size:1.75rem;font-weight:900;color:#E65100">{{ $statsHariIni['izin'] ?? 0 }}</div>
-            <div style="font-size:.8rem;color:#7A7A7A">Izin Hari Ini</div>
+            <div style="font-size:1.5rem;font-weight:900;color:#E65100">{{ $statsHariIni['izin'] ?? 0 }}</div>
+            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;font-weight:700">Izin</div>
         </div>
     </div>
-    <div style="background:#fff;border-radius:14px;border:1px solid #F0EBE5;padding:20px;display:flex;align-items:center;gap:16px">
-        <div style="width:44px;height:44px;background:#FEF2F2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem">✗</div>
+    <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:20px;display:flex;align-items:center;gap:16px">
+        <div style="width:40px;height:40px;background:#FEF2F2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem">✗</div>
         <div>
-            <div style="font-size:1.75rem;font-weight:900;color:#DC2626">{{ $statsHariIni['alpa'] ?? 0 }}</div>
-            <div style="font-size:.8rem;color:#7A7A7A">Alpa Hari Ini</div>
+            <div style="font-size:1.5rem;font-weight:900;color:#DC2626">{{ $statsHariIni['alpa'] ?? 0 }}</div>
+            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;font-weight:700">Alpa</div>
+        </div>
+    </div>
+    <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:20px;display:flex;align-items:center;gap:16px">
+        <div style="width:40px;height:40px;background:#E8F4FD;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem">👥</div>
+        <div>
+            <div style="font-size:1.5rem;font-weight:900;color:#1565C0">{{ $statsHariIni['tamu'] ?? 0 }}</div>
+            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;font-weight:700">Tamu</div>
         </div>
     </div>
 </div>
 
 {{-- TAB SWITCHER --}}
-<div style="display:flex;gap:0;margin-bottom:24px;background:#F5F3F1;border-radius:12px;padding:4px;width:fit-content">
-    <button onclick="switchTab('barcode')" id="tab-barcode"
-        style="padding:8px 20px;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:#C65D2E;color:#fff;transition:all .2s">
-        📷 Sesi Barcode (QR)
+<div style="display:flex;gap:4px;margin-bottom:24px;background:#F5F3F1;border-radius:14px;padding:6px;width:fit-content;border:1px solid var(--border)">
+    <button onclick="switchTab('permanent')" id="tab-permanent" class="tab-btn active">
+        🔗 QR Utama
     </button>
-    <button onclick="switchTab('manual')" id="tab-manual"
-        style="padding:8px 20px;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#7A7A7A;transition:all .2s">
+    <button onclick="switchTab('guest')" id="tab-guest" class="tab-btn">
+        👥 QR Tamu
+    </button>
+    <button onclick="switchTab('manual')" id="tab-manual" class="tab-btn">
         ✏️ Input Manual
     </button>
 </div>
 
-{{-- ══ PANEL BARCODE ════════════════════════════════════════ --}}
-<div id="panel-barcode">
-    <div style="background:#fff;border-radius:16px;border:1px solid #E8E0D8;overflow:hidden;margin-bottom:24px">
-        <div style="padding:18px 24px;border-bottom:1px solid #F0EBE5;background:#FDF8F5">
-            <h3 style="font-size:1rem;font-weight:700;color:#1A1A1A">Buat Sesi Kehadiran Barcode</h3>
-            <p style="font-size:.8rem;color:#7A7A7A;margin-top:2px">Admin membuat sesi → QR Code ditampilkan → Anggota scan menggunakan HP.</p>
+<style>
+.tab-btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: .875rem;
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted);
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tab-btn:hover { background: rgba(0, 0, 0, 0.05); color: var(--dark); transform: translateY(-1px); }
+.tab-btn.active {
+    background: var(--dark) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+</style>
+
+{{-- ══ PANEL PERMANENT ══════════════════════════════════════ --}}
+<div id="panel-permanent">
+    <div style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:24px">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);background:#FDF8F5">
+            <h3 style="font-size:1rem;font-weight:700;color:var(--dark)">QR Code Universal Sanggar (Anggota)</h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px">Satu kode untuk semua anggota tetap & sementara. Scan via Dashboard.</p>
         </div>
         <div style="padding:24px">
-            <form method="POST" action="{{ route('admin.kehadiran.buat-sesi') }}">
-                @csrf
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:16px;align-items:end">
-                    <div>
-                        <label style="font-size:.8rem;font-weight:700;color:#1A1A1A;display:block;margin-bottom:6px">Jadwal Latihan <span style="color:#C65D2E">*</span></label>
-                        <select name="jadwal_id" required style="width:100%;padding:10px 14px;border:1.5px solid #E8E0D8;border-radius:10px;font-size:.875rem;background:#FAF8F6;outline:none">
-                            <option value="">-- Pilih jadwal --</option>
-                            @foreach($jadwal as $j)
-                            <option value="{{ $j->id }}">{{ $j->hari }} · {{ $j->jam_mulai }}–{{ $j->jam_selesai }} · {{ $j->kelas }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:.8rem;font-weight:700;color:#1A1A1A;display:block;margin-bottom:6px">Kelas / Kegiatan <span style="color:#C65D2E">*</span></label>
-                        <select name="tarian_id" required style="width:100%;padding:10px 14px;border:1.5px solid #E8E0D8;border-radius:10px;font-size:.875rem;background:#FAF8F6;outline:none">
-                            <option value="">-- Pilih kegiatan --</option>
-                            @foreach($tarian as $t)
-                            <option value="{{ $t->id }}">{{ $t->nama }} ({{ ucfirst($t->jenis_kegiatan ?? 'tari') }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:.8rem;font-weight:700;color:#1A1A1A;display:block;margin-bottom:6px">Tanggal <span style="color:#C65D2E">*</span></label>
-                        <input type="date" name="tanggal" required value="{{ $today }}" style="width:100%;padding:10px 14px;border:1.5px solid #E8E0D8;border-radius:10px;font-size:.875rem;background:#FAF8F6;outline:none">
-                    </div>
-                    <div>
-                        <label style="font-size:.8rem;font-weight:700;color:#1A1A1A;display:block;margin-bottom:6px">Durasi Sesi (menit)</label>
-                        <input type="number" name="durasi" value="120" min="15" max="480" style="width:100%;padding:10px 14px;border:1.5px solid #E8E0D8;border-radius:10px;font-size:.875rem;background:#FAF8F6;outline:none">
-                    </div>
-                    <button type="submit"
-                        style="background:#C65D2E;color:#fff;font-weight:700;padding:11px 24px;border-radius:50px;border:none;cursor:pointer;white-space:nowrap;font-size:.875rem">
-                        📷 Buat QR Code →
-                    </button>
-                </div>
-            </form>
+            <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+                <tbody>
+                    @foreach($permanentQR as $qr)
+                    <tr>
+                        <td style="padding:16px 0">
+                            <span style="font-weight:700;color:var(--dark);font-size:1.1rem">🏮 QR Code Universal</span>
+                        </td>
+                        <td style="text-align:right">
+                            <a href="{{ route('admin.kehadiran.permanent.show', $qr->id) }}" 
+                               style="background:var(--primary);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;box-shadow:0 4px 12px var(--primary-pale)">
+                                🖨️ Cetak QR Anggota
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 
-    {{-- Sesi aktif hari ini --}}
-    @if($sesiAktif->count())
-    <div style="background:#fff;border-radius:16px;border:1px solid #E8E0D8;overflow:hidden">
-        <div style="padding:16px 24px;border-bottom:1px solid #F0EBE5">
-            <h3 style="font-size:1rem;font-weight:700;color:#1A1A1A">🟢 Sesi Barcode Aktif Hari Ini</h3>
+{{-- ══ PANEL GUEST QR ══════════════════════════════════════ --}}
+<div id="panel-guest" style="display:none">
+    <div style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:24px">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);background:#F0F9FF">
+            <h3 style="font-size:1rem;font-weight:700;color:var(--dark)">QR Code Khusus Tamu / Pengunjung</h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px">Bisa di-scan menggunakan Kamera HP Biasa (Tanpa Aplikasi/Login).</p>
         </div>
-        <div style="padding:8px 24px 16px">
-            @foreach($sesiAktif as $s)
-            @php $expired = $s->expires_at && now()->isAfter($s->expires_at); @endphp
-            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #FAF8F6">
-                <div style="width:40px;height:40px;background:{{ $expired ? '#FEF2F2' : '#E8F5E9' }};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem">
-                    {{ $expired ? '⏰' : '📷' }}
+        <div style="padding:24px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                    <h4 style="font-size:1.1rem;font-weight:800">👥 QR Buku Tamu Digital</h4>
+                    <p style="font-size:.875rem;color:var(--muted);margin-top:4px">Tempelkan ini di resepsionis atau gerbang masuk untuk tamu umum.</p>
                 </div>
-                <div style="flex:1">
-                    <div style="font-weight:700;font-size:.875rem">{{ $s->jadwal->hari }} · {{ $s->tarian->nama }}</div>
-                    <div style="font-size:.75rem;color:#7A7A7A">
-                        Berakhir: {{ $s->expires_at ? $s->expires_at->format('H:i') : '-' }}
-                        @if($expired) <span style="color:#DC2626;font-weight:700"> · SUDAH BERAKHIR</span>@endif
-                    </div>
+                <div style="display:flex;gap:12px">
+                     {{-- Kita buatkan view khusus cetak tamu --}}
+                    <a href="{{ route('admin.kehadiran.permanent.show', ['id' => $permanentQR->first()->id, 'type' => 'guest']) }}" 
+                       style="background:var(--dark);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700">
+                        🖨️ Cetak QR Tamu
+                    </a>
                 </div>
-                <a href="{{ route('admin.kehadiran.sesi', $s->id) }}"
-                    style="background:#C65D2E;color:#fff;font-weight:700;padding:7px 18px;border-radius:20px;font-size:.8rem;text-decoration:none">
-                    Lihat QR
-                </a>
-                <form method="POST" action="{{ route('admin.kehadiran.tutup-sesi', $s->id) }}" style="display:inline">
-                    @csrf
-                    <button type="submit" onclick="return confirm('Tutup sesi ini?')"
-                        style="background:#F3F4F6;color:#DC2626;font-weight:700;padding:7px 14px;border-radius:20px;border:1px solid #FECACA;font-size:.8rem;cursor:pointer">
-                        Tutup
-                    </button>
-                </form>
             </div>
-            @endforeach
         </div>
     </div>
-    @else
-    <div style="background:#FAFAF8;border-radius:16px;border:1.5px dashed #E8E0D8;padding:40px;text-align:center;color:#7A7A7A">
-        <div style="font-size:2.5rem;margin-bottom:8px">📷</div>
-        <p style="font-weight:600;margin-bottom:4px">Belum ada sesi barcode aktif hari ini</p>
-        <p style="font-size:.8rem">Buat sesi di atas untuk mulai absensi scan QR.</p>
-    </div>
-    @endif
 </div>
 
 {{-- ══ PANEL MANUAL ═════════════════════════════════════════ --}}
 <div id="panel-manual" style="display:none">
-    <div style="background:#fff;border-radius:16px;border:1px solid #E8E0D8;overflow:hidden;margin-bottom:24px">
-        <div style="padding:18px 24px;border-bottom:1px solid #F0EBE5;background:#FAFAF8">
-            <h3 style="font-size:1rem;font-weight:700;color:#1A1A1A">Input Kehadiran Manual</h3>
-            <p style="font-size:.8rem;color:#7A7A7A;margin-top:2px">Pilih jadwal dan tanggal lalu input status kehadiran satu per satu.</p>
+    <div style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:24px">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);background:#FAFAF8">
+            <h3 style="font-size:1rem;font-weight:700;color:var(--dark)">Input Kehadiran Manual (Anggota)</h3>
+            <p style="font-size:.8rem;color:var(--muted);margin-top:2px">Gunakan ini jika anggota lupa membawa HP.</p>
         </div>
         <div style="padding:24px">
             <form method="POST" action="{{ route('admin.kehadiran.input') }}">
                 @csrf
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:16px;align-items:end">
                     <div>
-                        <label style="font-size:.8rem;font-weight:700;color:#1A1A1A;display:block;margin-bottom:6px">Jadwal Latihan <span style="color:#C65D2E">*</span></label>
-                        <select name="jadwal_id" required style="width:100%;padding:10px 14px;border:1.5px solid #E8E0D8;border-radius:10px;font-size:.875rem;background:#FAF8F6;outline:none">
-                            <option value="">-- Pilih jadwal --</option>
+                        <label style="font-size:.8rem;font-weight:700;color:var(--dark);display:block;margin-bottom:6px">Jadwal Latihan</label>
+                        <select name="jadwal_id" required style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:.875rem;background:#fff;outline:none">
                             @foreach($jadwal as $j)
-                            <option value="{{ $j->id }}">{{ $j->hari }} · {{ $j->jam_mulai }}–{{ $j->jam_selesai }} · {{ $j->kelas }}</option>
+                            <option value="{{ $j->id }}">{{ $j->hari }} · {{ $j->kelas }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
-                        <label style="font-size:.8rem;font-weight:700;color:#1A1A1A;display:block;margin-bottom:6px">Kelas / Kegiatan <span style="color:#C65D2E">*</span></label>
-                        <select name="tarian_id" required style="width:100%;padding:10px 14px;border:1.5px solid #E8E0D8;border-radius:10px;font-size:.875rem;background:#FAF8F6;outline:none">
-                            <option value="">-- Pilih kegiatan --</option>
+                        <label style="font-size:.8rem;font-weight:700;color:var(--dark);display:block;margin-bottom:6px">Kegiatan</label>
+                        <select name="tarian_id" required style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:.875rem;background:#fff;outline:none">
                             @foreach($tarian as $t)
-                            <option value="{{ $t->id }}">{{ $t->nama }} ({{ ucfirst($t->jenis_kegiatan ?? 'tari') }})</option>
+                            <option value="{{ $t->id }}">{{ $t->nama }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
-                        <label style="font-size:.8rem;font-weight:700;color:#1A1A1A;display:block;margin-bottom:6px">Tanggal <span style="color:#C65D2E">*</span></label>
-                        <input type="date" name="tanggal" required value="{{ $today }}" style="width:100%;padding:10px 14px;border:1.5px solid #E8E0D8;border-radius:10px;font-size:.875rem;background:#FAF8F6;outline:none">
+                        <label style="font-size:.8rem;font-weight:700;color:var(--dark);display:block;margin-bottom:6px">Tanggal</label>
+                        <input type="date" name="tanggal" required value="{{ $today }}" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:.875rem;background:#fff;outline:none">
                     </div>
-                    <button type="submit" style="background:#C65D2E;color:#fff;font-weight:700;padding:11px 24px;border-radius:50px;border:none;cursor:pointer;white-space:nowrap;font-size:.875rem">
+                    <button type="submit" style="background:var(--primary);color:#fff;font-weight:700;padding:11px 24px;border-radius:50px;border:none;cursor:pointer;font-size:.875rem">
                         Mulai Input →
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
-    {{-- Sesi manual hari ini --}}
-    @if($sesiHariIni->count())
-    <div style="background:#fff;border-radius:16px;border:1px solid #E8E0D8;overflow:hidden">
-        <div style="padding:16px 24px;border-bottom:1px solid #F0EBE5">
-            <h3 style="font-size:1rem;font-weight:700;color:#1A1A1A">Sesi yang Sudah Diinput Hari Ini</h3>
-        </div>
-        <div style="padding:8px 24px 16px">
-            @foreach($sesiHariIni as $s)
-            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #FAF8F6">
-                <div style="width:36px;height:36px;background:#E8F5E9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#2E7D32;font-size:1rem">✓</div>
-                <div style="flex:1">
-                    <span style="font-weight:600;font-size:.875rem">{{ $s->jadwal->hari }}</span>
-                    <span style="color:#7A7A7A;font-size:.8rem"> · {{ $s->tarian->nama }}</span>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
 </div>
 
 <script>
 function switchTab(tab) {
-    document.getElementById('panel-barcode').style.display = tab === 'barcode' ? 'block' : 'none';
     document.getElementById('panel-manual').style.display  = tab === 'manual'  ? 'block' : 'none';
-    document.getElementById('tab-barcode').style.background = tab === 'barcode' ? '#C65D2E' : 'transparent';
-    document.getElementById('tab-barcode').style.color      = tab === 'barcode' ? '#fff'    : '#7A7A7A';
-    document.getElementById('tab-manual').style.background  = tab === 'manual'  ? '#C65D2E' : 'transparent';
-    document.getElementById('tab-manual').style.color       = tab === 'manual'  ? '#fff'    : '#7A7A7A';
+    document.getElementById('panel-permanent').style.display = tab === 'permanent' ? 'block' : 'none';
+    document.getElementById('panel-guest').style.display = tab === 'guest' ? 'block' : 'none';
+    
+    const tabs = ['manual', 'permanent', 'guest'];
+    tabs.forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        if(t === tab) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
 </script>
 

@@ -18,7 +18,7 @@ class ChatbotController extends Controller
 
         $sessionId = $request->session_id;
         $userId    = auth()->id();
-        $apiKey    = config('services.gemini.key'); // Set di .env: GEMINI_API_KEY=xxx
+        $apiKey    = config('services.gemini.key');
 
         // Simpan pesan user
         ChatbotMessage::create([
@@ -46,8 +46,6 @@ class ChatbotController extends Controller
 
         // Format history untuk Gemini
         $contents = [];
-
-        // System context sebagai pesan pertama
         $contents[] = [
             'role'  => 'user',
             'parts' => [['text' => $context]],
@@ -57,7 +55,6 @@ class ChatbotController extends Controller
             'parts' => [['text' => 'Baik, saya siap membantu menjawab pertanyaan seputar Sanggar Mulya Bhakti!']],
         ];
 
-        // Tambahkan history percakapan
         foreach ($history as $msg) {
             $contents[] = [
                 'role'  => $msg->role === 'user' ? 'user' : 'model',
@@ -69,7 +66,7 @@ class ChatbotController extends Controller
             $response = Http::withoutVerifying()
                 ->timeout(30)
                 ->post(
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}",
                     ['contents' => $contents]
                 );
 
@@ -77,15 +74,12 @@ class ChatbotController extends Controller
                 $reply = $response->json('candidates.0.content.parts.0.text')
                     ?? 'Maaf, saya tidak dapat memproses pertanyaan Anda saat ini.';
             } else {
-                // Fallback jika API error
                 $reply = $this->getFallbackReply($request->message, $profil);
             }
-
         } catch (\Exception $e) {
             $reply = $this->getFallbackReply($request->message, $profil);
         }
 
-        // Simpan balasan assistant
         ChatbotMessage::create([
             'session_id' => $sessionId,
             'user_id'    => $userId,
@@ -99,11 +93,9 @@ class ChatbotController extends Controller
         ]);
     }
 
-    // ── Fallback tanpa API ────────────────────────────────────
     private function getFallbackReply(string $msg, $profil): string
     {
         $msg = strtolower($msg);
-
         if (str_contains($msg, 'daftar') || str_contains($msg, 'gabung')) {
             return "Untuk mendaftar sebagai anggota Sanggar Mulya Bhakti, klik tombol **Daftar Anggota** di pojok kanan atas halaman ini. Pendaftaran gratis! Setelah mendaftar, Anda bisa memilih kelas tari yang diminati.";
         }
@@ -119,14 +111,29 @@ class ChatbotController extends Controller
         if (str_contains($msg, 'halo') || str_contains($msg, 'hai') || str_contains($msg, 'hello')) {
             return "Halo! Selamat datang di Sanggar Mulya Bhakti 🎭 Saya asisten virtual kami. Ada yang bisa saya bantu? Anda bisa tanya tentang jadwal latihan, cara daftar, atau tarian yang kami ajarkan!";
         }
-
         return "Terima kasih atas pertanyaan Anda! Untuk informasi lebih lanjut tentang {$profil->nama_sanggar}, silakan hubungi kami di {$profil->no_hp} atau email {$profil->email}. Kami siap membantu! 😊";
     }
 
-    // ── Hapus riwayat chat (opsional) ─────────────────────────
     public function clearHistory(Request $request)
     {
         ChatbotMessage::where('session_id', $request->session_id)->delete();
         return response()->json(['success' => true]);
+    }
+
+    public function recommendDance(Request $request)
+    {
+        $request->validate(['preference' => 'required|string|max:500']);
+        $apiKey = config('services.gemini.key');
+        $tarian = Tarian::where('aktif', true)->get();
+        $tariList = $tarian->map(fn($t) => "- {$t->nama}: {$t->deskripsi_singkat}")->implode("\n");
+        $prompt = "Calon murid bingung pilih tari. Karakter: \"{$request->preference}\". Daftar tari:\n{$tariList}\nPilih SATU tari. Balas JSON murni: {\"tarian\":\"..\",\"alasan\":\"..\"}.";
+
+        try {
+            $resp = Http::withoutVerifying()->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
+                'contents' => [['parts' => [['text' => $prompt]]]]
+            ]);
+            $res = json_decode(trim(preg_replace('/```json|```/', '', $resp->json('candidates.0.content.parts.0.text'))), true);
+            return response()->json(['success' => true, 'tarian' => $res['tarian'], 'alasan' => $res['alasan']]);
+        } catch (\Exception $e) { return response()->json(['success' => false, 'error' => $e->getMessage()]); }
     }
 }

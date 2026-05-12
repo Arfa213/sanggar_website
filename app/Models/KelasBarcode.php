@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class KelasBarcode extends Model
+{
+    use HasFactory;
+
+    protected $table = 'kelas_barcode';
+
+    protected $fillable = [
+        'jadwal_id',
+        'tarian_id',
+        'barcode_token',
+        'aktif',
+        'dibuat_oleh',
+    ];
+
+    protected $casts = [
+        'aktif' => 'boolean',
+    ];
+
+    public function jadwal()
+    {
+        return $this->belongsTo(JadwalLatihan::class, 'jadwal_id');
+    }
+
+    public function tarian()
+    {
+        return $this->belongsTo(Tarian::class, 'tarian_id');
+    }
+
+    public function kehadiran()
+    {
+        return $this->hasMany(Kehadiran::class, 'barcode_token', 'barcode_token');
+    }
+}

@@ -1,247 +1,275 @@
 @extends('layouts.member')
-@section('title', 'Penjadwalan Tari')
+@section('title', 'Pendaftaran Latihan')
 @section('content')
 
-<section style="padding-top:calc(var(--nav-h) + 32px);padding-bottom:80px;background:var(--bg-soft);min-height:100vh">
-<div class="container">
+<style>
+    :root {
+        --p-color: #C65D2E;
+        --p-soft: #FDF0EA;
+        --border-color: #F1F1F1;
+    }
 
-    {{-- HEADER --}}
-    <div style="text-align:center;margin-bottom:40px">
-        <span class="badge">Pendaftaran Kelas</span>
-        <h1 style="font-family:var(--font-display);font-size:2.5rem;font-weight:900;color:var(--dark);margin-bottom:8px">Pilih Kelas Tari</h1>
-        <p style="color:var(--muted);max-width:540px;margin:0 auto">Daftar satu atau lebih kelas tari yang ingin kamu pelajari. Jadwal akan otomatis disesuaikan.</p>
-    </div>
+    .discovery-container {
+        padding-top: calc(var(--nav-h) + 60px);
+        padding-bottom: 120px;
+        background: #fafaf8;
+        min-height: 100vh;
+    }
 
-    {{-- FLASH --}}
-    @if(session('success'))
-    <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:12px;padding:14px 20px;margin-bottom:24px;color:#15803D;display:flex;align-items:center;gap:10px">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-        {{ session('success') }}
-    </div>
-    @endif
-    @if(session('error'))
-    <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:14px 20px;margin-bottom:24px;color:#DC2626">
-        {{ session('error') }}
-    </div>
-    @endif
+    /* HEADER STYLE */
+    .page-header {
+        text-align: center;
+        margin-bottom: 64px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .page-header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3rem;
+        font-weight: 900;
+        color: #111827;
+        margin-bottom: 12px;
+    }
+    .page-header p {
+        color: #6b7280;
+        font-size: 1.1rem;
+    }
 
-    {{-- KELAS YANG SUDAH TERDAFTAR --}}
-    @if($pendaftaran->count())
-    <div style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:32px">
-        <div style="padding:18px 24px;border-bottom:1px solid var(--border);background:var(--bg-soft)">
-            <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700">Kelas yang Sudah Saya Ikuti</h3>
-        </div>
-        <div style="padding:16px 24px">
-            @foreach($pendaftaran as $p)
-            <div style="display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #FAF8F6">
-                <div style="width:54px;height:54px;background:var(--primary-pale);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                </div>
-                <div style="flex:1">
-                    <div style="font-weight:700;font-size:.95rem;color:var(--dark)">{{ $p->tarian->nama }}</div>
-                    <div style="font-size:.8rem;color:var(--muted);margin-top:2px">
-                        📅 {{ $p->jadwal->hari }} &nbsp;·&nbsp;
-                        ⏰ {{ $p->jadwal->jam_mulai }}–{{ $p->jadwal->jam_selesai }} &nbsp;·&nbsp;
-                        📍 {{ $p->jadwal->tempat }}
-                    </div>
-                    <div style="font-size:.75rem;color:var(--muted);margin-top:2px">
-                        Terdaftar: {{ $p->tanggal_daftar->format('d M Y') }}
-                    </div>
-                </div>
-                <span style="background:#E8F5E9;color:#2E7D32;font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:20px">Aktif</span>
-                <form method="POST" action="{{ route('penjadwalan.batalkan', $p->id) }}">
-                    @csrf
-                    <button type="submit" onclick="return confirm('Batalkan pendaftaran Tari {{ $p->tarian->nama }}?')"
-                        style="background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;font-size:.75rem;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer">
-                        Batalkan
-                    </button>
-                </form>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
+    /* PROGRAM RUTIN CARDS */
+    .routine-section {
+        margin-bottom: 80px;
+    }
+    .routine-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 24px;
+    }
+    .routine-card {
+        background: #fff;
+        padding: 32px;
+        border-radius: 24px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        text-align: center;
+    }
+    .routine-card h4 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+    .routine-card .time-info {
+        font-weight: 700;
+        color: var(--p-color);
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+        display: block;
+    }
+    .routine-card p {
+        font-size: 0.9rem;
+        color: #6b7280;
+        line-height: 1.6;
+        margin-bottom: 24px;
+    }
 
-    {{-- HEADER DAFTAR TARIAN & PENCARIAN --}}
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
-        <div>
-            <h3 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--dark);">Pilihan Kelas Tari</h3>
-            <p style="color:var(--muted);font-size:.9rem;">Temukan tarian yang ingin kamu pelajari.</p>
-        </div>
-        <div style="position:relative; width:100%; max-width:300px;">
-            <svg style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#9CA3AF;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="searchInput" placeholder="Cari tarian..." 
-                style="width:100%; padding:12px 16px 12px 40px; border:1.5px solid var(--border); border-radius:50px; font-size:.9rem; outline:none; background:#fff; transition:border .3s;">
-        </div>
-    </div>
+    /* GENERAL BUTTONS */
+    .btn-main {
+        background: var(--p-color);
+        color: #fff;
+        font-weight: 800;
+        padding: 14px 28px;
+        border-radius: 100px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .btn-main:hover {
+        background: #a44d26;
+        transform: translateY(-2px);
+    }
+    .btn-success {
+        background: #ecfdf5;
+        color: #059669;
+        font-weight: 800;
+        padding: 14px 28px;
+        border-radius: 100px;
+        font-size: 0.85rem;
+        display: block;
+        text-align: center;
+    }
 
-    {{-- DAFTAR TARIAN TERSEDIA --}}
-    <div id="tarianGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px">
-        @foreach($tarianTersedia as $t)
-        @php
-            $sudahDaftar = $pendaftaran->where('tarian_id', $t->id)->count() > 0;
-            $jadwalTarian = $jadwalLatihan; // semua jadwal tersedia
-        @endphp
+    /* TAB & GRID */
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.75rem;
+        font-weight: 900;
+        color: #111827;
+        margin-bottom: 32px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .section-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e5e7eb;
+    }
 
-        <div style="background:#fff;border-radius:20px;border:2px solid {{ $sudahDaftar ? '#C65D2E' : 'var(--border)' }};overflow:hidden;transition:all .25s"
-             id="card-tarian-{{ $t->id }}">
+    .tari-card {
+        background: #fff;
+        border-radius: 24px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        transition: all 0.4s ease;
+        cursor: pointer;
+    }
+    .tari-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    }
+    .tari-img {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+    }
+    .tari-content {
+        padding: 24px;
+    }
+</style>
 
-            {{-- Thumbnail --}}
-            <div style="height:140px;background:var(--primary-pale);position:relative;display:flex;align-items:center;justify-content:center">
-                @if($t->foto)
-                    <img src="{{ asset('storage/'.$t->foto) }}" style="width:100%;height:100%;object-fit:cover">
-                @else
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                @endif
-                @if($sudahDaftar)
-                <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(198,93,46,.12);display:flex;align-items:center;justify-content:center">
-                    <span style="background:#C65D2E;color:#fff;font-weight:800;font-size:.8rem;padding:6px 14px;border-radius:20px">✓ Sudah Terdaftar</span>
-                </div>
-                @endif
-                {{-- Category badge --}}
-                <div style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,.9);color:#C65D2E;font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:20px">
-                    {{ ucfirst($t->kategori) }}
-                </div>
-            </div>
-
-            <div style="padding:18px; display:flex; flex-direction:column; flex:1;">
-                <h4 class="tarian-title" style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:4px">{{ $t->nama }}</h4>
-                <p style="font-size:.8rem;color:var(--muted);margin-bottom:4px">📍 <span class="tarian-asal">{{ $t->asal }}</span></p>
-                @if($t->durasi)
-                <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">⏱ Durasi: {{ $t->durasi }}</p>
-                @endif
-                <p style="font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:20px;flex:1;">
-                    {{ Str::limit($t->deskripsi, 100) }}
-                </p>
-
-                @if(!$sudahDaftar)
-                <button type="button" onclick="openDaftarModal({{ $t->id }}, '{{ addslashes($t->nama) }}')"
-                    style="width:100%;background:var(--primary);color:#fff;font-family:var(--font-body);font-size:.9rem;font-weight:700;padding:12px;border-radius:50px;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(198,93,46,.2);"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(198,93,46,.3)';" 
-                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(198,93,46,.2)';">
-                    Daftar Kelas Ini →
-                </button>
-                @else
-                <div style="text-align:center;padding:12px;background:var(--bg-soft);border-radius:50px;border:1px solid var(--border);">
-                    <p style="font-size:.85rem;font-weight:600;color:var(--muted);margin:0;">✓ Terdaftar</p>
-                </div>
-                @endif
-            </div>
-        </div>
-        @endforeach
-    </div>
-
-</div>
-</section>
-
-{{-- MODAL PENDAFTARAN --}}
-<div id="daftarModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity .3s;">
-    <div style="background:#fff; border-radius:24px; width:100%; max-width:480px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,.2); transform:translateY(20px); transition:transform .3s;" id="daftarModalContent">
-        <div style="padding:24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#FAF8F6;">
-            <div>
-                <span style="color:var(--primary); font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Pendaftaran Kelas</span>
-                <h3 id="modalTariTitle" style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:var(--dark); margin-top:4px;">Nama Tarian</h3>
-            </div>
-            <button onclick="closeDaftarModal()" style="background:none; border:none; font-size:1.5rem; color:var(--muted); cursor:pointer;">✕</button>
-        </div>
+<div class="discovery-container">
+    <div class="container">
         
-        <form method="POST" action="{{ route('penjadwalan.daftar') }}" style="padding:24px;">
-            @csrf
-            <input type="hidden" name="tarian_id" id="modalTariId" value="">
+        {{-- SIMPLE CENTERED HEADER --}}
+        <div class="page-header">
+            <h1>Jadwal Latihan Sanggar</h1>
+            <p>Kelola pendaftaran rutin mingguan dan booking sesi tambahan Anda.</p>
+        </div>
 
-            <div style="margin-bottom:20px">
-                <label style="font-size:.85rem;font-weight:700;color:var(--dark);display:block;margin-bottom:8px">Pilih Jadwal Latihan <span style="color:#C65D2E">*</span></label>
-                <div style="position:relative;">
-                    <select name="jadwal_id" required
-                        style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:.9rem;background:#fff;outline:none;appearance:none;cursor:pointer;">
-                        <option value="">-- Pilih hari & jam --</option>
-                        @foreach($jadwalLatihan as $j)
-                        <option value="{{ $j->id }}">
-                            {{ $j->hari }} · {{ $j->jam_mulai }}–{{ $j->jam_selesai }}
-                        </option>
-                        @endforeach
-                    </select>
-                    <svg style="position:absolute;right:16px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        {{-- LATIHAN RUTIN SECTION --}}
+        @if(Auth::user()->tipe_anggota == 'anggota_tetap')
+        <div class="routine-section">
+            <h3 class="section-title">Program Latihan Rutin</h3>
+            <div class="routine-grid">
+                {{-- JUMAT --}}
+                <div class="routine-card">
+                    <h4>Jumat Siang</h4>
+                    <span class="time-info">Jam: 14:00 - 17:00 WIB</span>
+                    <p>Sesi latihan teknik dasar dan pemantapan koreografi mingguan bagi seluruh anggota tetap.</p>
+                    
+                    @php $isRegisteredJumat = $pendaftaran->where('jam_latihan', '14:00:00')->count(); @endphp
+                    @if($isRegisteredJumat)
+                        <span class="btn-success">✓ Terdaftar Rutin</span>
+                    @else
+                        <form action="{{ route('penjadwalan.daftar') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="tarian_id" value="{{ $tarianTersedia->first()->id ?? 1 }}">
+                            <input type="hidden" name="tanggal_latihan" value="{{ date('Y-m-d', strtotime('next friday')) }}">
+                            <input type="hidden" name="jam_latihan" value="14:00">
+                            <input type="hidden" name="catatan" value="Latihan Rutin Jumat">
+                            <button type="submit" class="btn-main">Daftar Rutin Jumat</button>
+                        </form>
+                    @endif
                 </div>
-                <p style="font-size:.75rem; color:var(--muted); margin-top:6px;">Pilih jadwal yang paling sesuai dengan waktu luangmu.</p>
-            </div>
 
-            <div style="margin-bottom:30px">
-                <label style="font-size:.85rem;font-weight:700;color:var(--dark);display:block;margin-bottom:8px">Catatan (opsional)</label>
-                <textarea name="catatan" placeholder="Misal: Saya pemula dan belum pernah menari sebelumnya..." rows="3"
-                    style="width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:.9rem;background:#fff;outline:none;resize:vertical;"></textarea>
+                {{-- MINGGU --}}
+                <div class="routine-card">
+                    <h4>Minggu Rutin</h4>
+                    <span class="time-info">Jam: 08:00 - 16:00 WIB</span>
+                    <p>Sesi pendalaman materi tarian tradisional dan kreasi secara intensif sepanjang hari.</p>
+                    
+                    @php $isRegisteredMinggu = $pendaftaran->where('jam_latihan', '08:00:00')->count(); @endphp
+                    @if($isRegisteredMinggu)
+                        <span class="btn-success">✓ Terdaftar Rutin</span>
+                    @else
+                        <form action="{{ route('penjadwalan.daftar') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="tarian_id" value="{{ $tarianTersedia->first()->id ?? 1 }}">
+                            <input type="hidden" name="tanggal_latihan" value="{{ date('Y-m-d', strtotime('next sunday')) }}">
+                            <input type="hidden" name="jam_latihan" value="08:00">
+                            <input type="hidden" name="catatan" value="Latihan Rutin Minggu">
+                            <button type="submit" class="btn-main">Daftar Rutin Minggu</button>
+                        </form>
+                    @endif
+                </div>
             </div>
+        </div>
+        @endif
 
-            <div style="display:flex; gap:12px;">
-                <button type="button" onclick="closeDaftarModal()"
-                    style="flex:1; background:var(--bg-soft); color:var(--text); font-weight:700; padding:14px; border-radius:50px; border:1px solid var(--border); cursor:pointer;">
-                    Batal
-                </button>
-                <button type="submit"
-                    style="flex:2; background:var(--primary); color:#fff; font-weight:700; padding:14px; border-radius:50px; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(198,93,46,.3);">
-                    Konfirmasi Pendaftaran
-                </button>
+        {{-- BOOKING SECTION --}}
+        <div>
+            <h3 class="section-title">Booking Sesi Tambahan</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 32px;">
+                @foreach($tarianTersedia as $t)
+                <div class="tari-card" onclick="openDaftarModal({{ $t->id }}, '{{ $t->nama }}')">
+                    @if($t->foto)
+                        <img src="{{ asset('storage/'.$t->foto) }}" class="tari-img">
+                    @else
+                        <div style="height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; color: #d1d5db;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        </div>
+                    @endif
+                    <div class="tari-content">
+                        <div style="font-size: 0.65rem; font-weight: 800; color: var(--p-color); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">{{ $t->kategori }}</div>
+                        <h4 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 800; color: #111827; margin-bottom: 12px;">{{ $t->nama }}</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f3f4f6; padding-top: 16px;">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: #9ca3af;">{{ $t->asal }}</div>
+                            <div style="color: var(--p-color); font-weight: 800; font-size: 0.8rem;">Booking →</div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{{-- MODAL --}}
+<div id="daftarModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(17, 24, 39, 0.5); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#fff; border-radius:32px; width:100%; max-width:540px; overflow:hidden;" id="daftarModalContent">
+        <div style="padding:40px; text-align:center;">
+            <h2 id="modalTariTitle" style="font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 900; color: #111827;">Nama Tarian</h2>
+            <p style="color: #6b7280; margin-top: 8px;">Tentukan jadwal booking tambahan Anda.</p>
+        </div>
+        <form method="POST" action="{{ route('penjadwalan.daftar') }}" style="padding:0 40px 40px;">
+            @csrf
+            <input type="hidden" name="tarian_id" id="modalTariId">
+            <input type="hidden" name="jam_latihan" id="selectedJam">
+            <div style="margin-bottom: 20px;">
+                <label style="font-size:.85rem; font-weight:800; display:block; margin-bottom:10px;">Pilih Tanggal</label>
+                <input type="date" name="tanggal_latihan" required min="{{ date('Y-m-d') }}" style="width:100%; padding:14px; border-radius:14px; border:1px solid #e5e7eb;">
+            </div>
+            <label style="font-size:.85rem; font-weight:800; display:block; margin-bottom:12px;">Pilih Jam</label>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 24px;">
+                @foreach(['08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'] as $slot)
+                    <div class="time-slot" onclick="selectJam('{{ $slot }}', this)" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 12px; cursor: pointer; text-align: center; font-size: 0.8rem; font-weight: 700;">{{ $slot }}</div>
+                @endforeach
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button type="button" onclick="closeDaftarModal()" style="flex: 1; padding: 14px; border-radius: 100px; border: 1px solid #e5e7eb; background: #fff; font-weight: 800; cursor: pointer;">Batal</button>
+                <button type="submit" style="flex: 1.5; padding: 14px; border-radius: 100px; border: none; background: var(--p-color); color: #fff; font-weight: 800; cursor: pointer;">Confirm Booking</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-// --- LIVE SEARCH LOGIC ---
-const searchInput = document.getElementById('searchInput');
-if(searchInput) {
-    searchInput.addEventListener('input', function() {
-        const query = this.value.toLowerCase();
-        const cards = document.querySelectorAll('#tarianGrid > div');
-        
-        cards.forEach(card => {
-            const title = card.querySelector('.tarian-title').textContent.toLowerCase();
-            const asal = card.querySelector('.tarian-asal').textContent.toLowerCase();
-            if(title.includes(query) || asal.includes(query)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
+function selectJam(jam, el) {
+    document.querySelectorAll('.time-slot').forEach(s => { s.style.borderColor = '#e5e7eb'; s.style.background = '#fff'; s.style.color = '#000'; });
+    el.style.borderColor = 'var(--p-color)'; el.style.background = 'var(--p-soft)'; el.style.color = 'var(--p-color)';
+    document.getElementById('selectedJam').value = jam;
 }
-
-// --- MODAL LOGIC ---
-const modal = document.getElementById('daftarModal');
-const modalContent = document.getElementById('daftarModalContent');
-
-function openDaftarModal(tariId, tariNama) {
-    document.getElementById('modalTariId').value = tariId;
-    document.getElementById('modalTariTitle').textContent = tariNama;
-    
-    modal.style.display = 'flex';
-    // Small delay to allow display:flex to apply before animating opacity
-    setTimeout(() => {
-        modal.style.opacity = '1';
-        modalContent.style.transform = 'translateY(0)';
-    }, 10);
+function openDaftarModal(id, nama) {
+    document.getElementById('modalTariId').value = id;
+    document.getElementById('modalTariTitle').innerText = nama;
+    document.getElementById('daftarModal').style.display = 'flex';
 }
-
-function closeDaftarModal() {
-    modal.style.opacity = '0';
-    modalContent.style.transform = 'translateY(20px)';
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
-}
-
-// Close modal when clicking outside
-modal.addEventListener('click', function(e) {
-    if (e.target === modal) {
-        closeDaftarModal();
-    }
-});
-
-// Auto-select tarian jika ada query param
-const tarianParam = new URLSearchParams(window.location.search).get('tarian');
-if (tarianParam) {
-    const card = document.getElementById('card-tarian-' + tarianParam);
-    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
+function closeDaftarModal() { document.getElementById('daftarModal').style.display = 'none'; }
 </script>
+
 @endsection

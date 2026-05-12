@@ -164,33 +164,94 @@
     </div>
     @endif
 
-    {{-- REKOMENDASI TARIAN --}}
-    @if($tarianRekomendasi->count())
-    <div style="background:#fff;border-radius:16px;border:1px solid #E8E0D8;overflow:hidden">
-        <div style="padding:16px 20px;border-bottom:1px solid #F0EBE5">
-            <div style="font-size:.65rem;font-weight:700;color:#C65D2E;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">UNTUK KAMU</div>
-            <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700">Tarian yang Bisa Dipelajari</h3>
+    {{-- AI DANCE CONSULTANT --}}
+    <div style="background: linear-gradient(135deg, #1A1A1A 0%, #333333 100%); border-radius: 16px; padding: 24px; color: #fff; position: relative; overflow: hidden; margin-bottom: 24px;">
+        <div style="position: relative; z-index: 2;">
+            <div style="font-size: .65rem; font-weight: 700; color: #C65D2E; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">PANDUAN PINTAR</div>
+            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; line-height: 1.2;">Bingung Pilih Latihan Tari Apa?</h3>
+            <p style="font-size: .875rem; opacity: .8; margin-bottom: 20px; max-width: 80%;">Tanya AI kami untuk mendapatkan rekomendasi tarian yang paling cocok dengan karakter dan keinginanmu.</p>
+            
+            <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.1); padding: 6px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2);">
+                <input type="text" id="aiPreference" placeholder="Contoh: Saya suka tarian yang enerjik dan gagah..." 
+                    style="flex: 1; background: transparent; border: none; padding: 10px 18px; color: #fff; font-size: .875rem; outline: none;">
+                <button onclick="getAiRecommendation()" id="btnAiRecommend" style="background: #C65D2E; color: #fff; border: none; padding: 10px 24px; border-radius: 50px; font-weight: 700; cursor: pointer; transition: all .2s;">
+                    Tanya AI
+                </button>
+            </div>
+
+            <div id="aiResult" style="display: none; margin-top: 20px; padding: 20px; background: rgba(198, 93, 46, 0.1); border: 1px solid rgba(198, 93, 46, 0.3); border-radius: 12px; animation: fadeIn .5s ease;">
+                <div style="font-weight: 800; font-size: 1.1rem; color: #C65D2E; margin-bottom: 8px;" id="aiTarian"></div>
+                <p style="font-size: .875rem; line-height: 1.6; color: #eee; margin-bottom: 15px;" id="aiAlasan"></p>
+                <a href="{{ route('penjadwalan') }}" style="display: inline-block; color: #fff; text-decoration: none; font-size: .8rem; font-weight: 700; border-bottom: 2px solid #C65D2E; padding-bottom: 2px;">Daftar Kelas Ini Sekarang →</a>
+            </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 20px">
-            @foreach($tarianRekomendasi as $t)
-            <a href="{{ route('penjadwalan') }}?tarian={{ $t->id }}"
-               style="display:block;background:#FAFAF8;border-radius:12px;border:1px solid #F0EBE5;padding:14px;text-decoration:none;transition:all .2s"
-               onmouseover="this.style.borderColor='#C65D2E';this.style.background='#FDF0EA'"
-               onmouseout="this.style.borderColor='#F0EBE5';this.style.background='#FAFAF8'">
-                <div style="font-size:.7rem;font-weight:700;color:#C65D2E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">{{ ucfirst($t->kategori) }}</div>
-                <div style="font-weight:700;font-size:.875rem;color:#1A1A1A">{{ $t->nama }}</div>
-                <div style="font-size:.75rem;color:#7A7A7A;margin-top:2px">📍 {{ $t->asal }}</div>
-                <div style="font-size:.75rem;color:#C65D2E;font-weight:700;margin-top:8px">Daftar kelas →</div>
-            </a>
-            @endforeach
+
+        {{-- Dekorasi background --}}
+        <div style="position: absolute; right: -20px; bottom: -20px; opacity: 0.1; transform: rotate(-15deg);">
+            <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
         </div>
     </div>
-    @endif
+
+    <script>
+        function getAiRecommendation() {
+            const pref = document.getElementById('aiPreference').value;
+            const btn = document.getElementById('btnAiRecommend');
+            const resultDiv = document.getElementById('aiResult');
+            
+            if (!pref) return alert('Beri tahu kami keinginanmu dulu ya!');
+
+            btn.disabled = true;
+            btn.innerText = 'Menganalisis...';
+            
+            fetch("{{ route('chatbot.recommend') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ preference: pref })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('aiTarian').innerText = '✨ Rekomendasi: ' + data.tarian;
+                    document.getElementById('aiAlasan').innerText = data.alasan;
+                    resultDiv.style.display = 'block';
+                    resultDiv.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert('Maaf, AI sedang sibuk. Coba lagi nanti ya!');
+                }
+            })
+            .catch(() => alert('Terjadi kesalahan. Pastikan koneksi internet lancar.'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = 'Tanya AI';
+            });
+        }
+    </script>
+
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 
 </div>
 
 {{-- SIDEBAR KANAN --}}
 <div>
+    {{-- SCAN KEHADIRAN (PRIMARY ACTION) --}}
+    <a href="{{ route('member.kehadiran.scan') }}" 
+       style="display:flex;align-items:center;justify-content:center;gap:12px;background:#1A1A1A;color:#fff;border-radius:16px;padding:18px;margin-bottom:16px;text-decoration:none;transition:all .3s;box-shadow:0 10px 20px rgba(0,0,0,.1)"
+       onmouseover="this.style.transform='translateY(-3px)';this.style.background='#333'"
+       onmouseout="this.style.transform='translateY(0)';this.style.background='#1A1A1A'">
+        <div style="width:40px;height:40px;background:rgba(255,255,255,.1);border-radius:12px;display:flex;align-items:center;justify-content:center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div style="text-align:left">
+            <div style="font-size:1rem;font-weight:900;line-height:1.2">Scan Kehadiran</div>
+            <div style="font-size:.7rem;opacity:.6;margin-top:2px">Masuk kelas via Kamera</div>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:auto;opacity:.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
 
     {{-- Kehadiran bulan ini --}}
     <div style="background:#C65D2E;border-radius:16px;padding:20px;color:#fff;margin-bottom:16px">

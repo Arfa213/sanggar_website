@@ -52,7 +52,7 @@ function previewImage(input) {
 function togglePrivateFields() {
     const tipe = document.getElementById('tipe_anggota').value;
     const privateFields = document.getElementById('private-fields');
-    privateFields.style.display = (tipe === 'private' || tipe === 'pengunjung') ? 'block' : 'none';
+    privateFields.style.display = (tipe === 'sementara') ? 'block' : 'none';
 }
 </script>
 
@@ -86,14 +86,12 @@ function togglePrivateFields() {
             <div class="form-group">
                 <label>Tipe Keanggotaan <span class="required">*</span></label>
                 <select name="tipe_anggota" id="tipe_anggota" class="form-control" onchange="togglePrivateFields()">
-                    <option value="anggota_tetap" {{ old('tipe_anggota',$anggota->tipe_anggota ?? 'anggota_tetap')==='anggota_tetap' ? 'selected' : '' }}>🎭 Anggota Tetap</option>
-                    <option value="pengunjung"    {{ old('tipe_anggota',$anggota->tipe_anggota)==='pengunjung' ? 'selected' : '' }}>👁 Pengunjung</option>
-                    <option value="private"       {{ old('tipe_anggota',$anggota->tipe_anggota)==='private' ? 'selected' : '' }}>🎯 Kelas Private</option>
+                    <option value="tetap" {{ old('tipe_anggota',$anggota->tipe_anggota ?? 'tetap')==='tetap' ? 'selected' : '' }}>🎭 Anggota Tetap</option>
+                    <option value="sementara" {{ old('tipe_anggota',$anggota->tipe_anggota)==='sementara' ? 'selected' : '' }}>🎯 Anggota Sementara</option>
                 </select>
                 <p style="font-size:.75rem;color:var(--muted);margin-top:4px">
                     <strong>Anggota Tetap</strong>: Bergabung jangka panjang.<br>
-                    <strong>Pengunjung</strong>: Hanya untuk pendataan kunjungan.<br>
-                    <strong>Private</strong>: Belajar tari tertentu, keluar saat selesai.
+                    <strong>Anggota Sementara</strong>: Belajar tari tertentu, aktif hingga tanggal tertentu.
                 </p>
             </div>
             <div class="form-group">
@@ -105,18 +103,18 @@ function togglePrivateFields() {
             </div>
         </div>
 
-        {{-- Field khusus pengunjung & private --}}
-        <div id="private-fields" style="display:{{ in_array(old('tipe_anggota',$anggota->tipe_anggota ?? ''), ['private','pengunjung']) ? 'block' : 'none' }}">
+        {{-- Field khusus sementara --}}
+        <div id="private-fields" style="display:{{ old('tipe_anggota',$anggota->tipe_anggota ?? '')==='sementara' ? 'block' : 'none' }}">
             <div style="background:#FDF8F5;border-radius:12px;border:1px solid #F5EAE2;padding:16px;margin-bottom:16px">
-                <p style="font-size:.8rem;font-weight:700;color:#C65D2E;margin-bottom:12px">📋 Info Keanggotaan Sementara</p>
+                <p style="font-size:.8rem;font-weight:700;color:#C65D2E;margin-bottom:12px">📋 Info Anggota Sementara</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
                     <div class="form-group">
-                        <label>Tanggal Keluar (Rencana)</label>
-                        <input type="date" name="tanggal_keluar" class="form-control" value="{{ old('tanggal_keluar',$anggota->tanggal_keluar ? $anggota->tanggal_keluar->format('Y-m-d') : '') }}">
+                        <label>Berlaku Hingga</label>
+                        <input type="date" name="tgl_kadaluarsa" class="form-control" value="{{ old('tgl_kadaluarsa',$anggota->tgl_kadaluarsa ? $anggota->tgl_kadaluarsa->format('Y-m-d') : '') }}">
                     </div>
                     <div class="form-group">
-                        <label>Catatan Keanggotaan</label>
-                        <input type="text" name="catatan_keanggotaan" class="form-control" value="{{ old('catatan_keanggotaan',$anggota->catatan_keanggotaan) }}" placeholder="Mis: Belajar Tari Topeng saja">
+                        <label>Catatan</label>
+                        <input type="text" name="catatan_keanggotaan" class="form-control" value="{{ old('catatan_keanggotaan',$anggota->catatan_keanggotaan) }}" placeholder="Mis: Belajar Tari Topeng 10 pertemuan">
                     </div>
                 </div>
             </div>

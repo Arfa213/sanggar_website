@@ -22,8 +22,8 @@ class User extends Authenticatable {
         'password',
         'role',                  // 'admin' | 'anggota'
         'status',                // 'aktif' | 'nonaktif'
-        'tipe_anggota',          // 'anggota_tetap' | 'pengunjung' | 'private'
-        'tanggal_keluar',        // untuk anggota private / pengunjung sementara
+        'tipe_anggota',          // 'tetap' | 'sementara'
+        'tgl_kadaluarsa',        // khusus anggota sementara
         'catatan_keanggotaan',   // catatan tambahan
     ];
 
@@ -41,6 +41,7 @@ class User extends Authenticatable {
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password'          => 'hashed',
+        'tgl_kadaluarsa'    => 'date',
     ];
     
 
@@ -57,21 +58,19 @@ class User extends Authenticatable {
 
     public function getTipeAnggotaLabelAttribute(): string
     {
-        return match ($this->tipe_anggota ?? 'anggota_tetap') {
-            'anggota_tetap' => 'Anggota Tetap',
-            'pengunjung'    => 'Pengunjung',
-            'private'       => 'Kelas Private',
-            default         => 'Anggota Tetap',
+        return match ($this->tipe_anggota ?? 'tetap') {
+            'tetap'     => 'Anggota Tetap',
+            'sementara' => 'Anggota Sementara',
+            default     => 'Anggota Tetap',
         };
     }
 
     public function getTipeAnggotaColorAttribute(): string
     {
-        return match ($this->tipe_anggota ?? 'anggota_tetap') {
-            'anggota_tetap' => 'chip--green',
-            'pengunjung'    => 'chip--blue',
-            'private'       => 'chip--purple',
-            default         => 'chip--gray',
+        return match ($this->tipe_anggota ?? 'tetap') {
+            'tetap'     => 'chip--green',
+            'sementara' => 'chip--purple',
+            default     => 'chip--gray',
         };
     }
    public function pendaftaranTari()

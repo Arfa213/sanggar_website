@@ -8,6 +8,8 @@ use App\Http\Controllers\{
     DigitalArchiveController,
     DashboardController,
     PenjadwalanController,
+    AttendanceController,
+    ChatbotController,
 };
 use App\Http\Controllers\Api\GeminiController;
 use App\Http\Controllers\Auth\AuthController;
@@ -48,6 +50,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/penjadwalan/daftar',        [PenjadwalanController::class, 'daftar'])->name('penjadwalan.daftar');
     Route::post('/penjadwalan/batalkan/{id}', [PenjadwalanController::class, 'batalkan'])->name('penjadwalan.batalkan');
     Route::get('/penjadwalan/riwayat',        [PenjadwalanController::class, 'riwayatKehadiran'])->name('penjadwalan.kehadiran');
+    
+    // Member Attendance Scanner
+    Route::get('/kehadiran/scan',             [AttendanceController::class, 'scan'])->name('member.kehadiran.scan');
+    Route::post('/kehadiran/scan/process',    [AttendanceController::class, 'processScan'])->name('member.kehadiran.process');
     
     // Member Profile
     Route::get('/my-profile',                 [DashboardController::class, 'editProfile'])->name('member.profile');
@@ -125,14 +131,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Kehadiran
     Route::get('/kehadiran',                    [AdminKehadiran::class, 'index'])->name('kehadiran.index');
-    Route::post('/kehadiran/buat-sesi',         [AdminKehadiran::class, 'buatSesi'])->name('kehadiran.buat-sesi');
-    Route::get('/kehadiran/sesi/{id}',          [AdminKehadiran::class, 'tampilSesi'])->name('kehadiran.sesi');
-    Route::post('/kehadiran/sesi/{id}/tutup',   [AdminKehadiran::class, 'tutupSesi'])->name('kehadiran.tutup-sesi');
     Route::post('/kehadiran/input',             [AdminKehadiran::class, 'inputKehadiran'])->name('kehadiran.input');
     Route::post('/kehadiran/simpan',            [AdminKehadiran::class, 'simpanKehadiran'])->name('kehadiran.simpan');
+    // Laporan Kehadiran
     Route::get('/kehadiran/laporan',            [AdminKehadiran::class, 'laporan'])->name('kehadiran.laporan');
+    Route::get('/kehadiran/laporan/anggota',    [AdminKehadiran::class, 'laporanAnggota'])->name('kehadiran.laporan.anggota');
+    Route::get('/kehadiran/laporan/pengunjung', [AdminKehadiran::class, 'laporanPengunjung'])->name('kehadiran.laporan.pengunjung');
+    Route::get('/kehadiran/laporan/export-pdf', [AdminKehadiran::class, 'exportPdf'])->name('kehadiran.pdf');
+
+    // Permanent QR (Kelas Barcode)
+    Route::get('/kehadiran/permanent/{id}',     [AdminKehadiran::class, 'showPermanentQR'])->name('kehadiran.permanent.show');
+    Route::delete('/kehadiran/permanent/{id}',  [AdminKehadiran::class, 'deletePermanentQR'])->name('kehadiran.permanent.destroy');
 });
 
-// ── BARCODE SCAN (public/anggota) ────────────────────────────────────
-Route::get('/hadir/{token}',  [AdminKehadiran::class, 'scanBarcode'])->name('kehadiran.scan');
-Route::post('/hadir/{token}', [AdminKehadiran::class, 'prosesBarcode'])->name('kehadiran.proses');
+// ── PENGUNJUNG / TAMU (Public) ───────────────────────────────────────
+Route::get('/tamu',           [AttendanceController::class, 'guestIndex'])->name('tamu.index');
+Route::post('/tamu/simpan',   [AttendanceController::class, 'guestStore'])->name('tamu.store');
+
+// ── CHATBOT AI ────────────────────────────────────────────────────────
+Route::post('/chatbot/chat',      [ChatbotController::class, 'chat'])->name('chatbot.chat');
+Route::post('/chatbot/clear',     [ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
+Route::post('/chatbot/recommend', [ChatbotController::class, 'recommendDance'])->name('chatbot.recommend');
+
