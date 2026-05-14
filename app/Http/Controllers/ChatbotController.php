@@ -71,12 +71,18 @@ class ChatbotController extends Controller
                 );
 
             if ($response->successful()) {
-                $reply = $response->json('candidates.0.content.parts.0.text')
-                    ?? 'Maaf, saya tidak dapat memproses pertanyaan Anda saat ini.';
+                $reply = $response->json('candidates.0.content.parts.0.text');
+                
+                if (!$reply) {
+                    \Log::warning("Gemini API return empty candidates. Check safety settings or prompt. Response: " . $response->body());
+                    $reply = $this->getFallbackReply($request->message, $profil);
+                }
             } else {
+                \Log::error("Gemini API Error: " . $response->status() . " - " . $response->body());
                 $reply = $this->getFallbackReply($request->message, $profil);
             }
         } catch (\Exception $e) {
+            \Log::error("Chatbot Exception: " . $e->getMessage());
             $reply = $this->getFallbackReply($request->message, $profil);
         }
 
@@ -95,20 +101,32 @@ class ChatbotController extends Controller
 
     private function getFallbackReply(string $msg, $profil): string
     {
-        $msg = strtolower($msg);
-        if (str_contains($msg, 'daftar') || str_contains($msg, 'gabung')) {
+        $msgLower = strtolower($msg);
+
+        // Cari di database tarian jika menanyakan tarian spesifik
+        $tarianItem = Tarian::where('aktif', true)
+            ->get()
+            ->filter(function($t) use ($msgLower) {
+                return str_contains($msgLower, strtolower($t->nama));
+            })->first();
+
+        if ($tarianItem) {
+            return "Tentu! **{$tarianItem->nama}** adalah tarian asal {$tarianItem->asal}. {$tarianItem->deskripsi} Tarian ini biasanya berfungsi sebagai {$tarianItem->fungsi}. Ingin tahu lebih banyak atau melihat videonya? Silakan cek di menu Arsip Digital kami!";
+        }
+
+        if (str_contains($msgLower, 'daftar') || str_contains($msgLower, 'gabung')) {
             return "Untuk mendaftar sebagai anggota Sanggar Mulya Bhakti, klik tombol **Daftar Anggota** di pojok kanan atas halaman ini. Pendaftaran gratis! Setelah mendaftar, Anda bisa memilih kelas tari yang diminati.";
         }
-        if (str_contains($msg, 'jadwal') || str_contains($msg, 'latihan')) {
+        if (str_contains($msgLower, 'jadwal') || str_contains($msgLower, 'latihan')) {
             return "Jadwal latihan kami: Senin & Rabu (15.00–17.30), Jumat (15.00–18.00), Sabtu (08.00–11.00 untuk anak-anak), Minggu (08.00–12.00 sesi gabungan). Semua di Jl. Kebudayaan No. 17, Indramayu.";
         }
-        if (str_contains($msg, 'tari') || str_contains($msg, 'kelas')) {
+        if (str_contains($msgLower, 'tari') || str_contains($msgLower, 'kelas')) {
             return "Kami mengajarkan tarian tradisional Indramayu seperti Tari Topeng Kelana, Tari Sintren, Tari Ronggeng Bugis, Tari Baladewa, Tari Buyung, dan masih banyak lagi. Cek halaman Arsip Digital untuk informasi lengkap!";
         }
-        if (str_contains($msg, 'kontak') || str_contains($msg, 'hubungi')) {
+        if (str_contains($msgLower, 'kontak') || str_contains($msgLower, 'hubungi')) {
             return "Hubungi kami di: 📞 {$profil->no_hp} | ✉️ {$profil->email} | Instagram: {$profil->instagram}";
         }
-        if (str_contains($msg, 'halo') || str_contains($msg, 'hai') || str_contains($msg, 'hello')) {
+        if (str_contains($msgLower, 'halo') || str_contains($msgLower, 'hai') || str_contains($msgLower, 'hello')) {
             return "Halo! Selamat datang di Sanggar Mulya Bhakti 🎭 Saya asisten virtual kami. Ada yang bisa saya bantu? Anda bisa tanya tentang jadwal latihan, cara daftar, atau tarian yang kami ajarkan!";
         }
         return "Terima kasih atas pertanyaan Anda! Untuk informasi lebih lanjut tentang {$profil->nama_sanggar}, silakan hubungi kami di {$profil->no_hp} atau email {$profil->email}. Kami siap membantu! 😊";

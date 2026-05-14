@@ -16,6 +16,8 @@ class PendaftaranTari extends Model
         'user_id',
         'tarian_id',
         'jadwal_id',
+        'tanggal_latihan',
+        'jam_latihan',
         'status',
         'tanggal_daftar',
         'catatan',

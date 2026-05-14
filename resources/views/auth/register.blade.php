@@ -33,6 +33,25 @@
                 <form method="POST" action="{{ route('register.post') }}">
                     @csrf
 
+                    <!-- Type Selector -->
+                    <div class="auth-type-selector">
+                        <div class="type-option active" onclick="setRegType('tetap', this)">
+                            <span class="type-icon">👑</span>
+                            <div class="type-text">
+                                <strong>Anggota Tetap</strong>
+                                <small>Latihan rutin mingguan</small>
+                            </div>
+                        </div>
+                        <div class="type-option" onclick="setRegType('sementara', this)">
+                            <span class="type-icon">⭐</span>
+                            <div class="type-text">
+                                <strong>Anggota Sementara</strong>
+                                <small>Booking sesi fleksibel</small>
+                            </div>
+                        </div>
+                        <input type="hidden" name="tipe_anggota" id="tipe_anggota" value="tetap">
+                    </div>
+
                     <div class="form-group">
                         <label for="name">Nama Lengkap <span class="required">*</span></label>
                         <input
@@ -61,20 +80,59 @@
                         @error('email')<span class="field-error">{{ $message }}</span>@enderror
                     </div>
 
-                    <div class="form-group">
-                        <label for="alamat">Alamat <span class="required">*</span></label>
-                        <textarea
-                            id="alamat"
-                            name="alamat"
-                            class="form-input form-textarea @error('alamat') is-error @enderror"
-                            placeholder="Masukan alamat Lengkap"
-                            rows="3"
-                            required
-                        >{{ old('alamat') }}</textarea>
-                        @error('alamat')<span class="field-error">{{ $message }}</span>@enderror
+                    <!-- Fields for Anggota Tetap -->
+                    <div id="alamat-field">
+                        <div class="form-group">
+                            <label for="alamat">Alamat <span class="required">*</span></label>
+                            <textarea
+                                id="alamat"
+                                name="alamat"
+                                class="form-input form-textarea @error('alamat') is-error @enderror"
+                                placeholder="Masukan alamat Lengkap"
+                                rows="3"
+                            >{{ old('alamat') }}</textarea>
+                            @error('alamat')<span class="field-error">{{ $message }}</span>@enderror
+                        </div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- Fields for Anggota Sementara -->
+                    <div id="sementara-fields" style="display:none">
+                        <div class="form-group">
+                            <label for="no_hp">Nomor WhatsApp <span class="required">*</span></label>
+                            <input
+                                type="tel"
+                                id="no_hp"
+                                name="no_hp"
+                                class="form-input"
+                                placeholder="0812..."
+                                value="{{ old('no_hp') }}"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="tarian_custom">Tarian yang Ingin Dipelajari <span class="required">*</span></label>
+                            <input
+                                type="text"
+                                id="tarian_custom"
+                                name="tarian_custom"
+                                class="form-input"
+                                placeholder="Contoh: Tari Merak, Gamelan, dll"
+                                value="{{ old('tarian_custom') }}"
+                            >
+                        </div>
+
+                        <div class="sessions-wrap">
+                            <label>Pilih Sesi Latihan <span class="required">*</span></label>
+                            <div id="sessions-container">
+                                <!-- Sesi akan ditambahkan di sini via JS -->
+                            </div>
+                            <button type="button" class="btn-add-session" onclick="addSession()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                Tambah Sesi Latihan
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top:24px">
                         <label for="password">Password <span class="required">*</span></label>
                         <div class="input-password-wrap">
                             <input
@@ -85,7 +143,6 @@
                                 placeholder="Minimal 8 karakter, huruf besar, angka"
                                 required
                                 minlength="8"
-                                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
                                 oninput="checkPasswordStrength(this.value)"
                             >
                             <button type="button" class="toggle-pw" aria-label="Tampilkan password" onclick="togglePassword('password', this)">
@@ -135,7 +192,9 @@
                         <div id="pwMatch" style="margin-top:8px;font-size:.8rem;color:#999;display:none">Konfirmasi password belum sama</div>
                     </div>
 
-                    <button type="submit" class="btn-submit">Daftar</button>
+                    <button type="submit" class="btn-submit" style="margin-top:12px">Daftar Sekarang</button>
+
+                </form>
 
                     <p class="form-switch">
                         Sudah punya akun?
@@ -162,6 +221,109 @@ function togglePassword(inputId, btn) {
         input.type = 'password';
         eyeOpen.style.display = 'block';
         eyeClosed.style.display = 'none';
+    }
+}
+
+let sessionCount = 0;
+
+function setRegType(type, el) {
+    document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tipe_anggota').value = type;
+
+    if (type === 'sementara') {
+        document.getElementById('alamat-field').style.display = 'none';
+        document.getElementById('sementara-fields').style.display = 'block';
+        document.getElementById('alamat').required = false;
+        document.getElementById('no_hp').required = true;
+        document.getElementById('tarian_custom').required = true;
+        if (sessionCount === 0) addSession();
+    } else {
+        document.getElementById('alamat-field').style.display = 'block';
+        document.getElementById('sementara-fields').style.display = 'none';
+        document.getElementById('alamat').required = true;
+        document.getElementById('no_hp').required = false;
+        document.getElementById('tarian_custom').required = false;
+    }
+}
+
+function addSession() {
+    sessionCount++;
+    const container = document.getElementById('sessions-container');
+    const div = document.createElement('div');
+    div.className = 'session-item';
+    div.id = `session-${sessionCount}`;
+    div.innerHTML = `
+        <div class="session-header">
+            <span>Sesi #${sessionCount}</span>
+            <button type="button" class="btn-remove-session" onclick="removeSession(${sessionCount})">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                Hapus
+            </button>
+        </div>
+        <div class="session-grid">
+            <div class="form-group">
+                <label>Tanggal</label>
+                <input type="date" name="sessions[${sessionCount}][tanggal]" class="form-input" required min="${new Date().toISOString().split('T')[0]}" onchange="validateDay(this)">
+            </div>
+            <div class="form-group">
+                <label>Jam Latihan</label>
+                <select name="sessions[${sessionCount}][jam]" class="form-input" required>
+                    <option value="">Pilih Jam</option>
+                    <option value="08:00">08:00</option>
+                    <option value="10:00">10:00</option>
+                    <option value="13:00">13:00</option>
+                    <option value="15:00">15:00</option>
+                    <option value="16:00">16:00</option>
+                    <option value="17:00">17:00</option>
+                    <option value="19:00">19:00</option>
+                    <option value="20:00">20:00</option>
+                </select>
+            </div>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function removeSession(id) {
+    if (document.querySelectorAll('.session-item').length <= 1) {
+        alert("Setidaknya harus ada 1 sesi latihan.");
+        return;
+    }
+    const el = document.getElementById(`session-${id}`);
+    if (el) el.remove();
+}
+
+function validateDay(input) {
+    const date = new Date(input.value);
+    const day = date.getDay(); // 0 = Sunday, 5 = Friday
+    const jamSelect = input.closest('.session-grid').querySelector('select');
+
+    // Reset options
+    Array.from(jamSelect.options).forEach(opt => {
+        opt.disabled = false;
+        opt.style.display = 'block';
+    });
+
+    if (day === 0) {
+        alert("Maaf, hari Minggu sanggar libur / penuh untuk latihan rutin.");
+        input.value = "";
+    } else if (day === 5) {
+        // Friday: Only 08:00 - 13:00
+        alert("Hari Jumat hanya tersedia jam 08:00 s/d 13:00.");
+        Array.from(jamSelect.options).forEach(opt => {
+            if (opt.value) {
+                const hour = parseInt(opt.value.split(':')[0]);
+                if (hour >= 13) {
+                    opt.disabled = true;
+                    opt.style.display = 'none';
+                }
+            }
+        });
+        if (jamSelect.value) {
+            const hour = parseInt(jamSelect.value.split(':')[0]);
+            if (hour >= 13) jamSelect.value = "";
+        }
     }
 }
 

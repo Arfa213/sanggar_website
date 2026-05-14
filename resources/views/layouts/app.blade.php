@@ -65,20 +65,25 @@
                                 <div style="font-size:.72rem; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis;">{{ Auth::user()->email }}</div>
                             </div>
                             <div style="padding:8px 0;">
+                                @if(Auth::user()->role !== 'admin')
                                 <a href="{{ route('dashboard') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                                     Dashboard Member
                                 </a>
+                                @endif
                                 @if(Auth::user()->role === 'admin')
                                 <a href="{{ route('admin.dashboard') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                                     Admin Panel
                                 </a>
                                 @endif
+
+                                @if(Auth::user()->tipe_anggota !== 'pengunjung' && Auth::user()->role !== 'admin')
                                 <a href="{{ route('member.profile') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     Pengaturan Profil
                                 </a>
+                                @endif
                             </div>
                             <div style="padding:8px 0; border-top:1px solid var(--border); background: #FFF5F5;">
                                 <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Apakah Anda yakin ingin keluar?')">
@@ -111,7 +116,9 @@
             <li><a href="{{ route('event') }}">Event</a></li>
             <li><a href="{{ route('digital-archive') }}">Arsip Digital</a></li>
             @auth
+            @if(Auth::user()->role !== 'admin')
             <li><a href="{{ route('dashboard') }}">Dashboard Saya</a></li>
+            @endif
             @if(Auth::user()->role === 'admin')
             <li><a href="{{ route('admin.dashboard') }}">Admin Panel</a></li>
             @endif

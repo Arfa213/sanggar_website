@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\{
     GaleriController         as AdminGaleri,
     KehadiranController      as AdminKehadiran,
     TopengController         as AdminTopeng,
+    BookingController        as AdminBooking,
 };
 
 // ── PUBLIC ────────────────────────────────────────────────────
@@ -30,6 +31,10 @@ Route::get('/profile',        [ProfileController::class,        'index'])->name(
 Route::get('/event',          [EventController::class,          'index'])->name('event');
 Route::get('/digital-archive',[DigitalArchiveController::class, 'index'])->name('digital-archive');
 Route::get('/galeri/{seksi?}', [App\Http\Controllers\GaleriController::class, 'frontendIndex'])->name('galeri.frontend.index');
+
+// ── TAMU (Public Guest Log) ──────────────────────────────────
+Route::get('/tamu',           [\App\Http\Controllers\TamuController::class, 'index'])->name('tamu.index');
+Route::post('/tamu',          [\App\Http\Controllers\TamuController::class, 'store'])->name('tamu.store');
 
 // ── AUTH ──────────────────────────────────────────────────────
 Route::get('/login',    [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
@@ -52,7 +57,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/penjadwalan/riwayat',        [PenjadwalanController::class, 'riwayatKehadiran'])->name('penjadwalan.kehadiran');
     
     // Member Attendance Scanner
-    Route::get('/kehadiran/scan',             [AttendanceController::class, 'scan'])->name('member.kehadiran.scan');
     Route::post('/kehadiran/scan/process',    [AttendanceController::class, 'processScan'])->name('member.kehadiran.process');
     
     // Member Profile
@@ -60,9 +64,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/my-profile/update',         [DashboardController::class, 'updateProfile'])->name('member.profile.update');
 });
 
-// ── CHATBOT (public — semua bisa akses) ───────────────────────
-Route::post('/chatbot/chat', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
-Route::post('/chatbot/clear', [App\Http\Controllers\ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
 
 // ── ADMIN ─────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -142,11 +143,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Permanent QR (Kelas Barcode)
     Route::get('/kehadiran/permanent/{id}',     [AdminKehadiran::class, 'showPermanentQR'])->name('kehadiran.permanent.show');
     Route::delete('/kehadiran/permanent/{id}',  [AdminKehadiran::class, 'deletePermanentQR'])->name('kehadiran.permanent.destroy');
-});
 
-// ── PENGUNJUNG / TAMU (Public) ───────────────────────────────────────
-Route::get('/tamu',           [AttendanceController::class, 'guestIndex'])->name('tamu.index');
-Route::post('/tamu/simpan',   [AttendanceController::class, 'guestStore'])->name('tamu.store');
+    // Booking Anggota Sementara
+    Route::get('/booking',            [AdminBooking::class, 'index'])->name('booking.index');
+    Route::post('/booking/{id}/confirm', [AdminBooking::class, 'confirm'])->name('booking.confirm');
+    Route::post('/booking/{id}/reject',  [AdminBooking::class, 'reject'])->name('booking.reject');
+    Route::delete('/booking/{id}',    [AdminBooking::class, 'destroy'])->name('booking.destroy');
+});
 
 // ── CHATBOT AI ────────────────────────────────────────────────────────
 Route::post('/chatbot/chat',      [ChatbotController::class, 'chat'])->name('chatbot.chat');

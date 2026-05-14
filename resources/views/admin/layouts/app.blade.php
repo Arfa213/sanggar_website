@@ -65,6 +65,18 @@
                 Anggota
                 <span class="nav-badge">{{ \App\Models\User::where('role','anggota')->count() }}</span>
             </a>
+            <a href="{{ route('admin.booking.index') }}" class="nav-item {{ request()->routeIs('admin.booking*') ? 'active' : '' }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Booking Sementara
+                @php 
+                    $pendingCount = \App\Models\PendaftaranTari::where('status', 'nonaktif')
+                        ->whereHas('user', function($q) { $q->where('tipe_anggota', 'pengunjung'); })
+                        ->count(); 
+                @endphp
+                @if($pendingCount > 0)
+                    <span class="nav-badge" style="background:#8B5CF6">{{ $pendingCount }}</span>
+                @endif
+            </a>
         </div>
         <div class="nav-group">
             <span class="nav-label">KEHADIRAN</span>

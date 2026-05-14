@@ -20,6 +20,9 @@ class Kehadiran extends Model
         'status',
         'keterangan',
         'dicatat_oleh',
+        'barcode_token',
+        'scan_at',
+        'metode_absen',
     ];
 
     protected $casts = [

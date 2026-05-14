@@ -16,7 +16,17 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Jadwal aktif saya
+        // Admin diarahkan ke dashboard admin
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Jika anggota sementara (pengunjung)
+        if ($user->tipe_anggota === 'pengunjung') {
+            return $this->guestDashboard($user);
+        }
+
+        // Jadwal aktif saya (untuk anggota tetap)
         $jadwalAktif = PendaftaranTari::with(['tarian', 'jadwal'])
             ->where('user_id', $user->id)
             ->where('status', 'aktif')
@@ -63,9 +73,44 @@ class DashboardController extends Controller
         ));
     }
 
+    private function guestDashboard($user)
+    {
+        // Semua sesi pendaftaran (termasuk yang pending)
+        $sesiBooking = PendaftaranTari::with('tarian')
+            ->where('user_id', $user->id)
+            ->orderBy('tanggal_latihan', 'asc')
+            ->get();
+
+        // Hitung statistik kehadiran khusus pengunjung
+        $totalSesiBooking = $sesiBooking->count();
+        $totalHadir = Kehadiran::where('user_id', $user->id)->where('status', 'hadir')->count();
+        
+        // Persentase berdasarkan sesi yang SUDAH LEWAT atau TOTAL?
+        // Kita gunakan total sesi yang didaftarkan saja
+        $persenHadir = $totalSesiBooking > 0 ? round(($totalHadir / $totalSesiBooking) * 100) : 0;
+
+        // Event & Rekomendasi tetap ditampilkan sebagai pemanis
+        $eventMendatang = Event::where('status', 'akan_datang')->orderBy('tanggal')->limit(3)->get();
+
+        return view('pages.guest_dashboard', compact(
+            'user', 'sesiBooking', 'totalSesiBooking', 'totalHadir', 'persenHadir', 'eventMendatang'
+        ));
+    }
+
     public function editProfile()
     {
         $user = Auth::user();
+
+        // Admin diarahkan ke dashboard admin
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Anggota sementara tidak diizinkan edit profil (permintaan user)
+        if ($user->tipe_anggota === 'pengunjung') {
+            return redirect()->route('dashboard')->with('error', 'Anggota sementara tidak memerlukan pengaturan profil.');
+        }
+
         $riwayatTarian = PendaftaranTari::with(['tarian', 'jadwal'])
             ->where('user_id', $user->id)
             ->orderByDesc('tanggal_daftar')

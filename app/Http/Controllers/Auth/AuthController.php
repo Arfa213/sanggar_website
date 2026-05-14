@@ -82,38 +82,84 @@ class AuthController extends Controller
     //  PROCESS REGISTER (with strong password)
     // ─────────────────────────────────────────
     public function register(Request $request)
-{
-    $request->validate([
-        'name'     => 'required|string|max:255',
-        'email'    => 'required|email|unique:users,email',
-        'alamat'   => 'nullable|string|max:500',
-        'password' => [
-            'required',
-            'confirmed',
-            Password::min(8)
-                ->mixedCase()
-                ->numbers(),
-        ],
-    ], [
-        'email.unique'       => 'Email sudah terdaftar.',
-        'password.confirmed' => 'Konfirmasi password tidak cocok.',
-        'password.min'       => 'Password minimal 8 karakter.',
-        'password.mixed_case' => 'Password harus mengandung huruf besar dan huruf kecil.',
-        'password.numbers'   => 'Password harus mengandung setidaknya 1 angka.',
-    ]);
+    {
+        $isSementara = $request->tipe_anggota === 'sementara';
 
-    User::create([
-        'name'     => $request->name,
-        'email'    => $request->email,
-        'alamat'   => $request->alamat,
-        'password' => Hash::make($request->password),
-        'role'     => 'anggota',
-        'status'   => 'aktif',
-    ]);
+        $rules = [
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|email|unique:users,email',
+            'password'     => [
+                'required',
+                'confirmed',
+                Password::min(8)->mixedCase()->numbers(),
+            ],
+            'tipe_anggota' => 'required|in:tetap,sementara',
+        ];
 
-    return redirect()->route('login')
-        ->with('success', 'Pendaftaran berhasil! Silakan login dengan akun yang baru dibuat.');
-}
+        if ($isSementara) {
+            $rules['no_hp']          = 'required|string|max:20';
+            $rules['tarian_custom']  = 'required|string|max:100';
+            $rules['sessions']       = 'required|array|min:1';
+            $rules['sessions.*.tanggal'] = 'required|date|after_or_equal:today';
+            $rules['sessions.*.jam']     = 'required|string';
+        } else {
+            $rules['alamat'] = 'required|string|max:500';
+        }
+
+        $request->validate($rules, [
+            'email.unique'       => 'Email sudah terdaftar.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password.min'       => 'Password minimal 8 karakter.',
+            'password.mixed_case' => 'Password harus mengandung huruf besar dan huruf kecil.',
+            'password.numbers'   => 'Password harus mengandung setidaknya 1 angka.',
+            'sessions.required'  => 'Harap pilih setidaknya satu sesi latihan.',
+        ]);
+
+        // 1. Create User
+        $user = User::create([
+            'name'         => $request->name,
+            'email'        => $request->email,
+            'alamat'       => $isSementara ? null : $request->alamat,
+            'no_hp'        => $isSementara ? $request->no_hp : $request->no_hp, // Tetap allow no_hp if exists
+            'password'     => Hash::make($request->password),
+            'role'         => 'anggota',
+            'status'       => 'aktif',
+            'tipe_anggota' => $isSementara ? 'pengunjung' : 'anggota_tetap', 
+        ]);
+
+        // 2. If Temporary, Store Sessions
+        if ($isSementara) {
+            $defaultTarian = \App\Models\Tarian::where('aktif', true)->first();
+            
+            foreach ($request->sessions as $session) {
+                $tanggal = $session['tanggal'];
+                $jam     = $session['jam'];
+
+                // 2.1 Capacity Check (Max 2 sessions per slot total)
+                $count = \App\Models\PendaftaranTari::where('tanggal_latihan', $tanggal)
+                    ->where('jam_latihan', $jam)
+                    ->whereIn('status', ['aktif', 'nonaktif']) // Count confirmed and pending
+                    ->count();
+
+                if ($count >= 2) {
+                    return back()->withInput()->with('error', "Maaf, sesi pada tanggal {$tanggal} jam {$jam} sudah penuh. Silakan pilih jam lain.");
+                }
+
+                \App\Models\PendaftaranTari::create([
+                    'user_id'         => $user->id,
+                    'tarian_id'       => $defaultTarian ? $defaultTarian->id : null,
+                    'tanggal_latihan' => $tanggal,
+                    'jam_latihan'     => $jam,
+                    'status'          => 'nonaktif', // Status 'nonaktif' di sini berarti 'Pending Konfirmasi'
+                    'tanggal_daftar'  => now()->toDateString(),
+                    'catatan'         => 'Sesi khusus: ' . $request->tarian_custom,
+                ]);
+            }
+        }
+
+        return redirect()->route('login')
+            ->with('success', 'Pendaftaran berhasil! Booking Anda sedang menunggu konfirmasi admin. Silakan cek berkala.');
+    }
 
     // ─────────────────────────────────────────
     //  LOGOUT

@@ -14,6 +14,7 @@ class Pengunjung extends Model
     protected $fillable = [
         'nama',
         'no_hp',
+        'instansi',
         'tujuan',
         'tanggal',
         'jam',

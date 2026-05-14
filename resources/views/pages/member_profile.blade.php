@@ -80,14 +80,26 @@
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
                     <div>
                         <label style="font-size:.85rem; font-weight:700; color:var(--dark); display:block; margin-bottom:8px;">Kata Sandi Baru</label>
-                        <input type="password" name="password" placeholder="Minimal 8 karakter"
-                            style="width:100%; padding:12px 16px; border:1.5px solid var(--border); border-radius:12px; font-size:.9rem; outline:none; background:#FAF8F6;">
+                        <div style="position:relative;">
+                            <input type="password" name="password" id="password" placeholder="Minimal 8 karakter"
+                                style="width:100%; padding:12px 16px; padding-right:52px; border:1.5px solid var(--border); border-radius:12px; font-size:.9rem; outline:none; background:#FAF8F6;">
+                            <button type="button" onclick="togglePassword('password', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; padding:6px;">
+                                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                            </button>
+                        </div>
                         @error('password') <span style="color:#DC2626; font-size:.75rem; margin-top:4px; display:block;">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label style="font-size:.85rem; font-weight:700; color:var(--dark); display:block; margin-bottom:8px;">Konfirmasi Kata Sandi Baru</label>
-                        <input type="password" name="password_confirmation" placeholder="Ketik ulang kata sandi baru"
-                            style="width:100%; padding:12px 16px; border:1.5px solid var(--border); border-radius:12px; font-size:.9rem; outline:none; background:#FAF8F6;">
+                        <div style="position:relative;">
+                            <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Ketik ulang kata sandi baru"
+                                style="width:100%; padding:12px 16px; padding-right:52px; border:1.5px solid var(--border); border-radius:12px; font-size:.9rem; outline:none; background:#FAF8F6;">
+                            <button type="button" onclick="togglePassword('password_confirmation', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; padding:6px;">
+                                <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,6 +180,22 @@
 </section>
 
 <script>
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const eyeOpen = btn.querySelector('.eye-open');
+    const eyeClosed = btn.querySelector('.eye-closed');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        if(eyeOpen) eyeOpen.style.display = 'none';
+        if(eyeClosed) eyeClosed.style.display = 'block';
+    } else {
+        input.type = 'password';
+        if(eyeOpen) eyeOpen.style.display = 'block';
+        if(eyeClosed) eyeClosed.style.display = 'none';
+    }
+}
+
 function previewImage(input) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
