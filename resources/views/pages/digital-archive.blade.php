@@ -29,20 +29,29 @@
         <button class="filter-btn" data-filter="perang">⚔️ Perang</button>
     </div>
 </div>
+@php
+    $labels = [
+        'tari'    => ['title' => 'Koleksi Tarian', 'sub' => 'Setiap gerakan menyimpan cerita, setiap tarian adalah doa dari leluhur.'],
+        'gamelan' => ['title' => 'Koleksi Gamelan & Musik', 'sub' => 'Alunan instrumen tradisional yang mengiringi langkah para penari.'],
+    ];
+@endphp
 
-{{-- TARIAN --}}
-<section class="section">
+@foreach($tarianGrouped as $jenis => $items)
+<section class="section {{ $loop->even ? 'bg-soft' : '' }}">
     <div class="container">
         <div class="section-header">
-            <span class="badge">Koleksi Tarian</span>
-            <h2 class="section-heading">Tarian Khas Indramayu</h2>
-            <p class="section-sub">Setiap gerakan menyimpan cerita, setiap tarian adalah doa dari leluhur.</p>
+            <span class="badge">{{ $labels[$jenis]['title'] ?? ucfirst($jenis) }}</span>
+            <h2 class="section-heading">{{ $labels[$jenis]['title'] ?? ucfirst($jenis) }}</h2>
+            <p class="section-sub">{{ $labels[$jenis]['sub'] ?? 'Warisan seni budaya kebanggaan Indramayu.' }}</p>
         </div>
 
-        @if($tarian->count())
-        <div class="tarian-grid" id="tarianGrid">
-            @foreach($tarian as $idx => $t)
-            @php $catColor=['sakral'=>'event-cat--sakral','hiburan'=>'event-cat--hiburan','penyambutan'=>'event-cat--penyambutan','ritual'=>'event-cat--ritual','perang'=>'event-cat--perang']; @endphp
+        <div class="tarian-grid">
+            @foreach($items as $t)
+            @php 
+                $catColor=['sakral'=>'event-cat--sakral','hiburan'=>'event-cat--hiburan','penyambutan'=>'event-cat--penyambutan','ritual'=>'event-cat--ritual','perang'=>'event-cat--perang']; 
+                // Global index for modal
+                $globalIdx = $t->id;
+            @endphp
             <div class="tari-card {{ $t->unggulan ? 'tari-card--featured' : '' }}"
                  data-cat="{{ $t->kategori }}"
                  data-nama="{{ strtolower($t->nama) }}">
@@ -77,21 +86,21 @@
                         @if($t->fungsi)<span class="tari-meta-item">🎭 {{ $t->fungsi }}</span>@endif
                         @if($t->durasi)<span class="tari-meta-item">⏱ {{ $t->durasi }}</span>@endif
                     </div>
-                    <button class="btn-detail" onclick="openModal('tarian', {{ $idx }})">Lihat Selengkapnya →</button>
+                    <button class="btn-detail" onclick="openModal('tarian', {{ $t->id }})">Lihat Selengkapnya →</button>
                 </div>
             </div>
             @endforeach
         </div>
-        @else
-        <div style="text-align:center;padding:40px 20px;color:var(--muted)">
-            <p>Belum ada data tarian.</p>
-        </div>
-        @endif
     </div>
 </section>
+@endforeach
+
+<style>
+    .bg-soft { background: var(--bg-soft); }
+</style>
 
 {{-- TOPENG --}}
-<section class="section" style="background: var(--bg-soft);">
+<section class="section" style="background: #fff; border-top: 1px solid var(--border);">
     <div class="container">
         <div class="section-header">
             <span class="badge">Koleksi Topeng</span>
@@ -101,7 +110,7 @@
 
         @if($topeng->count())
         <div class="tarian-grid">
-            @foreach($topeng as $idx => $tp)
+            @foreach($topeng as $tp)
             <div class="tari-card" data-nama="{{ strtolower($tp->nama) }}">
                 <div class="tari-thumb" style="position:relative">
                     @if($tp->foto)
@@ -119,7 +128,7 @@
                     <h3 class="tari-nama">{{ $tp->nama }}</h3>
                     <p class="tari-asal">🎨 Warna: {{ $tp->warna }}</p>
                     <p class="tari-desc"><strong>Watak:</strong> {{ $tp->karakter }}</p>
-                    <button class="btn-detail" onclick="openModal('topeng', {{ $idx }})">Lihat Selengkapnya →</button>
+                    <button class="btn-detail" onclick="openModal('topeng', {{ $tp->id }})">Lihat Selengkapnya →</button>
                 </div>
             </div>
             @endforeach
@@ -143,22 +152,26 @@
 {{-- DATA JSON --}}
 <script>
 @php
-    $tarianJson = $tarian->values()->map(function($t) {
-        return [
-            'nama'      => $t->nama,
-            'asal'      => $t->asal,
-            'cat'       => ucfirst($t->kategori),
-            'deskripsi' => $t->deskripsi,
-            'fungsi'    => $t->fungsi,
-            'kostum'    => $t->kostum,
-            'durasi'    => $t->durasi,
-            'foto'      => $t->foto ? asset('storage/'.$t->foto) : null,
-            'video'     => $t->youtube_embed_url,
-        ];
-    });
+    $tarianDataMap = [];
+    foreach($tarianGrouped as $group) {
+        foreach($group as $t) {
+            $tarianDataMap[$t->id] = [
+                'nama'      => $t->nama,
+                'asal'      => $t->asal,
+                'cat'       => ucfirst($t->kategori),
+                'deskripsi' => $t->deskripsi,
+                'fungsi'    => $t->fungsi,
+                'kostum'    => $t->kostum,
+                'durasi'    => $t->durasi,
+                'foto'      => $t->foto ? asset('storage/'.$t->foto) : null,
+                'video'     => $t->youtube_embed_url,
+            ];
+        }
+    }
 
-    $topengJson = $topeng->values()->map(function($tp) {
-        return [
+    $topengDataMap = [];
+    foreach($topeng as $tp) {
+        $topengDataMap[$tp->id] = [
             'nama'      => $tp->nama,
             'warna'     => $tp->warna,
             'karakter'  => $tp->karakter,
@@ -166,21 +179,20 @@
             'deskripsi' => $tp->deskripsi,
             'foto'      => $tp->foto ? asset('storage/'.$tp->foto) : null,
         ];
-    });
+    }
 @endphp
 
     // Data Tarian
-    const tarianData = @json($tarianJson);
-
+    const tarianData = @json($tarianDataMap);
     // Data Topeng
-    const topengData = @json($topengJson);
+    const topengData = @json($topengDataMap);
 
 
-function openModal(type, idx) {
+function openModal(type, id) {
     let t, fotoHtml, bodyHtml;
     
     if (type === 'tarian') {
-        t = tarianData[idx];
+        t = tarianData[id];
         fotoHtml = t.foto
             ? `<img src="${t.foto}" alt="${t.nama}" style="width:100%;height:260px;object-fit:cover;border-radius:var(--radius) var(--radius) 0 0">`
             : `<div class="img-placeholder img-placeholder--modal"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
@@ -192,7 +204,7 @@ function openModal(type, idx) {
                        <iframe src="${t.video}?rel=0&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                    </div>
                </div>`
-            : `<p class="no-video" style="margin-top:20px">📹 Video belum tersedia untuk tarian ini.</p>`;
+            : `<p class="no-video" style="margin-top:20px">📹 Video belum tersedia untuk item ini.</p>`;
 
         bodyHtml = `
             <div class="modal-body">
@@ -208,7 +220,7 @@ function openModal(type, idx) {
                 ${videoHtml}
             </div>`;
     } else {
-        t = topengData[idx];
+        t = topengData[id];
         fotoHtml = t.foto
             ? `<div style="background:#f8f8f8;text-align:center"><img src="${t.foto}" alt="${t.nama}" style="width:auto;max-width:100%;height:300px;object-fit:contain;padding:20px"></div>`
             : `<div class="img-placeholder img-placeholder--modal"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/></svg></div>`;
@@ -243,8 +255,16 @@ function closeModal() {
 // Search
 document.getElementById('searchInput')?.addEventListener('input', function () {
     const q = this.value.toLowerCase();
+    
+    // Sembunyikan/Tampilkan kartu berdasarkan nama
     document.querySelectorAll('.tari-card').forEach(c => {
         c.style.display = c.dataset.nama?.includes(q) ? '' : 'none';
+    });
+
+    // Sembunyikan/Tampilkan section jika tidak ada isi yang cocok
+    document.querySelectorAll('.section').forEach(sec => {
+        const hasVisibleCards = Array.from(sec.querySelectorAll('.tari-card')).some(c => c.style.display !== 'none');
+        sec.style.display = hasVisibleCards ? '' : 'none';
     });
 });
 
@@ -254,9 +274,17 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const f = btn.dataset.filter;
-        // Filter tarianGrid saja
-        document.querySelectorAll('#tarianGrid .tari-card').forEach(c => {
+        
+        // Filter kartu
+        document.querySelectorAll('.tari-card').forEach(c => {
+            if (!c.dataset.cat) return; // Skip topeng cards
             c.style.display = (f === 'semua' || c.dataset.cat === f) ? '' : 'none';
+        });
+
+        // Sembunyikan section yang kosong (kecuali section Topeng jika filter bukan 'semua')
+        document.querySelectorAll('.section').forEach(sec => {
+            const hasVisibleCards = Array.from(sec.querySelectorAll('.tari-card')).some(c => c.style.display !== 'none');
+            sec.style.display = hasVisibleCards ? '' : 'none';
         });
     });
 });
