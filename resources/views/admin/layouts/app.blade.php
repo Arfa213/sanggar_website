@@ -73,9 +73,11 @@
                         ->whereHas('user', function($q) { $q->where('tipe_anggota', 'pengunjung'); })
                         ->count(); 
                 @endphp
-                @if($pendingCount > 0)
-                    <span class="nav-badge" style="background:#8B5CF6">{{ $pendingCount }}</span>
-                @endif
+                <span id="sidebar-booking-badge" class="nav-badge" style="background:#8B5CF6; display: {{ $pendingCount > 0 ? 'inline-block' : 'none' }};">{{ $pendingCount }}</span>
+            </a>
+            <a href="{{ route('admin.pengumuman.index') }}" class="nav-item {{ request()->routeIs('admin.pengumuman*') ? 'active' : '' }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l5 5"/></svg>
+                Broadcast Pengumuman
             </a>
         </div>
         <div class="nav-group">
@@ -122,7 +124,20 @@
                 <span class="bc-current">@yield('title','Dashboard')</span>
             </div>
         </div>
-        <div class="topbar-right">
+        <div class="topbar-right" style="display:flex; align-items:center; gap:20px;">
+            {{-- Lonceng Notifikasi Booking Realtime --}}
+            @php
+                $notifCount = \App\Models\PendaftaranTari::where('status', 'nonaktif')
+                    ->whereHas('user', function($q) { $q->where('tipe_anggota', 'pengunjung'); })
+                    ->count();
+            @endphp
+            <div class="topbar-bell" style="position:relative;">
+                <a href="{{ route('admin.booking.index') }}" id="admin-bell-link" style="color: #6B7280; display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:#F3F4F6; transition:all .2s; position:relative; border: 1px solid #E5E7EB;" onmouseover="this.style.background='#E5E7EB'" onmouseout="this.style.background='#F3F4F6'">
+                    <svg id="admin-bell-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s ease;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span id="admin-booking-badge" style="position:absolute; top:-2px; right:-2px; background:#EF4444; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:10px; border:2px solid #fff; line-height:1; display: {{ $notifCount > 0 ? 'inline-block' : 'none' }};">{{ $notifCount }}</span>
+                </a>
+            </div>
+
             <div class="topbar-user">
                 @if(Auth::user()->foto)
                     <img src="{{ asset('storage/'.Auth::user()->foto) }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--border)">
@@ -161,5 +176,75 @@
 
 <script src="{{ asset('js/admin.js') }}"></script>
 @stack('scripts')
+
+{{-- Real-time Booking Notification Polling & Effects --}}
+<style>
+@keyframes bell-shake {
+    0% { transform: rotate(0); }
+    15% { transform: rotate(12deg); }
+    30% { transform: rotate(-12deg); }
+    45% { transform: rotate(8deg); }
+    60% { transform: rotate(-8deg); }
+    75% { transform: rotate(4deg); }
+    85% { transform: rotate(-4deg); }
+    100% { transform: rotate(0); }
+}
+.bell-shake-animation {
+    animation: bell-shake 0.6s ease-in-out;
+    color: #EF4444 !important;
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let lastCount = parseInt('{{ $notifCount }}') || 0;
+    
+    function checkNewBookings() {
+        fetch('{{ route('admin.booking.pending-count') }}')
+            .then(res => res.json())
+            .then(data => {
+                const count = data.count;
+                
+                // Update Topbar Badge
+                const topbarBadge = document.getElementById('admin-booking-badge');
+                if (topbarBadge) {
+                    topbarBadge.innerText = count;
+                    topbarBadge.style.display = count > 0 ? 'inline-block' : 'none';
+                }
+                
+                // Update Sidebar Badge
+                const sidebarBadge = document.getElementById('sidebar-booking-badge');
+                if (sidebarBadge) {
+                    sidebarBadge.innerText = count;
+                    sidebarBadge.style.display = count > 0 ? 'inline-block' : 'none';
+                }
+                
+                // Trigger shaking effect & chime if new booking arrives!
+                if (count > lastCount) {
+                    const bellSvg = document.getElementById('admin-bell-svg');
+                    if (bellSvg) {
+                        bellSvg.classList.add('bell-shake-animation');
+                        
+                        // Mainkan suara bel notifikasi premium secara lembut
+                        try {
+                            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav');
+                            audio.volume = 0.4;
+                            audio.play();
+                        } catch(e) {}
+                        
+                        setTimeout(() => {
+                            bellSvg.classList.remove('bell-shake-animation');
+                        }, 1000);
+                    }
+                }
+                
+                lastCount = count;
+            })
+            .catch(err => console.error('Gagal memuat notifikasi booking:', err));
+    }
+    
+    // Jalankan polling setiap 5 detik
+    setInterval(checkNewBookings, 5000);
+});
+</script>
 </body>
 </html>

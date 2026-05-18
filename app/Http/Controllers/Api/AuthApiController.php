@@ -83,4 +83,52 @@ class AuthApiController extends Controller
             'message' => 'Berhasil keluar.',
         ]);
     }
+
+    // ── UPDATE PROFILE ─────────────────────────────────────────
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+        
+        $request->validate([
+            'name'   => 'required|string|max:255',
+            'email'  => 'required|email|unique:users,email,' . $user->id,
+            'telepon' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string|max:500',
+        ]);
+
+        $user->update($request->only('name', 'email', 'telepon', 'alamat'));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil berhasil diperbarui.',
+            'user'    => $user,
+        ]);
+    }
+
+    // ── UPDATE PASSWORD ────────────────────────────────────────
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'old_password' => 'required',
+            'password'     => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Password lama tidak sesuai.',
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password berhasil diubah.',
+        ]);
+    }
 }

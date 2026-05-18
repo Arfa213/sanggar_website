@@ -45,4 +45,15 @@ class BookingController extends Controller
 
         return back()->with('success', 'Data booking berhasil dihapus.');
     }
+
+    public function getPendingCount()
+    {
+        $count = PendaftaranTari::where('status', 'nonaktif')
+            ->whereHas('user', function($q) {
+                $q->where('tipe_anggota', 'pengunjung');
+            })
+            ->count();
+        return response()->json(['count' => $count]);
+    }
 }
+

@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\{
     KehadiranController      as AdminKehadiran,
     TopengController         as AdminTopeng,
     BookingController        as AdminBooking,
+    PengumumanController     as AdminPengumuman,
 };
 
 // ── PUBLIC ────────────────────────────────────────────────────
@@ -146,9 +147,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Booking Anggota Sementara
     Route::get('/booking',            [AdminBooking::class, 'index'])->name('booking.index');
+    Route::get('/booking/pending-count', [AdminBooking::class, 'getPendingCount'])->name('booking.pending-count');
     Route::post('/booking/{id}/confirm', [AdminBooking::class, 'confirm'])->name('booking.confirm');
     Route::post('/booking/{id}/reject',  [AdminBooking::class, 'reject'])->name('booking.reject');
     Route::delete('/booking/{id}',    [AdminBooking::class, 'destroy'])->name('booking.destroy');
+
+    // Broadcast Pengumuman Global
+    Route::get('/pengumuman',         [AdminPengumuman::class, 'index'])->name('pengumuman.index');
+    Route::post('/pengumuman',        [AdminPengumuman::class, 'store'])->name('pengumuman.store');
+    Route::delete('/pengumuman/{id}', [AdminPengumuman::class, 'destroy'])->name('pengumuman.destroy');
 });
 
 // ── CHATBOT AI ────────────────────────────────────────────────────────

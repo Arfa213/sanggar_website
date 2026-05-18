@@ -8,6 +8,11 @@ use App\Http\Controllers\Api\TarianApiController;
 use App\Http\Controllers\Api\GaleriApiController;
 use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\GeminiController;
+use App\Http\Controllers\Api\TopengApiController;
+use App\Http\Controllers\Api\ArchiveApiController;
+use App\Http\Controllers\Api\GuestApiController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\ChatbotController;
 use App\Models\JadwalLatihan;
 use App\Models\PendaftaranTari;
 use App\Models\Kehadiran;
@@ -23,6 +28,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/tarian/{id}', [TarianApiController::class,  'show']);
     Route::get('/galeri',      [GaleriApiController::class,  'index']);
     Route::post('/ai/chat', [GeminiController::class, 'chat']);
+    Route::get('/archive', [ArchiveApiController::class, 'index']);
+    Route::get('/topeng', [TopengApiController::class, 'index']);
+    Route::get('/topeng/{id}', [TopengApiController::class, 'show']);
+    Route::post('/tamu', [GuestApiController::class, 'store']);
+    Route::post('/ai/recommend', [ChatbotController::class, 'recommendDance']);
 
     Route::get('/jadwal', function () {
         $data = JadwalLatihan::where('aktif', true)->orderBy('urutan')->get();
@@ -38,6 +48,10 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/auth/me',      [AuthApiController::class, 'me']);
         Route::post('/auth/logout', [AuthApiController::class, 'logout']);
+        Route::put('/auth/profile', [AuthApiController::class, 'updateProfile']);
+        Route::put('/auth/password', [AuthApiController::class, 'updatePassword']);
+
+        Route::post('/attendance/scan', [AttendanceController::class, 'processScan']);
 
         Route::get('/pendaftaran', function (Illuminate\Http\Request $req) {
             $data = PendaftaranTari::with(['tarian', 'jadwal'])
@@ -107,6 +121,11 @@ Route::prefix('v1')->group(function () {
                 'bulan' => $bulan, 'hadir' => $hadir, 'izin' => $izin, 'alpa' => $alpa,
                 'total' => $total, 'persen_hadir' => $total > 0 ? round($hadir / $total * 100) : 0,
             ]]);
+        });
+
+        Route::get('/pengumuman', function () {
+            $data = \App\Models\Pengumuman::orderBy('created_at', 'desc')->get();
+            return response()->json(['data' => $data]);
         });
     });
 });

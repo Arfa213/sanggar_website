@@ -5,7 +5,7 @@
 <div class="page-header">
     <div class="page-header-text">
         <h1>Arsip Digital Tarian</h1>
-        <p>Kelola koleksi tarian tradisional Indramayu yang ditampilkan di website.</p>
+        <p>Kelola koleksi tarian tradisional yang ditampilkan di website.</p>
     </div>
     <div class="page-header-actions">
         <a href="{{ route('admin.tarian.pdf') }}" class="btn btn-secondary" target="_blank">🖨 Cetak PDF</a>

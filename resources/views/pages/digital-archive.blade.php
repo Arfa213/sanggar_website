@@ -7,8 +7,8 @@
     <div class="page-hero__bg page-hero__bg--archive"></div>
     <div class="container page-hero__inner">
         <span class="badge">Arsip Digital</span>
-        <h1 class="page-hero__title">Tari Tradisional<br><em>Indramayu</em></h1>
-        <p class="page-hero__sub">Memperkenalkan dan melestarikan kekayaan seni tari tradisional Indramayu — warisan leluhur yang tak ternilai.</p>
+        <h1 class="page-hero__title">Tari <br><em>Tradisional</em></h1>
+        <p class="page-hero__sub">Memperkenalkan dan melestarikan kekayaan seni tari tradisional warisan leluhur yang tak ternilai.</p>
         <div class="archive-search-wrap">
             <div class="archive-search">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A7A7A" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>

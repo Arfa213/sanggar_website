@@ -18,6 +18,7 @@ class TarianApiController extends Controller
 
         $tarian = $query->get()->map(fn($t) => array_merge($t->toArray(), [
             'foto' => $t->foto ? asset('storage/' . $t->foto) : null,
+            'youtube_embed_url' => $t->youtube_embed_url,
         ]));
 
         return response()->json(['data' => $tarian]);
@@ -30,6 +31,7 @@ class TarianApiController extends Controller
         return response()->json([
             'data' => array_merge($tarian->toArray(), [
                 'foto' => $tarian->foto ? asset('storage/' . $tarian->foto) : null,
+                'youtube_embed_url' => $tarian->youtube_embed_url,
             ]),
         ]);
     }
