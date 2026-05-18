@@ -138,13 +138,13 @@ jobs:
             docker pull $IMAGE:latest
 
             # Update container tanpa downtime besar
-            docker compose up -d --remove-orphans
+            docker-compose up -d --remove-orphans
 
             # Tunggu container siap
             echo "⏳ Menunggu container ready..."
             sleep 10
 
             # Jalankan migrasi database
-            docker compose exec -T app php artisan migrate --force --no-interaction
+            docker-compose exec -T app php artisan migrate --force --no-interaction
 
             echo "✅ Deployment selesai!"
