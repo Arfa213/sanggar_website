@@ -39,6 +39,12 @@ Route::prefix('v1')->group(function () {
         return response()->json(['data' => $data]);
     });
 
+    Route::get('/file/{path}', function ($path) {
+        $fullPath = storage_path('app/public/' . $path);
+        if (!file_exists($fullPath)) abort(404);
+        return response()->file($fullPath);
+    })->where('path', '.*');
+
     // ── AUTH ──────────────────────────────────────────────────
     Route::post('/auth/login',    [AuthApiController::class, 'login']);
     Route::post('/auth/register', [AuthApiController::class, 'register']);
@@ -49,46 +55,117 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me',      [AuthApiController::class, 'me']);
         Route::post('/auth/logout', [AuthApiController::class, 'logout']);
         Route::put('/auth/profile', [AuthApiController::class, 'updateProfile']);
+        Route::post('/auth/foto', [AuthApiController::class, 'updateFoto']);
         Route::put('/auth/password', [AuthApiController::class, 'updatePassword']);
 
         Route::post('/attendance/scan', [AttendanceController::class, 'processScan']);
 
         Route::get('/pendaftaran', function (Illuminate\Http\Request $req) {
-            $data = PendaftaranTari::with(['tarian', 'jadwal'])
-                ->where('user_id', $req->user()->id)
-                ->where('status', 'aktif')
-                ->get();
+            $user = $req->user();
+            if ($user->tipe_anggota === 'pengunjung') {
+                $data = PendaftaranTari::with(['tarian', 'jadwal'])
+                    ->where('user_id', $user->id)
+                    ->get();
+            } else {
+                $data = PendaftaranTari::with(['tarian', 'jadwal'])
+                    ->where('user_id', $user->id)
+                    ->where('status', 'aktif')
+                    ->get();
+            }
             return response()->json(['data' => $data]);
         });
 
         Route::post('/pendaftaran', function (Illuminate\Http\Request $req) {
-            $req->validate([
-                'tarian_id' => 'required|exists:tarian,id',
-                'jadwal_id' => 'required|exists:jadwal_latihan,id',
-                'catatan'   => 'nullable|string|max:500',
-            ]);
-            $exists = PendaftaranTari::where([
-                'user_id'   => $req->user()->id,
-                'tarian_id' => $req->tarian_id,
-                'jadwal_id' => $req->jadwal_id,
-            ])->exists();
-            if ($exists) {
-                return response()->json(['success' => false, 'message' => 'Kamu sudah terdaftar di kelas ini!'], 422);
+            $user = $req->user();
+            if ($user->tipe_anggota === 'pengunjung') {
+                $req->validate([
+                    'tarian_id'       => 'required|exists:tarian,id',
+                    'tanggal_latihan' => 'required|date|after_or_equal:today',
+                    'jam_latihan'     => 'required|string',
+                    'catatan'         => 'nullable|string|max:500',
+                ]);
+
+                $tarianId = $req->tarian_id;
+                $tanggal = $req->tanggal_latihan;
+                $jam = $req->jam_latihan;
+
+                // 1. Cek apakah user sudah daftar tarian ini di jam yang sama
+                $exists = PendaftaranTari::where([
+                    'user_id'         => $user->id,
+                    'tarian_id'       => $tarianId,
+                    'tanggal_latihan' => $tanggal,
+                    'jam_latihan'     => $jam,
+                ])->whereIn('status', ['aktif', 'nonaktif'])->exists();
+
+                if ($exists) {
+                    return response()->json(['success' => false, 'message' => 'Kamu sudah booking sesi ini!'], 422);
+                }
+
+                // 2. Cek Kapasitas Aula (Maksimal 2 tarian berbeda per jam)
+                $sessionsAtTime = PendaftaranTari::where('tanggal_latihan', $tanggal)
+                    ->where('jam_latihan', $jam)
+                    ->where('status', 'aktif')
+                    ->with('tarian')
+                    ->get();
+
+                $distinctDances = $sessionsAtTime->pluck('tarian.nama', 'tarian_id')->unique();
+                
+                if ($distinctDances->count() >= 2) {
+                    if (!$distinctDances->has($tarianId)) {
+                        $names = $distinctDances->implode(' dan ');
+                        return response()->json(['success' => false, 'message' => "Maaf, aula sudah penuh pada jam ini oleh kelas: {$names}. Silakan pilih jam atau tanggal lain."], 422);
+                    }
+                }
+
+                // 3. Simpan Pendaftaran
+                $p = PendaftaranTari::create([
+                    'user_id'         => $user->id,
+                    'tarian_id'       => $tarianId,
+                    'tanggal_latihan' => $tanggal,
+                    'jam_latihan'     => $jam,
+                    'status'          => 'nonaktif', // Pending
+                    'tanggal_daftar'  => now()->toDateString(),
+                    'catatan'         => $req->catatan,
+                ]);
+
+                $p->load(['tarian']);
+                
+                $msg = "Booking Tari {$p->tarian->nama} terkirim! Tanggal {$tanggal} jam {$jam}. Menunggu konfirmasi admin.";
+                return response()->json([
+                    'success' => true,
+                    'message' => $msg,
+                    'data'    => $p,
+                ], 201);
+            } else {
+                $req->validate([
+                    'tarian_id' => 'required|exists:tarian,id',
+                    'jadwal_id' => 'required|exists:jadwal_latihan,id',
+                    'catatan'   => 'nullable|string|max:500',
+                ]);
+                $exists = PendaftaranTari::where([
+                    'user_id'   => $req->user()->id,
+                    'tarian_id' => $req->tarian_id,
+                    'jadwal_id' => $req->jadwal_id,
+                    'status'    => 'aktif',
+                ])->exists();
+                if ($exists) {
+                    return response()->json(['success' => false, 'message' => 'Kamu sudah terdaftar di kelas ini!'], 422);
+                }
+                $p = PendaftaranTari::create([
+                    'user_id'        => $req->user()->id,
+                    'tarian_id'      => $req->tarian_id,
+                    'jadwal_id'      => $req->jadwal_id,
+                    'status'         => 'aktif',
+                    'tanggal_daftar' => now()->toDateString(),
+                    'catatan'        => $req->catatan,
+                ]);
+                $p->load(['tarian', 'jadwal']);
+                return response()->json([
+                    'success' => true,
+                    'message' => "Berhasil mendaftar Tari {$p->tarian->nama}! Jadwal: {$p->jadwal->hari}, {$p->jadwal->jam_mulai}–{$p->jadwal->jam_selesai} di {$p->jadwal->tempat}.",
+                    'data'    => $p,
+                ], 201);
             }
-            $p = PendaftaranTari::create([
-                'user_id'        => $req->user()->id,
-                'tarian_id'      => $req->tarian_id,
-                'jadwal_id'      => $req->jadwal_id,
-                'status'         => 'aktif',
-                'tanggal_daftar' => now()->toDateString(),
-                'catatan'        => $req->catatan,
-            ]);
-            $p->load(['tarian', 'jadwal']);
-            return response()->json([
-                'success' => true,
-                'message' => "Berhasil mendaftar Tari {$p->tarian->nama}! Jadwal: {$p->jadwal->hari}, {$p->jadwal->jam_mulai}–{$p->jadwal->jam_selesai} di {$p->jadwal->tempat}.",
-                'data'    => $p,
-            ], 201);
         });
 
         Route::post('/pendaftaran/{id}/batalkan', function (Illuminate\Http\Request $req, $id) {

@@ -52,7 +52,7 @@ function previewImage(input) {
 function togglePrivateFields() {
     const tipe = document.getElementById('tipe_anggota').value;
     const privateFields = document.getElementById('private-fields');
-    privateFields.style.display = (tipe === 'sementara') ? 'block' : 'none';
+    privateFields.style.display = (tipe === 'pengunjung') ? 'block' : 'none';
 }
 </script>
 
@@ -86,8 +86,8 @@ function togglePrivateFields() {
             <div class="form-group">
                 <label>Tipe Keanggotaan <span class="required">*</span></label>
                 <select name="tipe_anggota" id="tipe_anggota" class="form-control" onchange="togglePrivateFields()">
-                    <option value="tetap" {{ old('tipe_anggota',$anggota->tipe_anggota ?? 'tetap')==='tetap' ? 'selected' : '' }}>🎭 Anggota Tetap</option>
-                    <option value="sementara" {{ old('tipe_anggota',$anggota->tipe_anggota)==='sementara' ? 'selected' : '' }}>🎯 Anggota Sementara</option>
+                    <option value="anggota_tetap" {{ old('tipe_anggota',$anggota->tipe_anggota ?? 'anggota_tetap')==='anggota_tetap' ? 'selected' : '' }}>🎭 Anggota Tetap</option>
+                    <option value="pengunjung" {{ old('tipe_anggota',$anggota->tipe_anggota)==='pengunjung' ? 'selected' : '' }}>🎯 Anggota Sementara</option>
                 </select>
                 <p style="font-size:.75rem;color:var(--muted);margin-top:4px">
                     <strong>Anggota Tetap</strong>: Bergabung jangka panjang.<br>
@@ -104,7 +104,7 @@ function togglePrivateFields() {
         </div>
 
         {{-- Field khusus sementara --}}
-        <div id="private-fields" style="display:{{ old('tipe_anggota',$anggota->tipe_anggota ?? '')==='sementara' ? 'block' : 'none' }}">
+        <div id="private-fields" style="display:{{ old('tipe_anggota',$anggota->tipe_anggota ?? '')==='pengunjung' ? 'block' : 'none' }}">
             <div style="background:#FDF8F5;border-radius:12px;border:1px solid #F5EAE2;padding:16px;margin-bottom:16px">
                 <p style="font-size:.8rem;font-weight:700;color:#C65D2E;margin-bottom:12px">📋 Info Anggota Sementara</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -124,12 +124,10 @@ function togglePrivateFields() {
             <label>Password {{ $mode==='edit' ? '(kosongkan jika tidak diubah)' : '' }} <span class="required">{{ $mode==='create' ? '*' : '' }}</span></label>
             <input type="password" name="password" class="form-control" {{ $mode==='create' ? 'required' : '' }} placeholder="Minimal 8 karakter">
         </div>
-        @if($mode==='create')
-        <div class="form-group">
-            <label>Konfirmasi Password <span class="required">*</span></label>
-            <input type="password" name="password_confirmation" class="form-control" required>
+        <div class="form-group" style="margin-bottom:16px">
+            <label>Konfirmasi Password {{ $mode==='edit' ? '(kosongkan jika tidak diubah)' : '' }} <span class="required">{{ $mode==='create' ? '*' : '' }}</span></label>
+            <input type="password" name="password_confirmation" class="form-control" {{ $mode==='create' ? 'required' : '' }} placeholder="Ulangi password">
         </div>
-        @endif
     </div>
 </div>
 <div style="margin-top:16px;display:flex;gap:12px">

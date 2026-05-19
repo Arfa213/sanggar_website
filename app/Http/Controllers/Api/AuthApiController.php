@@ -43,19 +43,29 @@ class AuthApiController extends Controller
             'name'                  => 'required|string|max:255',
             'email'                 => 'required|email|unique:users,email',
             'alamat'                => 'nullable|string|max:500',
+            'tipe_anggota'          => 'nullable|string|in:tetap,sementara,anggota_tetap,pengunjung,private',
             'password'              => ['required', 'confirmed', Password::min(8)],
         ], [
             'email.unique'          => 'Email sudah terdaftar.',
             'password.confirmed'    => 'Konfirmasi password tidak cocok.',
         ]);
 
+        $inputTipe = $request->tipe_anggota ?? 'tetap';
+        $tipeAnggota = 'anggota_tetap';
+        if ($inputTipe === 'sementara' || $inputTipe === 'pengunjung') {
+            $tipeAnggota = 'pengunjung';
+        } elseif ($inputTipe === 'private') {
+            $tipeAnggota = 'private';
+        }
+
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'alamat'   => $request->alamat,
-            'password' => Hash::make($request->password),
-            'role'     => 'anggota',
-            'status'   => 'aktif',
+            'name'         => $request->name,
+            'email'        => $request->email,
+            'alamat'       => $request->alamat,
+            'tipe_anggota' => $tipeAnggota,
+            'password'     => Hash::make($request->password),
+            'role'         => 'anggota',
+            'status'       => 'aktif',
         ]);
 
         $token = $user->createToken('flutter-app')->plainTextToken;
@@ -90,17 +100,50 @@ class AuthApiController extends Controller
         $user = $request->user();
         
         $request->validate([
-            'name'   => 'required|string|max:255',
-            'email'  => 'required|email|unique:users,email,' . $user->id,
+            'name'    => 'required|string|max:255',
+            'email'   => 'required|email|unique:users,email,' . $user->id,
             'telepon' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string|max:500',
+            'no_hp'   => 'nullable|string|max:20',
+            'alamat'  => 'nullable|string|max:500',
         ]);
 
-        $user->update($request->only('name', 'email', 'telepon', 'alamat'));
+        $data = $request->only('name', 'email', 'alamat');
+        if ($request->has('no_hp')) {
+            $data['no_hp'] = $request->no_hp;
+        } elseif ($request->has('telepon')) {
+            $data['no_hp'] = $request->telepon;
+        }
+
+        $user->update($data);
 
         return response()->json([
             'success' => true,
             'message' => 'Profil berhasil diperbarui.',
+            'user'    => $user,
+        ]);
+    }
+
+    // ── UPDATE FOTO PROFIL ──────────────────────────────────────
+    public function updateFoto(Request $request)
+    {
+        $request->validate([
+            'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('foto')) {
+            // Hapus foto lama jika ada
+            if ($user->foto && \Storage::disk('public')->exists($user->foto)) {
+                \Storage::disk('public')->delete($user->foto);
+            }
+            $path = $request->file('foto')->store('profil_anggota', 'public');
+            $user->update(['foto' => $path]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto profil berhasil diperbarui.',
             'user'    => $user,
         ]);
     }

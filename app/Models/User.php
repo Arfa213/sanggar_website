@@ -58,19 +58,21 @@ class User extends Authenticatable {
 
     public function getTipeAnggotaLabelAttribute(): string
     {
-        return match ($this->tipe_anggota ?? 'tetap') {
-            'tetap'     => 'Anggota Tetap',
-            'sementara' => 'Anggota Sementara',
-            default     => 'Anggota Tetap',
+        return match ($this->tipe_anggota ?? 'anggota_tetap') {
+            'anggota_tetap' => 'Anggota Tetap',
+            'pengunjung'    => 'Anggota Sementara',
+            'private'       => 'Private',
+            default         => 'Anggota Tetap',
         };
     }
 
     public function getTipeAnggotaColorAttribute(): string
     {
-        return match ($this->tipe_anggota ?? 'tetap') {
-            'tetap'     => 'chip--green',
-            'sementara' => 'chip--purple',
-            default     => 'chip--gray',
+        return match ($this->tipe_anggota ?? 'anggota_tetap') {
+            'anggota_tetap' => 'chip--green',
+            'pengunjung'    => 'chip--purple',
+            'private'       => 'chip--blue',
+            default         => 'chip--gray',
         };
     }
    public function pendaftaranTari()

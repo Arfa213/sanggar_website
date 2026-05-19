@@ -33,8 +33,9 @@ class AnggotaController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.anggota.pdf', compact('anggota', 'tipe'));
         $label = match($tipe) {
-            'sementara' => 'Sementara',
-            default     => 'Semua',
+            'pengunjung' => 'Sementara',
+            'private'    => 'Private',
+            default      => 'Semua',
         };
         return $pdf->download("Data-Anggota-{$label}-SMB-" . now()->format('Y-m-d') . '.pdf');
     }
@@ -48,9 +49,10 @@ class AnggotaController extends Controller
         $anggota = $query->get();
 
         $label = match($tipe) {
-            'sementara' => 'Sementara',
-            'tetap'     => 'Tetap',
-            default     => 'Semua',
+            'pengunjung'    => 'Sementara',
+            'anggota_tetap' => 'Tetap',
+            'private'       => 'Private',
+            default         => 'Semua',
         };
         $filename = "Data-{$label}-SMB-" . now()->format('Y-m-d') . '.csv';
 
@@ -103,7 +105,7 @@ class AnggotaController extends Controller
             'no_hp'                => 'nullable|string|max:30',
             'password'             => 'required|min:8|confirmed',
             'status'               => 'required|in:aktif,nonaktif',
-            'tipe_anggota'         => 'required|in:tetap,sementara',
+            'tipe_anggota'         => 'required|in:anggota_tetap,pengunjung,private',
             'tgl_kadaluarsa'       => 'nullable|date',
             'catatan_keanggotaan'  => 'nullable|string|max:500',
             'foto'                 => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
@@ -149,7 +151,7 @@ class AnggotaController extends Controller
             'alamat'              => 'nullable|string',
             'no_hp'               => 'nullable|string|max:30',
             'status'              => 'required|in:aktif,nonaktif',
-            'tipe_anggota'        => 'required|in:tetap,sementara',
+            'tipe_anggota'        => 'required|in:anggota_tetap,pengunjung,private',
             'tgl_kadaluarsa'      => 'nullable|date',
             'catatan_keanggotaan' => 'nullable|string|max:500',
             'password'            => 'nullable|min:8|confirmed',
