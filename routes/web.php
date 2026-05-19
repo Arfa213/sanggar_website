@@ -163,3 +163,29 @@ Route::post('/chatbot/chat',      [ChatbotController::class, 'chat'])->name('cha
 Route::post('/chatbot/clear',     [ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
 Route::post('/chatbot/recommend', [ChatbotController::class, 'recommendDance'])->name('chatbot.recommend');
 
+// Helper untuk membuat symbolic link storage di live server
+Route::get('/link-storage', function () {
+    try {
+        // Hapus folder/symlink storage yang mungkin sudah ada (biasanya rusak atau folder kosong)
+        $publicStoragePath = public_path('storage');
+        if (file_exists($publicStoragePath) || is_link($publicStoragePath)) {
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Windows
+                if (is_link($publicStoragePath)) {
+                    unlink($publicStoragePath);
+                } else {
+                    rmdir($publicStoragePath);
+                }
+            } else {
+                // Linux / Unix
+                exec('rm -rf ' . escapeshellarg($publicStoragePath));
+            }
+        }
+
+        $result = \Illuminate\Support\Facades\Artisan::call('storage:link');
+        return "Storage link created successfully!<br>Result Code: " . $result . "<br>Output: " . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return "Failed to link storage: " . $e->getMessage();
+    }
+});
+
