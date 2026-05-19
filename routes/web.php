@@ -185,7 +185,24 @@ Route::get('/link-storage', function () {
         $result = \Illuminate\Support\Facades\Artisan::call('storage:link');
         return "Storage link created successfully!<br>Result Code: " . $result . "<br>Output: " . \Illuminate\Support\Facades\Artisan::output();
     } catch (\Exception $e) {
-        return "Failed to link storage: " . $e->getMessage();
+        return "Failed to link storage: " . $e->getMessage() . "<br><br><b>Catatan:</b> Silakan hapus folder/file bernama 'storage' di dalam direktori 'public' hosting Anda secara manual melalui cPanel File Manager, lalu coba akses kembali halaman ini.";
     }
 });
+
+// Fallback route jika symbolic link dinonaktifkan oleh penyedia hosting (Permission Denied)
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+    
+    // Cegah directory traversal attacks untuk keamanan
+    if (strpos($path, '..') !== false) {
+        abort(404);
+    }
+    
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+    
+    return response()->file($fullPath);
+})->where('path', '.*');
+
 
