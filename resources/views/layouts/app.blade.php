@@ -208,6 +208,8 @@
     {{-- CHATBOT WIDGET --}}
     @include('components.chatbot')
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/sweetalert-integration.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
 
     {{-- Auto-hide flash after 4 seconds --}}
