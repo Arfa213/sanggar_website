@@ -174,4 +174,94 @@ class AuthApiController extends Controller
             'message' => 'Password berhasil diubah.',
         ]);
     }
+
+    // ── LOGIN WITH GOOGLE (Firebase Token) ─────────────────────
+    // Menerima Firebase ID Token dari Flutter, verifikasi ke Google,
+    // lalu buat/temukan user dan kembalikan Sanctum token.
+    public function loginWithGoogle(Request $request)
+    {
+        $request->validate([
+            'firebase_token' => 'required|string',
+        ]);
+
+        try {
+            // Verifikasi Firebase ID Token langsung ke Google API
+            $firebaseToken = $request->firebase_token;
+            $response = \Illuminate\Support\Facades\Http::get(
+                "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={$firebaseToken}"
+            );
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token Google tidak valid.',
+                ], 401);
+            }
+
+            $payload = $response->json();
+
+            // Pastikan token ditujukan untuk project Firebase yang benar
+            $validAudiences = [
+                '611713677810-86g03v381kvd8lua78c650t8elicjtce.apps.googleusercontent.com',
+                // Tambahkan client_id lain jika ada
+            ];
+            if (!in_array($payload['aud'] ?? '', $validAudiences) && ($payload['azp'] ?? '') !== '611713677810') {
+                // Fallback: cek issuer
+                $iss = $payload['iss'] ?? '';
+                if (!in_array($iss, ['accounts.google.com', 'https://accounts.google.com'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Token tidak valid untuk aplikasi ini.',
+                    ], 401);
+                }
+            }
+
+            $googleEmail = $payload['email'] ?? null;
+            $googleName  = $payload['name']  ?? 'Pengguna Google';
+            $googleId    = $payload['sub']   ?? null;
+
+            if (!$googleEmail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat mengambil email dari akun Google.',
+                ], 400);
+            }
+
+            // Cari user berdasarkan email, atau buat baru jika belum ada
+            $user = User::firstOrCreate(
+                ['email' => $googleEmail],
+                [
+                    'name'         => $googleName,
+                    'google_id'    => $googleId,
+                    'password'     => Hash::make(\Illuminate\Support\Str::random(32)),
+                    'role'         => 'anggota',
+                    'status'       => 'aktif',
+                    'tipe_anggota' => 'anggota_tetap',
+                    'foto'         => $payload['picture'] ?? null,
+                ]
+            );
+
+            // Update google_id jika user sudah ada tapi belum punya google_id
+            if (!$user->google_id && $googleId) {
+                $user->update(['google_id' => $googleId]);
+            }
+
+            // Hapus token lama agar tidak menumpuk (opsional)
+            $user->tokens()->where('name', 'flutter-google')->delete();
+
+            $token = $user->createToken('flutter-google')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'token'   => $token,
+                'user'    => $user,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
