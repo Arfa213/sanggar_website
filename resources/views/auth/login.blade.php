@@ -7,14 +7,8 @@
     <div class="container auth-container">
 
         {{-- LEFT IMAGE --}}
-        <div class="auth-image">
-            <div class="img-placeholder auth-placeholder">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                </svg>
-            </div>
+        <div class="auth-image" style="background:#FAF8F6; display:flex; align-items:center; justify-content:center; padding: 40px;">
+            <img src="{{ asset('assets/images/logosanggar.png') }}" alt="Logo Sanggar" style="max-width:85%; max-height:85%; object-fit:contain;">
         </div>
 
         {{-- RIGHT FORM --}}
