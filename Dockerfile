@@ -38,11 +38,15 @@ COPY . .
 # Install dependencies Laravel
 RUN composer install --optimize-autoloader --no-dev
 
+# Create storage symbolic link
+RUN php artisan storage:link
+
 # Set permission
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copy konfigurasi Nginx dan Supervisor
+# Copy konfigurasi Nginx, PHP, dan Supervisor
 COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/local.ini /usr/local/etc/php/conf.d/local.ini
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 80
