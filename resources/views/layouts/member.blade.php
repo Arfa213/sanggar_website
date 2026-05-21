@@ -431,6 +431,9 @@
 {{-- Chatbot --}}
 @include('components.chatbot')
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('js/sweetalert-integration.js') }}"></script>
+
 <script>
 function toggleSidebar() {
     document.getElementById('mSidebar').classList.toggle('open');
@@ -444,21 +447,39 @@ setTimeout(() => document.getElementById('mFlash')?.remove(), 4000);
 
 // Refresh CSRF token sebelum submit logout (mencegah 419 Page Expired)
 function submitLogout() {
-    if (!confirm('Apakah Anda yakin ingin keluar dari aplikasi?')) return;
-    
-    const form = document.getElementById('logoutForm');
-    const btn  = form.querySelector('button');
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
+    Swal.fire({
+        title: 'Keluar Aplikasi',
+        text: 'Apakah Anda yakin ingin keluar dari aplikasi?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Keluar',
+        cancelButtonText: 'Batal',
+        customClass: {
+            confirmButton: 'swal-btn swal-btn-confirm',
+            cancelButton: 'swal-btn swal-btn-cancel',
+            popup: 'swal-popup-custom'
+        },
+        buttonsStyling: false,
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('logoutForm');
+            const btn  = form.querySelector('button');
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+            }
 
-    // Ambil CSRF token terbaru dari meta tag (sudah di-set saat halaman dimuat)
-    const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            // Ambil CSRF token terbaru dari meta tag (sudah di-set saat halaman dimuat)
+            const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-    // Update hidden input CSRF di dalam form
-    const csrfInput = form.querySelector('input[name="_token"]');
-    if (csrfInput) csrfInput.value = token;
+            // Update hidden input CSRF di dalam form
+            const csrfInput = form.querySelector('input[name="_token"]');
+            if (csrfInput) csrfInput.value = token;
 
-    form.submit();
+            form.submit();
+        }
+    });
 }
 
 // Cegah bfcache: reload halaman jika user kembali via tombol Back browser

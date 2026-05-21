@@ -7,14 +7,8 @@
     <div class="container auth-container">
 
         {{-- LEFT IMAGE --}}
-        <div class="auth-image">
-            <div class="img-placeholder auth-placeholder">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                </svg>
-            </div>
+        <div class="auth-image" style="background:#FAF8F6; display:flex; align-items:center; justify-content:center; padding: 40px;">
+            <img src="{{ asset('assets/images/logosanggar.png') }}" alt="Logo Sanggar" style="max-width:85%; max-height:85%; object-fit:contain;">
         </div>
 
         {{-- RIGHT FORM --}}
@@ -86,6 +80,59 @@
                         <a href="{{ route('register') }}">Daftar di sini</a>
                     </p>
                 </form>
+
+                {{-- DIVIDER --}}
+                <div class="auth-divider">
+                    <span>atau</span>
+                </div>
+
+                {{-- GOOGLE SIGN-IN BUTTON --}}
+                <a href="{{ route('auth.google') }}" class="btn-google">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                         alt="Google" width="20" height="20">
+                    <span>Masuk dengan Google</span>
+                </a>
+
+                <style>
+                    .auth-divider {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        margin: 20px 0 16px;
+                        color: #999;
+                        font-size: 13px;
+                    }
+                    .auth-divider::before,
+                    .auth-divider::after {
+                        content: '';
+                        flex: 1;
+                        height: 1px;
+                        background: #E5E2DE;
+                    }
+                    .btn-google {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                        width: 100%;
+                        padding: 12px 20px;
+                        background: #fff;
+                        border: 1.5px solid #E5E2DE;
+                        border-radius: 12px;
+                        color: #333;
+                        font-size: 14px;
+                        font-weight: 600;
+                        text-decoration: none;
+                        transition: all 0.2s ease;
+                        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+                    }
+                    .btn-google:hover {
+                        background: #F8F7F5;
+                        border-color: #C65D2E;
+                        box-shadow: 0 4px 12px rgba(198,93,46,0.15);
+                        transform: translateY(-1px);
+                    }
+                </style>
             </div>
         </div>
 

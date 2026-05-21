@@ -44,6 +44,10 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register',[AuthController::class, 'register'])->name('register.post');
 Route::post('/logout',  [AuthController::class, 'logout'])->name('logout');
 
+// Google OAuth (Web)
+Route::get('/auth/google',          [AuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
 // Lupa password — halaman saja (kirim email butuh konfigurasi mail)
 Route::get('/forgot-password', function () {
     return view('auth.forgot-password');
@@ -162,4 +166,47 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::post('/chatbot/chat',      [ChatbotController::class, 'chat'])->name('chatbot.chat');
 Route::post('/chatbot/clear',     [ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
 Route::post('/chatbot/recommend', [ChatbotController::class, 'recommendDance'])->name('chatbot.recommend');
+
+// Helper untuk membuat symbolic link storage di live server
+Route::get('/link-storage', function () {
+    try {
+        // Hapus folder/symlink storage yang mungkin sudah ada (biasanya rusak atau folder kosong)
+        $publicStoragePath = public_path('storage');
+        if (file_exists($publicStoragePath) || is_link($publicStoragePath)) {
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Windows
+                if (is_link($publicStoragePath)) {
+                    unlink($publicStoragePath);
+                } else {
+                    rmdir($publicStoragePath);
+                }
+            } else {
+                // Linux / Unix
+                exec('rm -rf ' . escapeshellarg($publicStoragePath));
+            }
+        }
+
+        $result = \Illuminate\Support\Facades\Artisan::call('storage:link');
+        return "Storage link created successfully!<br>Result Code: " . $result . "<br>Output: " . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return "Failed to link storage: " . $e->getMessage() . "<br><br><b>Catatan:</b> Silakan hapus folder/file bernama 'storage' di dalam direktori 'public' hosting Anda secara manual melalui cPanel File Manager, lalu coba akses kembali halaman ini.";
+    }
+});
+
+// Fallback route jika symbolic link dinonaktifkan oleh penyedia hosting (Permission Denied)
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+    
+    // Cegah directory traversal attacks untuk keamanan
+    if (strpos($path, '..') !== false) {
+        abort(404);
+    }
+    
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+    
+    return response()->file($fullPath);
+})->where('path', '.*');
+
 

@@ -173,4 +173,52 @@ class AuthController extends Controller
         return redirect()->route('home')
             ->with('success', 'Anda berhasil keluar.');
     }
+
+    // ─────────────────────────────────────────
+    //  REDIRECT KE GOOGLE (OAuth Web)
+    // ─────────────────────────────────────────
+    public function redirectToGoogle()
+    {
+        return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
+    }
+
+    // ─────────────────────────────────────────
+    //  HANDLE CALLBACK DARI GOOGLE
+    // ─────────────────────────────────────────
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->stateless()->user();
+        } catch (\Exception $e) {
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Login Google gagal. Silakan coba lagi.']);
+        }
+
+        // Cari atau buat user berdasarkan email Google
+        $user = User::firstOrCreate(
+            ['email' => $googleUser->getEmail()],
+            [
+                'name'         => $googleUser->getName(),
+                'google_id'    => $googleUser->getId(),
+                'password'     => Hash::make(\Illuminate\Support\Str::random(32)),
+                'role'         => 'anggota',
+                'status'       => 'aktif',
+                'tipe_anggota' => 'anggota_tetap',
+                'foto'         => $googleUser->getAvatar(),
+            ]
+        );
+
+        // Update google_id jika user sudah ada tapi belum punya
+        if (!$user->google_id) {
+            $user->update(['google_id' => $googleUser->getId()]);
+        }
+
+        Auth::login($user, true);
+        request()->session()->regenerate();
+
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('dashboard');
+    }
 }

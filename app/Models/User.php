@@ -16,15 +16,16 @@ class User extends Authenticatable {
     protected $fillable = [
         'name',
         'email',
+        'google_id',
         'alamat',
         'no_hp',
         'foto',
         'password',
-        'role',                  // 'admin' | 'anggota'
-        'status',                // 'aktif' | 'nonaktif'
-        'tipe_anggota',          // 'tetap' | 'sementara'
-        'tgl_kadaluarsa',        // khusus anggota sementara
-        'catatan_keanggotaan',   // catatan tambahan
+        'role',
+        'status',
+        'tipe_anggota',
+        'tgl_kadaluarsa',
+        'catatan_keanggotaan',
     ];
 
     /**

@@ -11,10 +11,17 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    // Gemini AI untuk chatbot — daftar API key gratis di: https://aistudio.google.com/app/apikey
-    // Tambahkan di .env: GEMINI_API_KEY=AIzaSy...
+    // Gemini AI untuk chatbot
     'gemini' => [
         'key' => env('GEMINI_API_KEY', ''),
     ],
 
+    // Google OAuth (Socialite) — isi GOOGLE_CLIENT_ID dll di .env
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+    ],
+
 ];
+

@@ -9,7 +9,7 @@ return new class extends Migration {
         Schema::create('kelas_barcode', function (Blueprint $table) {
             $table->id();
             $table->foreignId('jadwal_id')->nullable()->constrained('jadwal_latihan')->onDelete('cascade');
-            $table->foreignId('tarian_id')->constrained('tarian')->onDelete('cascade');
+            $table->foreignId('tarian_id')->nullable()->constrained('tarian')->onDelete('cascade');
             $table->string('barcode_token', 64)->unique(); 
             $table->boolean('aktif')->default(true);
             $table->string('dibuat_oleh')->nullable();

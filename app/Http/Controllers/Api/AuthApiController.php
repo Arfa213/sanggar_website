@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\OtpRegistrationMail;
 
 class AuthApiController extends Controller
 {
@@ -27,6 +31,26 @@ class AuthApiController extends Controller
         }
 
         $user  = Auth::user();
+        
+        if (is_null($user->email_verified_at)) {
+            // Generate OTP baru jika belum terverifikasi saat mencoba login
+            $otp = rand(100000, 999999);
+            Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+            try {
+                Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+            } catch (\Exception $e) {
+                Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+            }
+            Log::info("OTP untuk {$user->email} adalah: {$otp}");
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Email belum diverifikasi. Kami telah mengirimkan OTP baru ke email Anda.',
+                'needs_verification' => true,
+                'user_id' => $user->id,
+            ], 403);
+        }
+
         $token = $user->createToken('flutter-app')->plainTextToken;
 
         return response()->json([
@@ -68,13 +92,87 @@ class AuthApiController extends Controller
             'status'       => 'aktif',
         ]);
 
+        $otp = rand(100000, 999999);
+        Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+        
+        try {
+            Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+        } catch (\Exception $e) {
+            Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+        }
+        Log::info("OTP untuk {$user->email} adalah: {$otp}");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pendaftaran berhasil. Silakan cek email Anda untuk kode verifikasi OTP.',
+            'needs_verification' => true,
+            'user_id' => $user->id,
+        ], 201);
+    }
+
+    // ── VERIFY OTP ───────────────────────────────────────────
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required',
+            'otp'     => 'required|numeric',
+        ]);
+
+        $cachedOtp = Cache::get('otp_register_' . $request->user_id);
+
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode OTP tidak valid atau sudah kadaluarsa.',
+            ], 400);
+        }
+
+        $user = User::find($request->user_id);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Pengguna tidak ditemukan.'], 404);
+        }
+
+        $user->email_verified_at = now();
+        $user->save();
+        Cache::forget('otp_register_' . $user->id);
+
         $token = $user->createToken('flutter-app')->plainTextToken;
 
         return response()->json([
             'success' => true,
+            'message' => 'Verifikasi berhasil.',
             'token'   => $token,
             'user'    => $user,
-        ], 201);
+        ]);
+    }
+
+    // ── RESEND OTP ───────────────────────────────────────────
+    public function resendOtp(Request $request)
+    {
+        $request->validate(['user_id' => 'required']);
+        $user = User::find($request->user_id);
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Pengguna tidak ditemukan.'], 404);
+        }
+        if ($user->email_verified_at) {
+            return response()->json(['success' => false, 'message' => 'Email sudah terverifikasi.'], 400);
+        }
+
+        $otp = rand(100000, 999999);
+        Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+        
+        try {
+            Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+        } catch (\Exception $e) {
+            Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+        }
+        Log::info("OTP untuk {$user->email} adalah: {$otp}");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kode OTP baru telah dikirim ke email Anda.',
+        ]);
     }
 
     // ── GET USER ─────────────────────────────────────────────
@@ -174,5 +272,95 @@ class AuthApiController extends Controller
             'success' => true,
             'message' => 'Password berhasil diubah.',
         ]);
+    }
+
+    // ── LOGIN WITH GOOGLE (Firebase Token) ─────────────────────
+    // Menerima Firebase ID Token dari Flutter, verifikasi ke Google,
+    // lalu buat/temukan user dan kembalikan Sanctum token.
+    public function loginWithGoogle(Request $request)
+    {
+        $request->validate([
+            'firebase_token' => 'required|string',
+        ]);
+
+        try {
+            // Verifikasi Firebase ID Token langsung ke Google API
+            $firebaseToken = $request->firebase_token;
+            $response = \Illuminate\Support\Facades\Http::get(
+                "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={$firebaseToken}"
+            );
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token Google tidak valid.',
+                ], 401);
+            }
+
+            $payload = $response->json();
+
+            // Pastikan token ditujukan untuk project Firebase yang benar
+            $validAudiences = [
+                '611713677810-86g03v381kvd8lua78c650t8elicjtce.apps.googleusercontent.com',
+                // Tambahkan client_id lain jika ada
+            ];
+            if (!in_array($payload['aud'] ?? '', $validAudiences) && ($payload['azp'] ?? '') !== '611713677810') {
+                // Fallback: cek issuer
+                $iss = $payload['iss'] ?? '';
+                if (!in_array($iss, ['accounts.google.com', 'https://accounts.google.com'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Token tidak valid untuk aplikasi ini.',
+                    ], 401);
+                }
+            }
+
+            $googleEmail = $payload['email'] ?? null;
+            $googleName  = $payload['name']  ?? 'Pengguna Google';
+            $googleId    = $payload['sub']   ?? null;
+
+            if (!$googleEmail) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat mengambil email dari akun Google.',
+                ], 400);
+            }
+
+            // Cari user berdasarkan email, atau buat baru jika belum ada
+            $user = User::firstOrCreate(
+                ['email' => $googleEmail],
+                [
+                    'name'         => $googleName,
+                    'google_id'    => $googleId,
+                    'password'     => Hash::make(\Illuminate\Support\Str::random(32)),
+                    'role'         => 'anggota',
+                    'status'       => 'aktif',
+                    'tipe_anggota' => 'anggota_tetap',
+                    'foto'         => $payload['picture'] ?? null,
+                ]
+            );
+
+            // Update google_id jika user sudah ada tapi belum punya google_id
+            if (!$user->google_id && $googleId) {
+                $user->update(['google_id' => $googleId]);
+            }
+
+            // Hapus token lama agar tidak menumpuk (opsional)
+            $user->tokens()->where('name', 'flutter-google')->delete();
+
+            $token = $user->createToken('flutter-google')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'token'   => $token,
+                'user'    => $user,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

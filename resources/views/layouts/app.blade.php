@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $siteProfil->nama_sanggar ?? 'Sanggar Mulya Bhakti' }} — @yield('title', $siteProfil->tagline ?? 'Melestarikan Budaya Melalui Seni')</title>
+    <link rel="shortcut icon" href="{{ asset('assets/images/logosanggar.png') }}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -28,8 +29,9 @@
     {{-- NAVBAR --}}
     <nav class="navbar" id="navbar">
         <div class="container navbar-inner">
-            <a href="{{ route('home') }}" class="navbar-brand">
-                {{ $siteProfil->nama_sanggar ?? 'Sanggar Mulya Bhakti' }}
+            <a href="{{ route('home') }}" class="navbar-brand" style="display:flex; align-items:center; gap:10px;">
+                <img src="{{ asset('assets/images/logosanggar.png') }}" alt="Logo" style="height:36px; object-fit:contain;">
+                <span>{{ $siteProfil->nama_sanggar ?? 'Sanggar Mulya Bhakti' }}</span>
             </a>
 
             <ul class="navbar-menu">
@@ -208,6 +210,8 @@
     {{-- CHATBOT WIDGET --}}
     @include('components.chatbot')
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/sweetalert-integration.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
 
     {{-- Auto-hide flash after 4 seconds --}}
