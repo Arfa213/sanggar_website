@@ -62,19 +62,31 @@ class AuthController extends Controller
 
             $user = Auth::user();
 
-            // Cek apakah email sudah terverifikasi
+            // Admin selalu bisa login tanpa OTP
+            // Akun lama (sebelum sistem OTP) juga langsung masuk & otomatis diverifikasi
             if (is_null($user->email_verified_at)) {
-                Auth::logout();
-                $otp = rand(100000, 999999);
-                Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
-                try {
-                    Mail::to($user->email)->send(new OtpRegistrationMail($otp));
-                } catch (\Exception $e) {
-                    Log::error('Gagal kirim OTP: ' . $e->getMessage());
+                if ($user->role === 'admin') {
+                    // Admin: bypass OTP, langsung verifikasi
+                    $user->email_verified_at = now();
+                    $user->save();
+                } elseif ($user->created_at < '2026-05-21') {
+                    // Akun lama (sebelum OTP system): auto-verifikasi
+                    $user->email_verified_at = now();
+                    $user->save();
+                } else {
+                    // Akun baru yang belum verifikasi: kirim OTP
+                    Auth::logout();
+                    $otp = rand(100000, 999999);
+                    Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+                    try {
+                        Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+                    } catch (\Exception $e) {
+                        Log::error('Gagal kirim OTP: ' . $e->getMessage());
+                    }
+                    Log::info("OTP login untuk {$user->email}: {$otp}");
+                    return redirect()->route('otp.verify.form', ['user_id' => $user->id])
+                        ->with('info', 'Email Anda belum diverifikasi. OTP baru telah dikirim ke email Anda.');
                 }
-                Log::info("OTP login untuk {$user->email}: {$otp}");
-                return redirect()->route('otp.verify.form', ['user_id' => $user->id])
-                    ->with('info', 'Email Anda belum diverifikasi. OTP baru telah dikirim ke email Anda.');
             }
 
             if ($user->role === 'admin') {

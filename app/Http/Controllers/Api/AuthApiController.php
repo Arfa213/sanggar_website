@@ -33,22 +33,34 @@ class AuthApiController extends Controller
         $user  = Auth::user();
         
         if (is_null($user->email_verified_at)) {
-            // Generate OTP baru jika belum terverifikasi saat mencoba login
-            $otp = rand(100000, 999999);
-            Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
-            try {
-                Mail::to($user->email)->send(new OtpRegistrationMail($otp));
-            } catch (\Exception $e) {
-                Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+            // Admin: bypass OTP, langsung verifikasi
+            if ($user->role === 'admin') {
+                $user->email_verified_at = now();
+                $user->save();
             }
-            Log::info("OTP untuk {$user->email} adalah: {$otp}");
+            // Akun lama (sebelum sistem OTP): auto-verifikasi
+            elseif ($user->created_at < '2026-05-21') {
+                $user->email_verified_at = now();
+                $user->save();
+            }
+            // Akun baru yang belum verifikasi: kirim OTP
+            else {
+                $otp = rand(100000, 999999);
+                Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+                try {
+                    Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+                } catch (\Exception $e) {
+                    Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+                }
+                Log::info("OTP untuk {$user->email} adalah: {$otp}");
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Email belum diverifikasi. Kami telah mengirimkan OTP baru ke email Anda.',
-                'needs_verification' => true,
-                'user_id' => $user->id,
-            ], 403);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email belum diverifikasi. Kami telah mengirimkan OTP baru ke email Anda.',
+                    'needs_verification' => true,
+                    'user_id' => $user->id,
+                ], 403);
+            }
         }
 
         $token = $user->createToken('flutter-app')->plainTextToken;
