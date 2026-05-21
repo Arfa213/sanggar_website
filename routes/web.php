@@ -44,6 +44,11 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register',[AuthController::class, 'register'])->name('register.post');
 Route::post('/logout',  [AuthController::class, 'logout'])->name('logout');
 
+// OTP Email Verification
+Route::get('/otp/verify',   [AuthController::class, 'showOtpForm'])->name('otp.verify.form');
+Route::post('/otp/verify',  [AuthController::class, 'verifyOtp'])->name('otp.verify');
+Route::post('/otp/resend',  [AuthController::class, 'resendOtp'])->name('otp.resend');
+
 // Google OAuth (Web)
 Route::get('/auth/google',          [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');

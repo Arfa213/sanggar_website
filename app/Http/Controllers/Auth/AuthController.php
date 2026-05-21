@@ -6,10 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use App\Mail\OtpRegistrationMail;
 
 class AuthController extends Controller
 {
@@ -47,16 +51,33 @@ class AuthController extends Controller
             'password.required' => 'Password wajib diisi.',
         ]);
 
-        RateLimiter::hit($key, 60); // 1 minute window
+        RateLimiter::hit($key, 60);
 
         $credentials = $request->only('email', 'password');
         $remember    = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
-            RateLimiter::clear($key); // Clear on success
+            RateLimiter::clear($key);
             $request->session()->regenerate();
 
-            if (Auth::user()->role === 'admin') {
+            $user = Auth::user();
+
+            // Cek apakah email sudah terverifikasi
+            if (is_null($user->email_verified_at)) {
+                Auth::logout();
+                $otp = rand(100000, 999999);
+                Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+                try {
+                    Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+                } catch (\Exception $e) {
+                    Log::error('Gagal kirim OTP: ' . $e->getMessage());
+                }
+                Log::info("OTP login untuk {$user->email}: {$otp}");
+                return redirect()->route('otp.verify.form', ['user_id' => $user->id])
+                    ->with('info', 'Email Anda belum diverifikasi. OTP baru telah dikirim ke email Anda.');
+            }
+
+            if ($user->role === 'admin') {
                 return redirect()->intended(route('admin.dashboard'));
             }
             return redirect()->intended(route('dashboard'));
@@ -135,10 +156,9 @@ class AuthController extends Controller
                 $tanggal = $session['tanggal'];
                 $jam     = $session['jam'];
 
-                // 2.1 Capacity Check (Max 2 sessions per slot total)
                 $count = \App\Models\PendaftaranTari::where('tanggal_latihan', $tanggal)
                     ->where('jam_latihan', $jam)
-                    ->whereIn('status', ['aktif', 'nonaktif']) // Count confirmed and pending
+                    ->whereIn('status', ['aktif', 'nonaktif'])
                     ->count();
 
                 if ($count >= 2) {
@@ -150,15 +170,101 @@ class AuthController extends Controller
                     'tarian_id'       => $defaultTarian ? $defaultTarian->id : null,
                     'tanggal_latihan' => $tanggal,
                     'jam_latihan'     => $jam,
-                    'status'          => 'nonaktif', // Status 'nonaktif' di sini berarti 'Pending Konfirmasi'
+                    'status'          => 'nonaktif',
                     'tanggal_daftar'  => now()->toDateString(),
                     'catatan'         => 'Sesi khusus: ' . $request->tarian_custom,
                 ]);
             }
         }
 
-        return redirect()->route('login')
-            ->with('success', 'Pendaftaran berhasil! Booking Anda sedang menunggu konfirmasi admin. Silakan cek berkala.');
+        // Kirim OTP ke email
+        $otp = rand(100000, 999999);
+        Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+        try {
+            Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+        } catch (\Exception $e) {
+            Log::error('Gagal kirim OTP: ' . $e->getMessage());
+        }
+        Log::info("OTP registrasi untuk {$user->email}: {$otp}");
+
+        return redirect()->route('otp.verify.form', ['user_id' => $user->id])
+            ->with('success', 'Pendaftaran berhasil! Silakan cek email Anda untuk kode OTP verifikasi.');
+    }
+
+    // ─────────────────────────────────────────
+    //  SHOW OTP VERIFY FORM (Web)
+    // ─────────────────────────────────────────
+    public function showOtpForm(Request $request)
+    {
+        $userId = $request->query('user_id');
+        if (!$userId || !User::find($userId)) {
+            return redirect()->route('register')->withErrors(['email' => 'Sesi tidak valid. Silakan daftar ulang.']);
+        }
+        return view('auth.otp-verify', ['userId' => $userId]);
+    }
+
+    // ─────────────────────────────────────────
+    //  VERIFY OTP (Web)
+    // ─────────────────────────────────────────
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required',
+            'otp'     => 'required|numeric|digits:6',
+        ], [
+            'otp.digits' => 'Kode OTP harus 6 digit.',
+            'otp.numeric' => 'Kode OTP hanya boleh angka.',
+        ]);
+
+        $cachedOtp = Cache::get('otp_register_' . $request->user_id);
+
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
+            return back()
+                ->withInput()
+                ->withErrors(['otp' => 'Kode OTP tidak valid atau sudah kadaluarsa (10 menit).']);
+        }
+
+        $user = User::find($request->user_id);
+        if (!$user) {
+            return redirect()->route('register')->withErrors(['email' => 'Pengguna tidak ditemukan.']);
+        }
+
+        $user->email_verified_at = now();
+        $user->save();
+        Cache::forget('otp_register_' . $user->id);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Email berhasil diverifikasi! Selamat datang, ' . $user->name . '!');
+    }
+
+    // ─────────────────────────────────────────
+    //  RESEND OTP (Web)
+    // ─────────────────────────────────────────
+    public function resendOtp(Request $request)
+    {
+        $request->validate(['user_id' => 'required']);
+        $user = User::find($request->user_id);
+
+        if (!$user) {
+            return back()->withErrors(['otp' => 'Pengguna tidak ditemukan.']);
+        }
+        if ($user->email_verified_at) {
+            return redirect()->route('login')->with('success', 'Email Anda sudah terverifikasi. Silakan login.');
+        }
+
+        $otp = rand(100000, 999999);
+        Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+        try {
+            Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+        } catch (\Exception $e) {
+            Log::error('Gagal kirim ulang OTP: ' . $e->getMessage());
+        }
+        Log::info("Resend OTP untuk {$user->email}: {$otp}");
+
+        return back()->with('success', 'Kode OTP baru telah dikirim ke email ' . $user->email);
     }
 
     // ─────────────────────────────────────────
