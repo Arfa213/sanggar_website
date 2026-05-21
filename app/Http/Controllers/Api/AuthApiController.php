@@ -138,7 +138,8 @@ class AuthApiController extends Controller
                 \Storage::disk('public')->delete($user->foto);
             }
             $path = $request->file('foto')->store('profil_anggota', 'public');
-            $user->update(['foto' => $path]);
+            $user->foto = $path; // Ini akan otomatis menyimpan 'profil_anggota/namafile.jpg'
+            $user->save();
         }
 
         return response()->json([

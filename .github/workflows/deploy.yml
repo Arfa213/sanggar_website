@@ -62,6 +62,15 @@ jobs:
       - name: Run PHPUnit tests
         run: php artisan test
 
+      # ─── NOTIFIKASI JIKA TESTING GAGAL ───
+      - name: ❌ Telegram Notification (Test Failed)
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="⚠️ *[CICD REPORT]* %0A❌ *PHPUnit Tests Gagal!* %0A%0ABuild dihentikan karena ada test kodingan yang error.%0ACommit: ${{ github.sha }}" \
+            -d parse_mode="Markdown"
+
   # ─── JOB 2: BUILD & PUSH IMAGE ────────────────────────────
   build-and-push:
     name: Build & Push Docker Image
@@ -108,6 +117,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # ─── NOTIFIKASI JIKA BUILD GAGAL ───
+      - name: ❌ Telegram Notification (Build Image Failed)
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="⚠️ *[CICD REPORT]* %0A❌ *Build Docker Image Gagal!* %0AGagal melakukan push ke GitHub Packages (GHCR).%0ACommit: ${{ github.sha }}" \
+            -d parse_mode="Markdown"
+
   # ─── JOB 3: DEPLOY KE VPS ────────────────────────────────
   deploy:
     name: Deploy ke VPS
@@ -148,3 +166,21 @@ jobs:
             docker-compose exec -T app php artisan migrate --force --no-interaction
 
             echo "✅ Deployment selesai!"
+
+      # ─── NOTIFIKASI FINAL DEPLOY SUCCESS ───
+      - name: 📢 Telegram Notification (Deploy Success)
+        if: success()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="🚀 *[CICD REPORT]* %0A✅ *DEPLOYMENT BERHASIL!* %0A%0AAplikasi Laravel terbaru sudah aktif di VPS.%0AAktor: *${{ github.actor }}* %0ACommit: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})" \
+            -d parse_mode="Markdown" --disable-web-page-preview
+
+      # ─── NOTIFIKASI FINAL DEPLOY FAILED ───
+      - name: ❌ Telegram Notification (Deploy Failed)
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="⚠️ *[CICD REPORT]* %0A❌ *DEPLOYMENT KE VPS GAGAL!* %0A%0AProses SSH atau migrasi database di VPS mengalami kendala.%0ACommit: ${{ github.sha }}" \
+            -d parse_mode="Markdown"
