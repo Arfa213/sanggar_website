@@ -48,6 +48,8 @@ Route::prefix('v1')->group(function () {
     // ── AUTH ──────────────────────────────────────────────────
     Route::post('/auth/login',    [AuthApiController::class, 'login']);
     Route::post('/auth/register', [AuthApiController::class, 'register']);
+    Route::post('/auth/verify-otp', [AuthApiController::class, 'verifyOtp']);
+    Route::post('/auth/resend-otp', [AuthApiController::class, 'resendOtp']);
     Route::post('/auth/google',   [AuthApiController::class, 'loginWithGoogle']); // Google Sign-In (Firebase)
 
     // ── PROTECTED ─────────────────────────────────────────────

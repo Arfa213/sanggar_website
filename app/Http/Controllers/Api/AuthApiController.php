@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\OtpRegistrationMail;
 
 class AuthApiController extends Controller
 {
@@ -27,6 +31,26 @@ class AuthApiController extends Controller
         }
 
         $user  = Auth::user();
+        
+        if (is_null($user->email_verified_at)) {
+            // Generate OTP baru jika belum terverifikasi saat mencoba login
+            $otp = rand(100000, 999999);
+            Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+            try {
+                Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+            } catch (\Exception $e) {
+                Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+            }
+            Log::info("OTP untuk {$user->email} adalah: {$otp}");
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Email belum diverifikasi. Kami telah mengirimkan OTP baru ke email Anda.',
+                'needs_verification' => true,
+                'user_id' => $user->id,
+            ], 403);
+        }
+
         $token = $user->createToken('flutter-app')->plainTextToken;
 
         return response()->json([
@@ -68,13 +92,87 @@ class AuthApiController extends Controller
             'status'       => 'aktif',
         ]);
 
+        $otp = rand(100000, 999999);
+        Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+        
+        try {
+            Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+        } catch (\Exception $e) {
+            Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+        }
+        Log::info("OTP untuk {$user->email} adalah: {$otp}");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pendaftaran berhasil. Silakan cek email Anda untuk kode verifikasi OTP.',
+            'needs_verification' => true,
+            'user_id' => $user->id,
+        ], 201);
+    }
+
+    // ── VERIFY OTP ───────────────────────────────────────────
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required',
+            'otp'     => 'required|numeric',
+        ]);
+
+        $cachedOtp = Cache::get('otp_register_' . $request->user_id);
+
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kode OTP tidak valid atau sudah kadaluarsa.',
+            ], 400);
+        }
+
+        $user = User::find($request->user_id);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Pengguna tidak ditemukan.'], 404);
+        }
+
+        $user->email_verified_at = now();
+        $user->save();
+        Cache::forget('otp_register_' . $user->id);
+
         $token = $user->createToken('flutter-app')->plainTextToken;
 
         return response()->json([
             'success' => true,
+            'message' => 'Verifikasi berhasil.',
             'token'   => $token,
             'user'    => $user,
-        ], 201);
+        ]);
+    }
+
+    // ── RESEND OTP ───────────────────────────────────────────
+    public function resendOtp(Request $request)
+    {
+        $request->validate(['user_id' => 'required']);
+        $user = User::find($request->user_id);
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Pengguna tidak ditemukan.'], 404);
+        }
+        if ($user->email_verified_at) {
+            return response()->json(['success' => false, 'message' => 'Email sudah terverifikasi.'], 400);
+        }
+
+        $otp = rand(100000, 999999);
+        Cache::put('otp_register_' . $user->id, $otp, now()->addMinutes(10));
+        
+        try {
+            Mail::to($user->email)->send(new OtpRegistrationMail($otp));
+        } catch (\Exception $e) {
+            Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+        }
+        Log::info("OTP untuk {$user->email} adalah: {$otp}");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kode OTP baru telah dikirim ke email Anda.',
+        ]);
     }
 
     // ── GET USER ─────────────────────────────────────────────
