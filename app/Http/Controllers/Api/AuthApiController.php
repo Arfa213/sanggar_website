@@ -79,6 +79,7 @@ class AuthApiController extends Controller
             'name'                  => 'required|string|max:255',
             'email'                 => 'required|email|unique:users,email',
             'alamat'                => 'nullable|string|max:500',
+            'no_hp'                 => 'nullable|string|max:20',
             'tipe_anggota'          => 'nullable|string|in:tetap,sementara,anggota_tetap,pengunjung,private',
             'password'              => ['required', 'confirmed', Password::min(8)],
         ], [
@@ -98,6 +99,7 @@ class AuthApiController extends Controller
             'name'         => $request->name,
             'email'        => $request->email,
             'alamat'       => $request->alamat,
+            'no_hp'        => $request->no_hp,
             'tipe_anggota' => $tipeAnggota,
             'password'     => Hash::make($request->password),
             'role'         => 'anggota',

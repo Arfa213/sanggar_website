@@ -98,7 +98,7 @@ Route::prefix('v1')->group(function () {
                     'tarian_id'       => $tarianId,
                     'tanggal_latihan' => $tanggal,
                     'jam_latihan'     => $jam,
-                ])->whereIn('status', ['aktif', 'nonaktif'])->exists();
+                ])->whereIn('status', ['aktif', 'pending'])->exists();
 
                 if ($exists) {
                     return response()->json(['success' => false, 'message' => 'Kamu sudah booking sesi ini!'], 422);
@@ -130,6 +130,12 @@ Route::prefix('v1')->group(function () {
                     'tanggal_daftar'  => now()->toDateString(),
                     'catatan'         => $req->catatan,
                 ]);
+
+                // Update kadaluarsa jika sesi baru lebih jauh
+                $tglBaru = \Carbon\Carbon::parse($tanggal)->addDays(3)->toDateString();
+                if (is_null($user->tgl_kadaluarsa) || $tglBaru > $user->tgl_kadaluarsa) {
+                    \App\Models\User::where('id', $user->id)->update(['tgl_kadaluarsa' => $tglBaru]);
+                }
 
                 $p->load(['tarian']);
                 
