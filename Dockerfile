@@ -39,7 +39,7 @@ COPY . .
 RUN composer install --optimize-autoloader --no-dev
 
 # Create storage symbolic link
-RUN php artisan storage:link
+RUN rm -rf public/storage && php artisan storage:link
 
 # Set permission
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
