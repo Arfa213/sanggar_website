@@ -165,6 +165,9 @@ jobs:
             # Jalankan migrasi database
             docker-compose exec -T app php artisan migrate --force --no-interaction
 
+            # Bersihkan cache website (ini yang menyebabkan tampilan web tidak berubah!)
+            docker-compose exec -T app php artisan optimize:clear
+
             echo "✅ Deployment selesai!"
 
       # ─── NOTIFIKASI FINAL DEPLOY SUCCESS (SUDAH DIPERBAIKI) ───
