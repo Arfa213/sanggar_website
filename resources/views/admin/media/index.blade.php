@@ -25,11 +25,11 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
                 <div class="form-group">
                     <label>Seksi / Bagian Tampilan <span class="required">*</span></label>
-                    <select name="seksi" class="form-control" required>
-                        <option value="hero">🌟 Hero / Banner Utama (Header)</option>
+                    <select name="seksi" id="seksiSelect" class="form-control" required>
+                        <option value="hero">🌟 Hero / Banner Utama (Header) @if(isset($grouped['hero']) && $grouped['hero']->isNotEmpty()) [Sudah Penuh - Max 1] @endif</option>
                         <option value="digital_archive">🎭 Digital Archive (Dokumentasi Seni)</option>
                         <option value="dokumentasi">📸 Dokumentasi (Kegiatan Sanggar)</option>
-                        <option value="about">ℹ️ Tentang Kami (Profil)</option>
+                        <option value="about">ℹ️ Tentang Kami (Profil) @if(isset($grouped['about']) && $grouped['about']->isNotEmpty()) [Sudah Penuh - Max 1] @endif</option>
                     </select>
                     <span class="hint" style="font-size:.75rem;margin-top:4px;display:block;color:var(--primary)">Pilih di mana media ini akan muncul.</span>
                 </div>
@@ -50,7 +50,14 @@
                     <span class="hint">Foto: JPG/PNG/WebP max 10MB | Video: MP4 max 20MB</span>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:16px">Unggah ke Galeri ↑</button>
+
+            {{-- Warning untuk Seksi Terbatas (Max 1) --}}
+            <div id="seksiWarning" style="display:none;background:#FFF3CD;border:1px solid #FFEBAA;border-radius:10px;padding:12px;margin:16px 0 0;color:#856404;font-size:.85rem;align-items:center;gap:10px;line-height:1.4">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="warningText">Seksi ini sudah memiliki foto. Hapus foto lama terlebih dahulu.</span>
+            </div>
+
+            <button type="submit" id="uploadSubmitBtn" class="btn btn-primary" style="width:100%;margin-top:16px;transition:all 0.2s">Unggah ke Galeri ↑</button>
             </form>
         </div>
     </div>
@@ -124,5 +131,48 @@
 </div>
 @endforeach
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const seksiSelect = document.getElementById('seksiSelect');
+    const warningDiv = document.getElementById('seksiWarning');
+    const warningText = document.getElementById('warningText');
+    const submitBtn = document.getElementById('uploadSubmitBtn');
+
+    // Status data dari Laravel apakah seksi tertentu sudah memiliki data
+    const seksiHasMedia = {
+        hero: @json(isset($grouped['hero']) && $grouped['hero']->isNotEmpty()),
+        about: @json(isset($grouped['about']) && $grouped['about']->isNotEmpty()),
+        digital_archive: false,
+        dokumentasi: false
+    };
+
+    function checkSeksiLimit() {
+        const selectedValue = seksiSelect.value;
+        if (seksiHasMedia[selectedValue]) {
+            const namaSeksi = selectedValue === 'hero' ? 'Hero / Banner Utama' : 'Tentang Kami';
+            warningText.textContent = `Seksi "${namaSeksi}" hanya boleh memiliki maksimal 1 media. Silakan hapus media yang ada terlebih dahulu jika ingin mengunggah yang baru.`;
+            warningDiv.style.display = 'flex';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+            submitBtn.textContent = 'Batas Maksimal Media Tercapai';
+        } else {
+            warningDiv.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+            submitBtn.textContent = 'Unggah ke Galeri ↑';
+        }
+    }
+
+    seksiSelect.addEventListener('change', checkSeksiLimit);
+    
+    // Jalankan pengecekan awal saat halaman dimuat
+    checkSeksiLimit();
+});
+</script>
+@endpush
 
 @endsection
