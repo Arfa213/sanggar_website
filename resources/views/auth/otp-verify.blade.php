@@ -108,6 +108,43 @@
 <script>
 const boxes = document.querySelectorAll('.otp-box');
 const combined = document.getElementById('otp_combined');
+const otpForm = document.getElementById('otpForm');
+let isSubmitting = false;
+
+// Fungsi terpusat untuk submit form dengan pencegahan double-submit
+function submitOtpForm() {
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    // Ubah status tombol submit
+    const submitBtn = otpForm.querySelector('.btn-submit');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Memverifikasi...';
+    }
+
+    // Buat input OTP readonly agar tidak bisa diedit saat proses kirim
+    boxes.forEach(box => box.readOnly = true);
+
+    // Kirim form secara terprogram
+    otpForm.submit();
+}
+
+// Tambahkan event listener submit pada form untuk menangani klik tombol / tekan enter
+otpForm.addEventListener('submit', function (e) {
+    if (isSubmitting) {
+        e.preventDefault();
+        return;
+    }
+    isSubmitting = true;
+
+    const submitBtn = this.querySelector('.btn-submit');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Memverifikasi...';
+    }
+    boxes.forEach(box => box.readOnly = true);
+});
 
 boxes.forEach((box, idx) => {
     box.addEventListener('input', (e) => {
@@ -120,10 +157,10 @@ boxes.forEach((box, idx) => {
             e.target.classList.remove('is-filled');
         }
         updateCombined();
-        // Auto submit kalau sudah 6 digit
+        // Auto submit jika sudah 6 digit
         if (getAllDigits().length === 6) {
             updateCombined();
-            document.getElementById('otpForm').submit();
+            submitOtpForm();
         }
     });
 
@@ -147,7 +184,7 @@ boxes.forEach((box, idx) => {
         });
         updateCombined();
         if (paste.length === 6) {
-            setTimeout(() => document.getElementById('otpForm').submit(), 100);
+            setTimeout(() => submitOtpForm(), 100);
         }
     });
 });
@@ -165,7 +202,6 @@ boxes[0].focus();
 
 // Countdown kirim ulang
 function startCountdown(e) {
-    const digits = getAllDigits();
     if (document.getElementById('resendBtn').disabled) {
         e.preventDefault();
         return;
@@ -198,8 +234,18 @@ const otpBoxes = document.getElementById('otp-boxes');
 otpBoxes.style.animation = 'shake 0.4s ease';
 setTimeout(() => otpBoxes.style.animation = '', 500);
 // Kosongkan semua box jika ada error
-boxes.forEach(b => { b.value = ''; b.classList.remove('is-filled'); });
+boxes.forEach(b => { 
+    b.value = ''; 
+    b.classList.remove('is-filled'); 
+    b.readOnly = false;
+});
 combined.value = '';
+isSubmitting = false;
+const submitBtn = otpForm.querySelector('.btn-submit');
+if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Verifikasi Sekarang';
+}
 boxes[0].focus();
 @endif
 </script>
