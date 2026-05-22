@@ -61,6 +61,7 @@ Route::get('/forgot-password', function () {
 // ── MEMBER (harus login) ──────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard',                  [DashboardController::class,   'index'])->name('dashboard');
+    Route::post('/dashboard/tambah-sesi',     [DashboardController::class,   'storeSesi'])->name('dashboard.tambah-sesi');
     Route::get('/penjadwalan',                [PenjadwalanController::class, 'index'])->name('penjadwalan');
     Route::post('/penjadwalan/daftar',        [PenjadwalanController::class, 'daftar'])->name('penjadwalan.daftar');
     Route::post('/penjadwalan/batalkan/{id}', [PenjadwalanController::class, 'batalkan'])->name('penjadwalan.batalkan');

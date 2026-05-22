@@ -109,15 +109,15 @@
                             >
                         </div>
                         <div class="form-group">
-                            <label for="tarian_custom">Tarian yang Ingin Dipelajari <span class="required">*</span></label>
-                            <input
-                                type="text"
-                                id="tarian_custom"
-                                name="tarian_custom"
-                                class="form-input"
-                                placeholder="Contoh: Tari Merak, Gamelan, dll"
-                                value="{{ old('tarian_custom') }}"
-                            >
+                            <label for="tarian_id">Tarian yang Ingin Dipelajari <span class="required">*</span></label>
+                            <select id="tarian_id" name="tarian_id" class="form-input" style="appearance:auto">
+                                <option value="">— Pilih Tarian —</option>
+                                @foreach($tarian as $t)
+                                    <option value="{{ $t->id }}" {{ old('tarian_id') == $t->id ? 'selected' : '' }}>
+                                        {{ $t->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="sessions-wrap">
@@ -196,11 +196,22 @@
 
                 </form>
 
-                    <p class="form-switch">
-                        Sudah punya akun?
-                        <a href="{{ route('login') }}">Masuk di sini</a>
-                    </p>
-                </form>
+                {{-- DIVIDER --}}
+                <div class="auth-divider">
+                    <span>atau</span>
+                </div>
+
+                {{-- GOOGLE SIGN-IN BUTTON --}}
+                <a href="{{ route('auth.google') }}" class="btn-google">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                         alt="Google" width="20" height="20">
+                    <span>Daftar dengan Google</span>
+                </a>
+
+                <p class="form-switch">
+                    Sudah punya akun?
+                    <a href="{{ route('login') }}">Masuk di sini</a>
+                </p>
             </div>
         </div>
 
@@ -368,4 +379,45 @@ function checkPasswordMatch() {
     }
 }
 </script>
+
+<style>
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 20px 0 16px;
+        color: #999;
+        font-size: 13px;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #E5E2DE;
+    }
+    .btn-google {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px 20px;
+        background: #fff;
+        border: 1.5px solid #E5E2DE;
+        border-radius: 12px;
+        color: #333;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .btn-google:hover {
+        background: #F8F7F5;
+        border-color: #C65D2E;
+        box-shadow: 0 4px 12px rgba(198,93,46,0.15);
+        transform: translateY(-1px);
+    }
+</style>
 @endsection

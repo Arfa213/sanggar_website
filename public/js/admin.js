@@ -25,9 +25,27 @@ document.addEventListener('DOMContentLoaded', () => {
             group.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
             const target = btn.dataset.tab;
-            document.getElementById(target)?.classList.add('active');
+            const panel = document.getElementById(target);
+            if (panel) panel.classList.add('active');
+            
+            // Simpan status tab aktif untuk halaman ini
+            sessionStorage.setItem('active_tab_' + window.location.pathname, target);
         });
     });
+
+    // Kembalikan tab aktif yang tersimpan saat memuat halaman
+    const savedTabId = sessionStorage.getItem('active_tab_' + window.location.pathname);
+    if (savedTabId) {
+        const savedBtn = document.querySelector(`.tab-btn[data-tab="${savedTabId}"]`);
+        if (savedBtn) {
+            const group = savedBtn.closest('[data-tabs]') || document.body;
+            group.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            group.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            savedBtn.classList.add('active');
+            const panel = document.getElementById(savedTabId);
+            if (panel) panel.classList.add('active');
+        }
+    }
 
     // ── File upload preview ─────────────────────────
     document.querySelectorAll('.file-upload-area').forEach(area => {

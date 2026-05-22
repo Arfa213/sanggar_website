@@ -24,12 +24,14 @@ class GaleriController extends Controller
             'file'  => 'required|file|mimes:jpg,jpeg,png,webp,mp4,mov|max:20480',
         ]);
 
-        // Pembatasan untuk seksi hero dan tentang kami (about): hanya boleh ada 1 media
-        if (in_array($request->seksi, ['hero', 'about'])) {
-            $hasExisting = Galeri::where('seksi', $request->seksi)->exists();
-            if ($hasExisting) {
-                $namaSeksi = $request->seksi === 'hero' ? 'Hero / Banner Utama' : 'Tentang Kami';
-                return back()->with('error', "Gagal mengunggah! Seksi {$namaSeksi} sudah memiliki media. Silakan hapus media lama terlebih dahulu.");
+        // Pembatasan untuk seksi hero (max 1) dan tentang kami / about (max 2)
+        if ($request->seksi === 'hero') {
+            if (Galeri::where('seksi', 'hero')->count() >= 1) {
+                return back()->with('error', "Gagal mengunggah! Seksi Hero / Banner Utama hanya boleh memiliki maksimal 1 media. Silakan hapus media lama terlebih dahulu.");
+            }
+        } elseif ($request->seksi === 'about') {
+            if (Galeri::where('seksi', 'about')->count() >= 2) {
+                return back()->with('error', "Gagal mengunggah! Seksi Tentang Kami hanya boleh memiliki maksimal 2 media. Silakan hapus media lama terlebih dahulu.");
             }
         }
 

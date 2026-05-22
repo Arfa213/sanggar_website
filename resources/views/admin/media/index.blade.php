@@ -28,8 +28,8 @@
                     <select name="seksi" id="seksiSelect" class="form-control" required>
                         <option value="dokumentasi">📸 Dokumentasi (Kegiatan Sanggar)</option>
                         <option value="digital_archive">🎭 Digital Archive (Dokumentasi Seni)</option>
-                        <option value="hero">🌟 Hero / Banner Utama (Header) @if(isset($grouped['hero']) && $grouped['hero']->isNotEmpty()) [Sudah Penuh - Max 1] @endif</option>
-                        <option value="about">ℹ️ Tentang Kami (Profil) @if(isset($grouped['about']) && $grouped['about']->isNotEmpty()) [Sudah Penuh - Max 1] @endif</option>
+                        <option value="hero">🌟 Hero / Banner Utama (Header) @if(isset($grouped['hero']) && $grouped['hero']->count() >= 1) [Sudah Penuh - Max 1] @else (Max 1) @endif</option>
+                        <option value="about">ℹ️ Tentang Kami (Profil) @if(isset($grouped['about']) && $grouped['about']->count() >= 2) [Sudah Penuh - Max 2] @else (Max 2) @endif</option>
                     </select>
                     <span class="hint" style="font-size:.75rem;margin-top:4px;display:block;color:var(--primary)">Pilih di mana media ini akan muncul.</span>
                 </div>
@@ -140,19 +140,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const warningText = document.getElementById('warningText');
     const submitBtn = document.getElementById('uploadSubmitBtn');
 
-    // Status data dari Laravel apakah seksi tertentu sudah memiliki data
-    const seksiHasMedia = {
-        hero: @json(isset($grouped['hero']) && $grouped['hero']->isNotEmpty()),
-        about: @json(isset($grouped['about']) && $grouped['about']->isNotEmpty()),
-        digital_archive: false,
-        dokumentasi: false
+    // Jumlah media per seksi saat ini
+    const seksiCount = {
+        hero: @json(isset($grouped['hero']) ? $grouped['hero']->count() : 0),
+        about: @json(isset($grouped['about']) ? $grouped['about']->count() : 0),
+        digital_archive: 0,
+        dokumentasi: 0
     };
 
     function checkSeksiLimit() {
         const selectedValue = seksiSelect.value;
-        if (seksiHasMedia[selectedValue]) {
-            const namaSeksi = selectedValue === 'hero' ? 'Hero / Banner Utama' : 'Tentang Kami';
-            warningText.textContent = `Seksi "${namaSeksi}" hanya boleh memiliki maksimal 1 media. Silakan hapus media yang ada terlebih dahulu jika ingin mengunggah yang baru.`;
+        let isLimitReached = false;
+        let limitText = "";
+        
+        if (selectedValue === 'hero' && seksiCount.hero >= 1) {
+            isLimitReached = true;
+            limitText = 'Seksi "Hero / Banner Utama" hanya boleh memiliki maksimal 1 media.';
+        } else if (selectedValue === 'about' && seksiCount.about >= 2) {
+            isLimitReached = true;
+            limitText = 'Seksi "Tentang Kami" hanya boleh memiliki maksimal 2 media.';
+        }
+
+        if (isLimitReached) {
+            warningText.textContent = `${limitText} Silakan hapus media yang ada terlebih dahulu jika ingin mengunggah yang baru.`;
             warningDiv.style.display = 'flex';
             submitBtn.disabled = true;
             submitBtn.style.opacity = '0.5';

@@ -342,19 +342,27 @@ class AuthApiController extends Controller
             $user = User::firstOrCreate(
                 ['email' => $googleEmail],
                 [
-                    'name'         => $googleName,
-                    'google_id'    => $googleId,
-                    'password'     => Hash::make(\Illuminate\Support\Str::random(32)),
-                    'role'         => 'anggota',
-                    'status'       => 'aktif',
-                    'tipe_anggota' => 'anggota_tetap',
-                    'foto'         => $payload['picture'] ?? null,
+                    'name'              => $googleName,
+                    'google_id'         => $googleId,
+                    'password'          => Hash::make(\Illuminate\Support\Str::random(32)),
+                    'role'              => 'anggota',
+                    'status'            => 'aktif',
+                    'tipe_anggota'      => 'anggota_tetap',
+                    'foto'              => $payload['picture'] ?? null,
+                    'email_verified_at' => now(),
                 ]
             );
 
-            // Update google_id jika user sudah ada tapi belum punya google_id
+            // Update google_id & email_verified_at jika user sudah ada tapi belum punya
+            $updates = [];
             if (!$user->google_id && $googleId) {
-                $user->update(['google_id' => $googleId]);
+                $updates['google_id'] = $googleId;
+            }
+            if (is_null($user->email_verified_at)) {
+                $updates['email_verified_at'] = now();
+            }
+            if (!empty($updates)) {
+                $user->update($updates);
             }
 
             // Hapus token lama agar tidak menumpuk (opsional)

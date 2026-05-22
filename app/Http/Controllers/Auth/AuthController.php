@@ -108,7 +108,9 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
-        return view('auth.register');
+        // Kirim daftar tarian aktif untuk dropdown anggota sementara
+        $tarian = \App\Models\Tarian::where('aktif', true)->orderBy('urutan')->get();
+        return view('auth.register', compact('tarian'));
     }
 
     // ─────────────────────────────────────────
@@ -130,9 +132,9 @@ class AuthController extends Controller
         ];
 
         if ($isSementara) {
-            $rules['no_hp']          = 'required|string|max:20';
-            $rules['tarian_custom']  = 'required|string|max:100';
-            $rules['sessions']       = 'required|array|min:1';
+            $rules['no_hp']      = 'required|string|max:20';
+            $rules['tarian_id']  = 'required|exists:tarian,id';
+            $rules['sessions']   = 'required|array|min:1';
             $rules['sessions.*.tanggal'] = 'required|date|after_or_equal:today';
             $rules['sessions.*.jam']     = 'required|string';
         } else {
@@ -140,37 +142,45 @@ class AuthController extends Controller
         }
 
         $request->validate($rules, [
-            'email.unique'       => 'Email sudah terdaftar.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'password.min'       => 'Password minimal 8 karakter.',
+            'email.unique'        => 'Email sudah terdaftar.',
+            'password.confirmed'  => 'Konfirmasi password tidak cocok.',
+            'password.min'        => 'Password minimal 8 karakter.',
             'password.mixed_case' => 'Password harus mengandung huruf besar dan huruf kecil.',
-            'password.numbers'   => 'Password harus mengandung setidaknya 1 angka.',
-            'sessions.required'  => 'Harap pilih setidaknya satu sesi latihan.',
+            'password.numbers'    => 'Password harus mengandung setidaknya 1 angka.',
+            'tarian_id.required'  => 'Harap pilih tarian yang ingin dipelajari.',
+            'tarian_id.exists'    => 'Tarian yang dipilih tidak valid.',
+            'sessions.required'   => 'Harap pilih setidaknya satu sesi latihan.',
         ]);
+
+        // Hitung kadaluarsa otomatis: tanggal sesi terakhir + 3 hari
+        $tglKadaluarsa = null;
+        if ($isSementara && !empty($request->sessions)) {
+            $tanggalTerakhir = collect($request->sessions)->pluck('tanggal')->max();
+            $tglKadaluarsa   = \Carbon\Carbon::parse($tanggalTerakhir)->addDays(3)->toDateString();
+        }
 
         // 1. Create User
         $user = User::create([
-            'name'         => $request->name,
-            'email'        => $request->email,
-            'alamat'       => $isSementara ? null : $request->alamat,
-            'no_hp'        => $isSementara ? $request->no_hp : $request->no_hp, // Tetap allow no_hp if exists
-            'password'     => Hash::make($request->password),
-            'role'         => 'anggota',
-            'status'       => 'aktif',
-            'tipe_anggota' => $isSementara ? 'pengunjung' : 'anggota_tetap', 
+            'name'               => $request->name,
+            'email'              => $request->email,
+            'alamat'             => $isSementara ? null : $request->alamat,
+            'no_hp'              => $request->no_hp,
+            'password'           => Hash::make($request->password),
+            'role'               => 'anggota',
+            'status'             => 'aktif',
+            'tipe_anggota'       => $isSementara ? 'pengunjung' : 'anggota_tetap',
+            'tgl_kadaluarsa'     => $tglKadaluarsa,
         ]);
 
-        // 2. If Temporary, Store Sessions
+        // 2. If Temporary, Store Sessions with proper tarian_id
         if ($isSementara) {
-            $defaultTarian = \App\Models\Tarian::where('aktif', true)->first();
-            
             foreach ($request->sessions as $session) {
                 $tanggal = $session['tanggal'];
                 $jam     = $session['jam'];
 
                 $count = \App\Models\PendaftaranTari::where('tanggal_latihan', $tanggal)
                     ->where('jam_latihan', $jam)
-                    ->whereIn('status', ['aktif', 'nonaktif'])
+                    ->whereIn('status', ['aktif', 'pending'])
                     ->count();
 
                 if ($count >= 2) {
@@ -179,12 +189,12 @@ class AuthController extends Controller
 
                 \App\Models\PendaftaranTari::create([
                     'user_id'         => $user->id,
-                    'tarian_id'       => $defaultTarian ? $defaultTarian->id : null,
+                    'tarian_id'       => $request->tarian_id,
                     'tanggal_latihan' => $tanggal,
                     'jam_latihan'     => $jam,
-                    'status'          => 'nonaktif',
+                    'status'          => 'pending',
                     'tanggal_daftar'  => now()->toDateString(),
-                    'catatan'         => 'Sesi khusus: ' . $request->tarian_custom,
+                    'catatan'         => null,
                 ]);
             }
         }
@@ -316,19 +326,27 @@ class AuthController extends Controller
         $user = User::firstOrCreate(
             ['email' => $googleUser->getEmail()],
             [
-                'name'         => $googleUser->getName(),
-                'google_id'    => $googleUser->getId(),
-                'password'     => Hash::make(\Illuminate\Support\Str::random(32)),
-                'role'         => 'anggota',
-                'status'       => 'aktif',
-                'tipe_anggota' => 'anggota_tetap',
-                'foto'         => $googleUser->getAvatar(),
+                'name'              => $googleUser->getName(),
+                'google_id'         => $googleUser->getId(),
+                'password'          => Hash::make(\Illuminate\Support\Str::random(32)),
+                'role'              => 'anggota',
+                'status'            => 'aktif',
+                'tipe_anggota'      => 'anggota_tetap',
+                'foto'              => $googleUser->getAvatar(),
+                'email_verified_at' => now(),
             ]
         );
 
-        // Update google_id jika user sudah ada tapi belum punya
+        // Update google_id & email_verified_at jika user sudah ada tapi belum punya
+        $updates = [];
         if (!$user->google_id) {
-            $user->update(['google_id' => $googleUser->getId()]);
+            $updates['google_id'] = $googleUser->getId();
+        }
+        if (is_null($user->email_verified_at)) {
+            $updates['email_verified_at'] = now();
+        }
+        if (!empty($updates)) {
+            $user->update($updates);
         }
 
         Auth::login($user, true);

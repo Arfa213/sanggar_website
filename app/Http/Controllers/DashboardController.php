@@ -81,21 +81,74 @@ class DashboardController extends Controller
             ->orderBy('tanggal_latihan', 'asc')
             ->get();
 
-        // Hitung statistik kehadiran khusus pengunjung
+        // Hitung statistik
         $totalSesiBooking = $sesiBooking->count();
-        $totalHadir = Kehadiran::where('user_id', $user->id)->where('status', 'hadir')->count();
-        
-        // Persentase berdasarkan sesi yang SUDAH LEWAT atau TOTAL?
-        // Kita gunakan total sesi yang didaftarkan saja
-        $persenHadir = $totalSesiBooking > 0 ? round(($totalHadir / $totalSesiBooking) * 100) : 0;
+        $totalHadir       = Kehadiran::where('user_id', $user->id)->where('status', 'hadir')->count();
+        $persenHadir      = $totalSesiBooking > 0 ? round(($totalHadir / $totalSesiBooking) * 100) : 0;
 
-        // Event & Rekomendasi tetap ditampilkan sebagai pemanis
+        // Event mendatang
         $eventMendatang = Event::where('status', 'akan_datang')->orderBy('tanggal')->limit(3)->get();
 
+        // Daftar tarian aktif untuk form tambah sesi
+        $tarianList = Tarian::where('aktif', true)->orderBy('urutan')->get();
+
         return view('pages.guest_dashboard', compact(
-            'user', 'sesiBooking', 'totalSesiBooking', 'totalHadir', 'persenHadir', 'eventMendatang'
+            'user', 'sesiBooking', 'totalSesiBooking', 'totalHadir', 'persenHadir',
+            'eventMendatang', 'tarianList'
         ));
     }
+
+    // ─────────────────────────────────────────
+    //  TAMBAH SESI BARU (Anggota Sementara)
+    // ─────────────────────────────────────────
+    public function storeSesi(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->tipe_anggota !== 'pengunjung') {
+            return redirect()->route('dashboard');
+        }
+
+        $request->validate([
+            'tarian_id' => 'required|exists:tarian,id',
+            'tanggal'   => 'required|date|after_or_equal:today',
+            'jam'       => 'required|string',
+        ], [
+            'tarian_id.required' => 'Harap pilih tarian.',
+            'tanggal.required'   => 'Harap pilih tanggal.',
+            'tanggal.after_or_equal' => 'Tanggal tidak boleh di masa lalu.',
+            'jam.required'       => 'Harap pilih jam latihan.',
+        ]);
+
+        // Cek kapasitas (max 2 sesi berbeda per jam)
+        $count = PendaftaranTari::where('tanggal_latihan', $request->tanggal)
+            ->where('jam_latihan', $request->jam)
+            ->whereIn('status', ['aktif', 'pending'])
+            ->count();
+
+        if ($count >= 2) {
+            return back()->with('error', "Maaf, sesi pada tanggal {$request->tanggal} jam {$request->jam} sudah penuh. Silakan pilih jam lain.");
+        }
+
+        // Update kadaluarsa jika sesi baru lebih jauh
+        $tglBaru = \Carbon\Carbon::parse($request->tanggal)->addDays(3)->toDateString();
+        if (is_null($user->tgl_kadaluarsa) || $tglBaru > $user->tgl_kadaluarsa) {
+            User::where('id', $user->id)->update(['tgl_kadaluarsa' => $tglBaru]);
+        }
+
+        PendaftaranTari::create([
+            'user_id'         => $user->id,
+            'tarian_id'       => $request->tarian_id,
+            'tanggal_latihan' => $request->tanggal,
+            'jam_latihan'     => $request->jam,
+            'status'          => 'pending',
+            'tanggal_daftar'  => now()->toDateString(),
+            'catatan'         => null,
+        ]);
+
+        return back()->with('success', 'Sesi latihan baru berhasil diajukan! Menunggu konfirmasi admin.');
+    }
+
 
     public function editProfile()
     {

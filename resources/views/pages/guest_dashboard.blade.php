@@ -50,8 +50,16 @@
                         @php 
                             $dateObj = \Carbon\Carbon::parse($sesi->tanggal_latihan);
                             $isPassed = $dateObj->isPast() && !$dateObj->isToday();
-                            $statusLabel = $sesi->status === 'aktif' ? 'Terkonfirmasi' : ($sesi->status === 'nonaktif' ? 'Menunggu Admin' : 'Selesai');
-                            $statusClass = $sesi->status === 'aktif' ? 'status--confirmed' : 'status--pending';
+                            if ($sesi->status === 'aktif') {
+                                $statusLabel = '✅ Terkonfirmasi';
+                                $statusClass = 'status--confirmed';
+                            } elseif ($sesi->status === 'ditolak') {
+                                $statusLabel = '❌ Ditolak';
+                                $statusClass = 'status--rejected';
+                            } else {
+                                $statusLabel = '⏳ Menunggu Admin';
+                                $statusClass = 'status--pending';
+                            }
                         @endphp
                         
                         <div class="session-card {{ $isPassed ? 'session--passed' : '' }}">
@@ -88,6 +96,55 @@
 
             <!-- Sidebar Info -->
             <aside class="dashboard-sidebar">
+
+                {{-- FORM TAMBAH SESI BARU --}}
+                <div class="qr-quick-access" style="border:2px solid #f97316;">
+                    <h3 style="color:#c2410c;margin-bottom:8px">➕ Tambah Sesi Latihan</h3>
+                    <p style="font-size:.85rem;color:#7c7c7c;margin-bottom:16px">Ingin latihan di waktu lain? Ajukan sesi baru di sini.</p>
+
+                    @if(session('success'))
+                        <div style="background:#dcfce7;color:#15803d;padding:10px;border-radius:10px;font-size:.85rem;font-weight:700;margin-bottom:12px">{{ session('success') }}</div>
+                    @endif
+                    @if(session('error'))
+                        <div style="background:#fee2e2;color:#dc2626;padding:10px;border-radius:10px;font-size:.85rem;font-weight:700;margin-bottom:12px">{{ session('error') }}</div>
+                    @endif
+
+                    <form method="POST" action="{{ route('dashboard.tambah-sesi') }}">
+                        @csrf
+                        <div style="margin-bottom:12px">
+                            <label style="font-size:.8rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Tarian</label>
+                            <select name="tarian_id" required style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.875rem;background:#fff">
+                                <option value="">— Pilih Tarian —</option>
+                                @foreach($tarianList as $t)
+                                    <option value="{{ $t->id }}">{{ $t->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div style="margin-bottom:12px">
+                            <label style="font-size:.8rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Tanggal</label>
+                            <input type="date" name="tanggal" required min="{{ now()->toDateString() }}"
+                                   style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.875rem;background:#fff">
+                        </div>
+                        <div style="margin-bottom:16px">
+                            <label style="font-size:.8rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">Jam Latihan</label>
+                            <select name="jam" required style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.875rem;background:#fff">
+                                <option value="">— Pilih Jam —</option>
+                                <option value="08:00">08:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="13:00">13:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:00">17:00</option>
+                                <option value="19:00">19:00</option>
+                                <option value="20:00">20:00</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-scan" style="background:#f97316">
+                            Ajukan Sesi Latihan →
+                        </button>
+                    </form>
+                </div>
+
                 <div class="qr-quick-access">
                     <h3>Presensi Cepat</h3>
                     <p>Scan barcode di sanggar untuk mencatat kehadiran Anda pada sesi aktif.</p>
@@ -100,7 +157,7 @@
                 <div class="events-card">
                     <h3>Event Mendatang</h3>
                     <div class="mini-event-list">
-                        @foreach($eventMendatang as $ev)
+                        @forelse($eventMendatang as $ev)
                         <div class="mini-event">
                             <div class="me-date">{{ \Carbon\Carbon::parse($ev->tanggal)->format('d M') }}</div>
                             <div class="me-info">
@@ -108,7 +165,9 @@
                                 <small>{{ $ev->lokasi }}</small>
                             </div>
                         </div>
-                        @endforeach
+                        @empty
+                            <p style="color:var(--muted);font-size:.85rem">Belum ada event mendatang.</p>
+                        @endforelse
                     </div>
                 </div>
             </aside>
@@ -306,7 +365,8 @@ function onScanSuccess(decodedText) {
 .session-date .month { font-size: 0.75rem; font-weight: 700; }
 .badge-status { padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
 .status--confirmed { background: #dcfce7; color: #15803d; }
-.status--pending { background: #f3e8ff; color: #7e22ce; }
+.status--pending { background: #fff7ed; color: #c2410c; }
+.status--rejected { background: #fee2e2; color: #dc2626; }
 .qr-quick-access, .events-card { background: white; padding: 24px; border-radius: 24px; margin-bottom: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
 .btn-scan {
     display: flex; align-items: center; justify-content: center; gap: 10px;

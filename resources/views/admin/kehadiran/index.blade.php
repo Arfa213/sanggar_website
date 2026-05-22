@@ -184,12 +184,26 @@ function switchTab(tab) {
     const tabs = ['manual', 'permanent', 'guest'];
     tabs.forEach(t => {
         const btn = document.getElementById('tab-' + t);
-        if(t === tab) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
+        if (btn) {
+            if(t === tab) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
         }
     });
+    sessionStorage.setItem('active_kehadiran_tab', tab);
+}
+
+// Inisialisasi tab aktif dari URL hash atau sessionStorage
+const hash = window.location.hash.replace('#','');
+const savedTab = sessionStorage.getItem('active_kehadiran_tab');
+if (['permanent', 'guest', 'manual'].includes(hash)) {
+    switchTab(hash);
+} else if (['permanent', 'guest', 'manual'].includes(savedTab)) {
+    switchTab(savedTab);
+} else {
+    switchTab('permanent');
 }
 </script>
 

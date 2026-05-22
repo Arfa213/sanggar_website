@@ -126,7 +126,7 @@ Route::prefix('v1')->group(function () {
                     'tarian_id'       => $tarianId,
                     'tanggal_latihan' => $tanggal,
                     'jam_latihan'     => $jam,
-                    'status'          => 'nonaktif', // Pending
+                    'status'          => 'pending', // Menunggu konfirmasi admin
                     'tanggal_daftar'  => now()->toDateString(),
                     'catatan'         => $req->catatan,
                 ]);

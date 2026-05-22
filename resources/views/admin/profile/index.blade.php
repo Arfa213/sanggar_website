@@ -483,11 +483,16 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.style.color = 'var(--muted)';
         btn.style.borderBottomColor = 'transparent';
+        btn.classList.remove('active');
     });
     document.getElementById('tab-' + tab).style.display = 'block';
     const btn = document.querySelector('[data-tab="' + tab + '"]');
-    btn.style.color = 'var(--primary)';
-    btn.style.borderBottomColor = 'var(--primary)';
+    if (btn) {
+        btn.style.color = 'var(--primary)';
+        btn.style.borderBottomColor = 'var(--primary)';
+        btn.classList.add('active');
+    }
+    sessionStorage.setItem('active_profile_tab', tab);
 }
 
 function toggleEditPelatih(id) {
@@ -513,8 +518,15 @@ function addMisi() {
     list.appendChild(div);
 }
 
-// Auto-switch ke tab aktif dari URL hash
+// Auto-switch ke tab aktif dari URL hash atau sessionStorage
 const hash = window.location.hash.replace('#','');
-if (['pelatih','pengelola','jadwal','profil'].includes(hash)) switchTab(hash);
+const savedTab = sessionStorage.getItem('active_profile_tab');
+if (['pelatih','pengelola','jadwal','profil'].includes(hash)) {
+    switchTab(hash);
+} else if (['pelatih','pengelola','jadwal','profil'].includes(savedTab)) {
+    switchTab(savedTab);
+} else {
+    switchTab('profil');
+}
 </script>
 @endsection
