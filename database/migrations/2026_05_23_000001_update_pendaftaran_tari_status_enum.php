@@ -14,6 +14,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'mysql') {
+            return; // Skip raw MySQL statement on SQLite/CI
+        }
+
         // MySQL: ubah kolom enum langsung via raw SQL
         DB::statement("ALTER TABLE pendaftaran_tari MODIFY COLUMN status ENUM('aktif','nonaktif','pending','ditolak','selesai') DEFAULT 'pending'");
 
@@ -24,6 +28,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'mysql') {
+            return; // Skip raw MySQL statement on SQLite/CI
+        }
+
         // Kembalikan ke enum lama, tapi data 'pending' jadi 'nonaktif' dulu
         DB::statement("UPDATE pendaftaran_tari SET status = 'nonaktif' WHERE status = 'pending'");
         DB::statement("UPDATE pendaftaran_tari SET status = 'nonaktif' WHERE status = 'ditolak'");
