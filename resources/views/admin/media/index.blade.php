@@ -26,9 +26,9 @@
                 <div class="form-group">
                     <label>Seksi / Bagian Tampilan <span class="required">*</span></label>
                     <select name="seksi" id="seksiSelect" class="form-control" required>
-                        <option value="hero">🌟 Hero / Banner Utama (Header) @if(isset($grouped['hero']) && $grouped['hero']->isNotEmpty()) [Sudah Penuh - Max 1] @endif</option>
-                        <option value="digital_archive">🎭 Digital Archive (Dokumentasi Seni)</option>
                         <option value="dokumentasi">📸 Dokumentasi (Kegiatan Sanggar)</option>
+                        <option value="digital_archive">🎭 Digital Archive (Dokumentasi Seni)</option>
+                        <option value="hero">🌟 Hero / Banner Utama (Header) @if(isset($grouped['hero']) && $grouped['hero']->isNotEmpty()) [Sudah Penuh - Max 1] @endif</option>
                         <option value="about">ℹ️ Tentang Kami (Profil) @if(isset($grouped['about']) && $grouped['about']->isNotEmpty()) [Sudah Penuh - Max 1] @endif</option>
                     </select>
                     <span class="hint" style="font-size:.75rem;margin-top:4px;display:block;color:var(--primary)">Pilih di mana media ini akan muncul.</span>
