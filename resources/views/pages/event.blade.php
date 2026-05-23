@@ -1,216 +1,146 @@
 @extends('layouts.app')
-@section('title', 'Event & Pentas')
+@section('title', 'Event & Workshop Mendatang')
 @section('content')
 
 {{-- HERO --}}
 <section class="page-hero">
     <div class="page-hero__bg"></div>
     <div class="container page-hero__inner">
-        <span class="badge">Jejak Prestasi</span>
-        <h1 class="page-hero__title">Event &amp; Pentas</h1>
-        <p class="page-hero__sub">Rekam jejak perjalanan sanggar dalam berbagai event bergengsi dari tingkat lokal hingga internasional.</p>
-        <div class="event-hero-stats">
-            <div class="ehs-item"><strong>{{ $stats['total'] }}</strong><span>Total Event</span></div>
-            <div class="ehs-sep"></div>
-            <div class="ehs-item"><strong>{{ $stats['internasional'] }}</strong><span>Internasional</span></div>
-            <div class="ehs-sep"></div>
-            <div class="ehs-item"><strong>{{ $stats['nasional_lokal'] }}</strong><span>Nasional &amp; Lokal</span></div>
-            <div class="ehs-sep"></div>
-            <div class="ehs-item"><strong>{{ $stats['penghargaan'] }}</strong><span>Penghargaan</span></div>
+        <span class="badge">Aktivitas Kami</span>
+        <h1 class="page-hero__title">Event &amp; Workshop Mendatang</h1>
+        <p class="page-hero__sub">Ikuti berbagai kegiatan, kelas khusus, dan workshop seni yang diselenggarakan di Sanggar Mulya Bhakti.</p>
+        <div class="page-hero__nav">
+            <a href="#mendatang" class="phero-nav-link">Jadwal Event</a>
+            <a href="#pengajuan" class="phero-nav-link">Ajukan Kolaborasi</a>
         </div>
-    </div>
-</section>
-
-{{-- FILTER --}}
-@if($stats['total'] > 1)
-<div class="filter-bar" id="filterBar">
-    <div class="container filter-bar__inner">
-        <button class="filter-btn active" data-filter="semua">Semua</button>
-        <button class="filter-btn" data-filter="internasional">🌏 Internasional</button>
-        <button class="filter-btn" data-filter="nasional">🇮🇩 Nasional</button>
-        <button class="filter-btn" data-filter="festival">🎭 Festival</button>
-        <button class="filter-btn" data-filter="pentas">🎤 Pentas</button>
-        <button class="filter-btn" data-filter="kompetisi">🏆 Kompetisi</button>
-    </div>
-</div>
-@endif
-
-{{-- EVENT UNGGULAN --}}
-@if($featured->count())
-<section class="section">
-    <div class="container">
-        <div class="section-header">
-            <span class="badge">Highlight</span>
-            <h2 class="section-heading">Event Unggulan</h2>
-        </div>
-        <div class="featured-events">
-            @foreach($featured->take(3) as $i => $ev)
-            @php $catColor=['internasional'=>'event-cat--internasional','nasional'=>'event-cat--nasional','festival'=>'event-cat--festival','pentas'=>'event-cat--pentas','kompetisi'=>'event-cat--kompetisi']; @endphp
-            <div class="fe-card {{ $i===0 ? 'fe-card--large' : '' }}" data-cat="{{ $ev->kategori }}">
-                <div class="{{ $i===0 ? 'fe-image' : 'fe-image fe-image--sm' }}">
-                    @if($ev->foto)
-                        <img src="{{ asset('storage/'.$ev->foto) }}" alt="{{ $ev->nama }}"
-                             style="width:100%;height:100%;object-fit:cover">
-                    @else
-                        <div class="img-placeholder" style="height:100%;border-radius:0">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C65D2E" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        </div>
-                    @endif
-                </div>
-                <div class="fe-body">
-                    <div class="fe-meta">
-                        <span class="event-cat {{ $catColor[$ev->kategori] ?? '' }}">{{ $ev->level }}</span>
-                        <span class="event-year">{{ $ev->tahun }}</span>
-                    </div>
-                    <h3 class="fe-title">{{ $ev->nama }}</h3>
-                    @if($ev->deskripsi)
-                    <p class="fe-desc">{{ Str::limit($ev->deskripsi, $i===0 ? 200 : 100) }}</p>
-                    @endif
-                    @if($ev->penghargaan && count($ev->penghargaan))
-                    <div class="fe-awards">
-                        @foreach($ev->penghargaan as $aw)
-                        <span class="award-badge">{{ $aw }}</span>
-                        @endforeach
-                    </div>
-                    @endif
-                    <div class="fe-footer">
-                        <span>📍 {{ $ev->lokasi }}</span>
-                        @if($ev->jumlah_penonton)<span>👥 {{ number_format($ev->jumlah_penonton) }}+ Penonton</span>@endif
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-@endif
-
-{{-- TIMELINE SEMUA EVENT --}}
-<section class="section section--alt">
-    <div class="container">
-        <div class="section-header">
-            <span class="badge">Rekam Jejak</span>
-            <h2 class="section-heading">Semua Event</h2>
-        </div>
-
-        @if($stats['total'] > 1 && $byYear->count())
-        <div class="timeline" id="eventTimeline">
-            @php $catColor=['internasional'=>'event-cat--internasional','nasional'=>'event-cat--nasional','festival'=>'event-cat--festival','pentas'=>'event-cat--pentas','kompetisi'=>'event-cat--kompetisi']; @endphp
-            @foreach($byYear->sortKeysDesc() as $tahun => $evList)
-            <div class="timeline-year">
-                <div class="ty-label">{{ $tahun }}</div>
-                <div class="ty-events">
-                    @foreach($evList as $ev)
-                    <div class="ty-event-card" data-cat="{{ $ev->kategori }}">
-                        <div class="ty-event-left">
-                            <span class="ty-bulan">{{ $ev->bulan }}</span>
-                            <div class="ty-dot"></div>
-                        </div>
-                        <div class="ty-event-body">
-                            <div class="ty-event-header">
-                                <h4>{{ $ev->nama }}</h4>
-                                <span class="event-cat {{ $catColor[$ev->kategori] ?? '' }}">{{ $ev->level }}</span>
-                            </div>
-                            <p class="ty-lokasi">📍 {{ $ev->lokasi }}</p>
-                            @if($ev->hasil)
-                            <span class="ty-hasil">{{ $ev->hasil }}</span>
-                            @endif
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endforeach
-        </div>
-        @else
-        <p style="text-align:center;color:var(--muted)">Belum ada data event.</p>
-        @endif
     </div>
 </section>
 
 {{-- EVENT MENDATANG --}}
-@if($mendatang->count())
-<section class="section">
+<section class="section" id="mendatang">
     <div class="container">
         <div class="section-header">
             <span class="badge">Segera Hadir</span>
-            <h2 class="section-heading">Event Mendatang</h2>
+            <h2 class="section-heading">Event yang Akan Datang</h2>
         </div>
+        
+        @if($mendatang->count())
         <div class="kegiatan-block">
-            <div class="kegiatan-block__header">
-                <div class="kb-icon kb-icon--purple">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                </div>
-                <h3>Event yang Akan Diikuti</h3>
-            </div>
             <div class="event-upcoming-list">
                 @foreach($mendatang as $ev)
-                <div class="eu-item">
-                    <div class="eu-date">
-                        <span class="eu-day">{{ $ev->tanggal->format('d') }}</span>
-                        <span class="eu-month">{{ $ev->bulan }} {{ $ev->tahun }}</span>
+                <div class="eu-item" style="border-left: 4px solid #C65D2E; background: #fff; margin-bottom: 20px; padding: 20px; border-radius: 12px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div class="eu-date" style="background: #1e1b4b; color: white; padding: 15px; border-radius: 10px; text-align: center; min-width: 80px;">
+                        <span class="eu-day" style="display: block; font-size: 1.8rem; font-weight: 900;">{{ $ev->tanggal->format('d') }}</span>
+                        <span class="eu-month" style="display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">{{ $ev->tanggal->isoFormat('MMM YYYY') }}</span>
                     </div>
-                    <div class="eu-info">
-                        <h4>{{ $ev->nama }}</h4>
-                        <span class="eu-meta">📍 {{ $ev->lokasi }}</span>
+                    <div class="eu-info" style="flex: 1;">
+                        <h4 style="font-size: 1.3rem; margin-bottom: 5px; color: #1e1b4b;">{{ $ev->nama }}</h4>
+                        <span class="eu-meta" style="color: #64748b; font-size: 0.9rem;">📍 {{ $ev->lokasi }}</span>
+                        
+                        @if($ev->nama_pengaju)
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                                <span style="font-size: 0.85rem; color: #4338ca; font-weight: 700;">🤝 Kolaborasi Spesial dengan: {{ $ev->nama_pengaju }}</span>
+                            </div>
+                        @endif
                     </div>
-                    <div class="eu-right">
-                        <span class="eu-tipe">{{ ucfirst($ev->kategori) }}</span>
-                        <span class="eu-status">✓ Terdaftar</span>
+                    <div class="eu-right" style="text-align: right;">
+                        <span class="eu-tipe" style="display: inline-block; padding: 6px 12px; background: #f1f5f9; color: #475569; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px;">{{ ucfirst($ev->kategori) }}</span>
+                        <br>
+                        <a href="https://wa.me/6281234567890?text=Halo%20Admin,%20saya%20tertarik%20mendaftar%20event%20{{ urlencode($ev->nama) }}" target="_blank" style="display: inline-block; padding: 8px 16px; background: #C65D2E; color: white; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none;">Daftar Sekarang</a>
                     </div>
                 </div>
                 @endforeach
             </div>
         </div>
+        @else
+        <div style="text-align: center; padding: 60px 20px; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 3rem; margin-bottom: 15px;">🗓️</div>
+            <h3 style="color: #1e1b4b; margin-bottom: 10px;">Belum Ada Event Terdekat</h3>
+            <p style="color: #64748b; max-width: 400px; margin: 0 auto;">Saat ini belum ada jadwal event atau workshop baru. Anda bisa mengajukan diri untuk mengisi acara di bawah ini!</p>
+        </div>
+        @endif
     </div>
 </section>
-@endif
 
-{{-- PENGHARGAAN --}}
-@if($awards->count())
-<section class="section section--alt">
+{{-- PENGAJUAN EVENT --}}
+<section class="section section--alt" id="pengajuan">
     <div class="container">
-        <div class="section-header">
-            <span class="badge">Prestasi</span>
-            <h2 class="section-heading">Penghargaan &amp; Prestasi</h2>
-        </div>
-        <div class="award-grid">
-            @foreach($awards as $ev)
-            <div class="award-card">
-                <span class="award-icon-lg">🏆</span>
-                <div class="award-text">
-                    <strong>{{ $ev->hasil }} — {{ $ev->nama }}</strong>
-                    <span>{{ $ev->lokasi }} · {{ $ev->tahun }}</span>
+        <div class="split-layout">
+            <div class="split-text">
+                <span class="badge">Creative Hub</span>
+                <h2 class="section-heading" style="text-align: left; margin-bottom: 16px;">Tertarik Menjadi Pemateri atau Mengadakan Kolaborasi?</h2>
+                <p style="margin-bottom: 15px; color: #475569; line-height: 1.6;">Sanggar Mulya Bhakti membuka kesempatan luas bagi seniman, profesional, dan penggiat budaya luar untuk mengadakan kelas khusus atau workshop di tempat kami.</p>
+                <p style="margin-bottom: 25px; color: #475569; line-height: 1.6;">Isi formulir pengajuan di samping untuk mendaftarkan acara Anda. Setelah kami review dan setujui, acara Anda akan langsung tayang di halaman ini dan bisa didaftar oleh anggota kami!</p>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+                    <div style="flex: 1; padding: 15px; background: #fff; border-radius: 12px; border-left: 3px solid #10b981;">
+                        <strong style="display: block; font-size: 0.9rem; color: #047857;">Audiens Tersedia</strong>
+                        <span style="font-size: 1.2rem; font-weight: 800; color: #1e1b4b;">100+ Anggota Aktif</span>
+                    </div>
+                    <div style="flex: 1; padding: 15px; background: #fff; border-radius: 12px; border-left: 3px solid #8b5cf6;">
+                        <strong style="display: block; font-size: 0.9rem; color: #5b21b6;">Fasilitas</strong>
+                        <span style="font-size: 1.2rem; font-weight: 800; color: #1e1b4b;">Aula Luas &amp; Sound</span>
+                    </div>
                 </div>
             </div>
-            @endforeach
+            
+            <div class="split-form" style="background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <h3 style="margin-bottom: 20px; color: #1e1b4b; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Formulir Pengajuan Event</h3>
+                
+                @if(session('success'))
+                    <div style="background:#dcfce7;color:#15803d;padding:15px;border-radius:10px;font-size:0.9rem;font-weight:700;margin-bottom:20px;">
+                        ✅ {{ session('success') }}
+                    </div>
+                @endif
+
+                <form action="{{ route('event.ajukan') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Nama Anda / Instruktur *</label>
+                        <input type="text" name="nama_pengaju" required placeholder="Contoh: Budi Santoso" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Nomor WhatsApp *</label>
+                        <input type="text" name="no_hp_pengaju" required placeholder="Contoh: 08123456789" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <small style="color: #94a3b8; font-size: 0.75rem;">Kami akan menghubungi Anda melalui nomor ini jika disetujui.</small>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Judul Event / Workshop *</label>
+                        <input type="text" name="nama" required placeholder="Contoh: Workshop Tari Topeng Lanjutan" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    </div>
+
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Rencana Tanggal *</label>
+                            <input type="date" name="tanggal" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Kategori *</label>
+                            <select name="kategori" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white;">
+                                <option value="workshop">Workshop / Seminar</option>
+                                <option value="kelas_khusus">Kelas Khusus</option>
+                                <option value="pentas">Pentas Kolaborasi</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Link Portofolio / Instagram</label>
+                        <input type="url" name="portofolio_link" placeholder="https://instagram.com/..." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Catatan Tambahan / Kebutuhan Fasilitas</label>
+                        <textarea name="catatan_pengaju" rows="3" placeholder="Ceritakan singkat tentang materi dan fasilitas yang Anda butuhkan (contoh: Butuh proyektor dan sound system)." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-cta" style="width: 100%; border-radius: 8px; font-size: 1rem;">Kirim Pengajuan Event 🚀</button>
+                </form>
+            </div>
         </div>
     </div>
 </section>
-@endif
 
-<section class="cta">
-    <div class="container cta-inner">
-        <h2>Jadilah Bagian dari Prestasi Kami</h2>
-        <p>Bergabunglah dan torehkan prestasi bersama sanggar.</p>
-        <a href="{{ route('register') }}" class="btn-cta">Daftar Anggota</a>
-    </div>
-</section>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const btns  = document.querySelectorAll('.filter-btn');
-    const cards = document.querySelectorAll('[data-cat]');
-    btns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            btns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const f = btn.dataset.filter;
-            cards.forEach(c => {
-                c.style.display = (f === 'semua' || c.dataset.cat === f) ? '' : 'none';
-            });
-        });
-    });
-});
-</script>
 @endsection

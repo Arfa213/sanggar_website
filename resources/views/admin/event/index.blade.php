@@ -15,9 +15,61 @@
     </div>
 </div>
 
+@if(session('wa_link'))
+<script>
+    window.open("{{ session('wa_link') }}", "_blank");
+</script>
+@endif
+
+@if(isset($pendingEvents) && $pendingEvents->count())
+<div class="card" style="margin-bottom: 24px; border: 2px solid #f59e0b;">
+    <div class="card-header" style="background: #fffbeb;">
+        <span class="card-title" style="color: #d97706;">⚠️ Pengajuan Event Baru (Menunggu Persetujuan)</span>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama Event</th><th>Pengaju</th><th>No WA</th><th>Tanggal</th><th>Tipe</th><th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pendingEvents as $pe)
+                <tr>
+                    <td style="font-weight:600">{{ $pe->nama }}</td>
+                    <td>{{ $pe->nama_pengaju }}</td>
+                    <td><a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $pe->no_hp_pengaju)) }}" target="_blank" style="color: #10b981;">{{ $pe->no_hp_pengaju }}</a></td>
+                    <td>{{ $pe->tanggal->format('d M Y') }}</td>
+                    <td><span class="chip chip--purple">{{ ucfirst($pe->kategori) }}</span></td>
+                    <td class="td-actions">
+                        <form method="POST" action="{{ route('admin.event.approve',$pe->id) }}" style="display:inline">
+                            @csrf
+                            <button type="submit" class="btn btn-primary btn-sm" style="background: #10b981; border: none;" data-confirm="Setujui dan tayangkan event ini?">Setujui & Kabari via WA</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.event.destroy',$pe->id) }}" style="display:inline">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm" data-confirm="Tolak dan hapus pengajuan ini?">Tolak</button>
+                        </form>
+                    </td>
+                </tr>
+                @if($pe->catatan_pengaju || $pe->portofolio_link)
+                <tr style="background: #f8fafc;">
+                    <td colspan="6" style="padding: 10px 16px; font-size: 0.85rem; color: #475569;">
+                        @if($pe->portofolio_link)<strong>Portofolio:</strong> <a href="{{ $pe->portofolio_link }}" target="_blank">{{ $pe->portofolio_link }}</a><br>@endif
+                        @if($pe->catatan_pengaju)<strong>Catatan:</strong> {{ $pe->catatan_pengaju }}@endif
+                    </td>
+                </tr>
+                @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
+
 <div class="card">
     <div class="card-header">
-        <span class="card-title">Daftar Semua Event ({{ $events->total() }})</span>
+        <span class="card-title">Daftar Event Resmi ({{ $events->total() }})</span>
     </div>
     <div class="table-wrap">
         <table>
@@ -29,7 +81,7 @@
             </thead>
             <tbody>
                 @forelse($events as $ev)
-                @php $catColor = ['internasional'=>'chip--blue','nasional'=>'chip--green','festival'=>'chip--orange','pentas'=>'chip--purple','kompetisi'=>'chip--yellow']; @endphp
+                @php $catColor = ['internasional'=>'chip--blue','nasional'=>'chip--green','festival'=>'chip--orange','pentas'=>'chip--purple','kompetisi'=>'chip--yellow','workshop'=>'chip--purple','kelas_khusus'=>'chip--purple']; @endphp
                 <tr>
                     <td>
                         @if($ev->foto)
@@ -40,10 +92,13 @@
                             </div>
                         @endif
                     </td>
-                    <td style="font-weight:600;max-width:200px">{{ $ev->nama }}</td>
+                    <td style="font-weight:600;max-width:200px">
+                        {{ $ev->nama }}
+                        @if($ev->is_external)<br><span style="font-size:0.75rem; color:#6366f1;">Oleh: {{ $ev->nama_pengaju }}</span>@endif
+                    </td>
                     <td style="white-space:nowrap">{{ $ev->tanggal->format('d M Y') }}</td>
                     <td style="max-width:160px">{{ $ev->lokasi }}</td>
-                    <td><span class="chip {{ $catColor[$ev->kategori] ?? 'chip--gray' }}">{{ ucfirst($ev->kategori) }}</span></td>
+                    <td><span class="chip {{ $catColor[$ev->kategori] ?? 'chip--gray' }}">{{ ucfirst(str_replace('_', ' ', $ev->kategori)) }}</span></td>
                     <td style="max-width:120px;font-size:.8rem">{{ $ev->hasil ?? '-' }}</td>
                     <td><span class="chip {{ $ev->unggulan ? 'chip--orange' : 'chip--gray' }}">{{ $ev->unggulan ? '★ Ya' : 'Tidak' }}</span></td>
                     <td><span class="chip {{ $ev->status==='selesai' ? 'chip--green' : 'chip--orange' }}">{{ $ev->status==='selesai' ? 'Selesai' : 'Mendatang' }}</span></td>

@@ -204,33 +204,41 @@
         </div>
         @endif
 
-        {{-- Event Mendatang --}}
-        @if($upcoming->count())
+        {{-- Event Selesai / Track Record --}}
+        @if($pastEvents->count())
         <div class="kegiatan-block" style="margin-top:48px">
             <div class="kegiatan-block__header">
                 <div class="kb-icon kb-icon--purple">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 </div>
-                <h3>Event &amp; Pentas Mendatang</h3>
+                <h3>Rekam Jejak &amp; Portofolio Event</h3>
             </div>
             <div class="event-upcoming-list">
-                @foreach($upcoming as $ev)
-                <div class="eu-item">
-                    <div class="eu-date">
+                @foreach($pastEvents->take(5) as $ev)
+                <div class="eu-item" style="border-left: 4px solid #C65D2E; background: #fff;">
+                    <div class="eu-date" style="background: #FAF9F6; color: #1e1b4b;">
                         <span class="eu-day">{{ $ev->tanggal->format('d') }}</span>
                         <span class="eu-month">{{ $ev->tanggal->isoFormat('MMM YYYY') }}</span>
                     </div>
                     <div class="eu-info">
                         <h4>{{ $ev->nama }}</h4>
                         <span class="eu-meta">📍 {{ $ev->lokasi }}</span>
+                        @if($ev->nama_pengaju)
+                            <span class="eu-meta" style="color: #6366f1; margin-top: 4px; display: block; font-weight: 600;">Kolaborasi dengan: {{ $ev->nama_pengaju }}</span>
+                        @endif
                     </div>
                     <div class="eu-right">
-                        <span class="eu-tipe">{{ ucfirst($ev->kategori) }}</span>
-                        @if($ev->hasil)<span class="eu-status">✓ {{ $ev->hasil }}</span>@endif
+                        <span class="eu-tipe" style="background: #f1f5f9; color: #475569;">{{ ucfirst($ev->kategori) }}</span>
+                        @if($ev->hasil)<span class="eu-status" style="background: #fef3c7; color: #d97706;">🏆 {{ $ev->hasil }}</span>@endif
                     </div>
                 </div>
                 @endforeach
             </div>
+            @if($pastEvents->count() > 5)
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ route('digital-archive') }}" class="btn-cta" style="background: transparent; color: #C65D2E; border: 2px solid #C65D2E; padding: 10px 24px;">Lihat Seluruh Arsip Event</a>
+            </div>
+            @endif
         </div>
         @endif
 

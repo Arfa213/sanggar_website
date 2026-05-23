@@ -7,8 +7,9 @@ class ProfileController extends Controller {
         $profil    = SanggarProfile::getInstance();
         $pelatih   = Pelatih::where('aktif', true)->orderBy('urutan')->get();
         $pengelola = Pengelola::where('aktif', true)->orderBy('urutan')->get();
-        $jadwal    = JadwalLatihan::where('aktif', true)->orderBy('urutan')->get();
-        $upcoming  = Event::where('status', 'akan_datang')->orderBy('tanggal')->limit(5)->get();
-        return view('pages.profile', compact('profil','pelatih','pengelola','jadwal','upcoming'));
+        $jadwal     = JadwalLatihan::where('aktif', true)->orderBy('urutan')->get();
+        $pastEvents = Event::where('status', 'selesai')->orderByDesc('tanggal')->get();
+        $byYear     = $pastEvents->groupBy(fn($e) => $e->tanggal->year);
+        return view('pages.profile', compact('profil','pelatih','pengelola','jadwal','pastEvents','byYear'));
     }
 }

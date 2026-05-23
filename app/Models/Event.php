@@ -9,15 +9,18 @@ class Event extends Model {
     protected $fillable = [
         'nama','lokasi','tanggal','kategori','level','hasil',
         'deskripsi','foto','penghargaan','jumlah_penonton','unggulan','status',
+        'is_external','nama_pengaju','no_hp_pengaju','portofolio_link','catatan_pengaju'
     ];
     protected $casts = [
         'tanggal'     => 'date',
         'penghargaan' => 'array',
         'unggulan'    => 'boolean',
+        'is_external' => 'boolean',
     ];
 
     public function scopeSelesai($q)    { return $q->where('status','selesai')->orderByDesc('tanggal'); }
     public function scopeMendatang($q)  { return $q->where('status','akan_datang')->orderBy('tanggal'); }
+    public function scopePending($q)    { return $q->where('status','pending_approval')->orderBy('created_at'); }
     public function scopeUnggulan($q)   { return $q->where('unggulan', true); }
 
     public function getTahunAttribute(): string { return $this->tanggal->format('Y'); }

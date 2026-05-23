@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\{
 Route::get('/',               [HomeController::class,           'index'])->name('home');
 Route::get('/profile',        [ProfileController::class,        'index'])->name('profile');
 Route::get('/event',          [EventController::class,          'index'])->name('event');
+Route::post('/event/ajukan',  [EventController::class,          'ajukan'])->name('event.ajukan');
 Route::get('/digital-archive',[DigitalArchiveController::class, 'index'])->name('digital-archive');
 Route::get('/galeri/{seksi?}', [App\Http\Controllers\GaleriController::class, 'frontendIndex'])->name('galeri.frontend.index');
 
@@ -98,12 +99,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/profil/jadwal/{id}/delete',    [AdminProfile::class, 'destroyJadwal'])->name('jadwal.destroy');
 
     // Event — pakai {id} numerik bukan model binding
-    Route::get('/event',               [AdminEvent::class, 'index'])->name('event.index');
-    Route::get('/event/create',        [AdminEvent::class, 'create'])->name('event.create');
-    Route::post('/event',              [AdminEvent::class, 'store'])->name('event.store');
-    Route::get('/event/{id}/edit',     [AdminEvent::class, 'edit'])->name('event.edit');
-    Route::put('/event/{id}',          [AdminEvent::class, 'update'])->name('event.update');
-    Route::delete('/event/{id}/delete',[AdminEvent::class, 'destroy'])->name('event.destroy');
+    Route::prefix('event')->name('event.')->group(function () {
+        Route::get('/',              [App\Http\Controllers\Admin\EventController::class, 'index'])->name('index');
+        Route::get('/create',        [App\Http\Controllers\Admin\EventController::class, 'create'])->name('create');
+        Route::post('/',             [App\Http\Controllers\Admin\EventController::class, 'store'])->name('store');
+        Route::get('/{id}/edit',     [App\Http\Controllers\Admin\EventController::class, 'edit'])->name('edit');
+        Route::put('/{id}',          [App\Http\Controllers\Admin\EventController::class, 'update'])->name('update');
+        Route::delete('/{id}',       [App\Http\Controllers\Admin\EventController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/approve', [App\Http\Controllers\Admin\EventController::class, 'approve'])->name('approve');
+    });
 
     // Tarian
     Route::get('/tarian/pdf',          [AdminTarian::class, 'downloadPdf'])->name('tarian.pdf');
