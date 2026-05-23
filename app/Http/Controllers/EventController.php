@@ -39,6 +39,8 @@ class EventController extends Controller {
 
         $event = Event::findOrFail($request->event_id);
         
+        $validated['order_id'] = 'EVT-' . time() . '-' . rand(100, 999);
+        
         if ($request->hasFile('bukti_transfer')) {
             $validated['bukti_transfer'] = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
             $validated['status_pembayaran'] = 'menunggu_verifikasi';
@@ -48,6 +50,38 @@ class EventController extends Controller {
 
         \App\Models\PesertaEvent::create($validated);
 
-        return back()->with('success', 'Pendaftaran berhasil dikirim! E-Tiket atau konfirmasi selanjutnya akan dikirim ke WhatsApp Anda oleh Admin.');
+        return back()->with('success', 'Pendaftaran berhasil dikirim! E-Tiket atau konfirmasi selanjutnya akan dikirim ke WhatsApp Anda oleh Admin setelah dicek.');
+    }
+
+    public function midtransWebhook(\Illuminate\Http\Request $request) {
+        $serverKey = config('midtrans.server_key');
+        $hashed = hash("sha512", $request->order_id.$request->status_code.$request->gross_amount.$serverKey);
+        
+        if ($hashed == $request->signature_key) {
+            $peserta = \App\Models\PesertaEvent::where('order_id', $request->order_id)->first();
+            
+            if ($peserta) {
+                if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
+                    $peserta->update(['status_pembayaran' => 'lunas']);
+                    // Kirim WA Otomatis
+                } elseif ($request->transaction_status == 'cancel' || $request->transaction_status == 'deny' || $request->transaction_status == 'expire') {
+                    $peserta->update(['status_pembayaran' => 'ditolak']);
+                }
+            }
+            return response()->json(['status' => 'success']);
+        }
+        
+        return response()->json(['status' => 'error'], 400);
+    }
+
+    public function tiketPdf($order_id) {
+        $peserta = \App\Models\PesertaEvent::with('event')->where('order_id', $order_id)->firstOrFail();
+        
+        if ($peserta->status_pembayaran !== 'lunas' && $peserta->status_pembayaran !== 'gratis') {
+            return abort(403, 'Tiket belum lunas. Silakan selesaikan pembayaran terlebih dahulu.');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pages.tiket_pdf', compact('peserta'));
+        return $pdf->download('Tiket_Event_' . $peserta->order_id . '.pdf');
     }
 }

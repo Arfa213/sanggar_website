@@ -32,6 +32,7 @@ Route::get('/profile',        [ProfileController::class,        'index'])->name(
 Route::get('/event',          [EventController::class,          'index'])->name('event');
 Route::post('/event/ajukan',  [EventController::class,          'ajukan'])->name('event.ajukan');
 Route::post('/event/daftar',  [EventController::class,          'daftar'])->name('event.daftar');
+Route::get('/event/tiket/{order_id}', [EventController::class,  'tiketPdf'])->name('event.tiket');
 Route::get('/digital-archive',[DigitalArchiveController::class, 'index'])->name('digital-archive');
 Route::get('/galeri/{seksi?}', [App\Http\Controllers\GaleriController::class, 'frontendIndex'])->name('galeri.frontend.index');
 
@@ -114,6 +115,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/peserta/{id}',  [App\Http\Controllers\Admin\PesertaEventController::class, 'updateStatus'])->name('peserta.update');
         Route::delete('/peserta/{id}',[App\Http\Controllers\Admin\PesertaEventController::class, 'destroy'])->name('peserta.destroy');
     });
+
+    // Midtrans Webhook
+    Route::post('/midtrans/webhook', [App\Http\Controllers\EventController::class, 'midtransWebhook'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])->name('midtrans.webhook');
 
     // Tarian
     Route::get('/tarian/pdf',          [AdminTarian::class, 'downloadPdf'])->name('tarian.pdf');

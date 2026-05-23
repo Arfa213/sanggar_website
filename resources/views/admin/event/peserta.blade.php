@@ -28,8 +28,8 @@
                     <th>No WA</th>
                     <th>Asal Instansi</th>
                     <th>Event</th>
-                    <th>Status Tiket</th>
-                    <th>Bukti TF</th>
+                    <th>Status Pembayaran</th>
+                    <th>Bukti TF & ID</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -49,7 +49,7 @@
                         @if($p->status_pembayaran == 'gratis') <span class="chip chip--blue">Gratis</span>
                         @elseif($p->status_pembayaran == 'menunggu_verifikasi') <span class="chip chip--orange">Menunggu Cek</span>
                         @elseif($p->status_pembayaran == 'lunas') <span class="chip chip--green">Lunas</span>
-                        @else <span class="chip chip--gray">Ditolak</span>
+                        @else <span class="chip chip--gray">Ditolak/Batal</span>
                         @endif
                     </td>
                     <td>
@@ -58,14 +58,17 @@
                         @else
                             -
                         @endif
+                        <div style="font-size: 0.7rem; color: #64748b; margin-top: 4px;">{{ $p->order_id }}</div>
                     </td>
                     <td class="td-actions">
                         @if($p->status_pembayaran == 'menunggu_verifikasi')
                         <form method="POST" action="{{ route('admin.event.peserta.update', $p->id) }}" style="display:inline">
                             @csrf @method('PUT')
                             <input type="hidden" name="status_pembayaran" value="lunas">
-                            <button type="submit" class="btn btn-primary btn-sm" style="background: #10b981; border: none;" data-confirm="Verifikasi lunas dan kirim WA E-Tiket ke peserta?">✅ Lunas</button>
+                            <button type="submit" class="btn btn-primary btn-sm" style="background: #10b981; border: none;" data-confirm="Set manual jadi Lunas?">✅ Lunas</button>
                         </form>
+                        @elseif($p->status_pembayaran == 'lunas' || $p->status_pembayaran == 'gratis')
+                        <a href="{{ route('event.tiket', $p->order_id) }}" target="_blank" class="btn btn-secondary btn-sm" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">📄 E-Tiket</a>
                         @endif
                         
                         <form method="POST" action="{{ route('admin.event.peserta.destroy', $p->id) }}" style="display:inline">

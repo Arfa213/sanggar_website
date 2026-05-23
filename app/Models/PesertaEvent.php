@@ -13,11 +13,13 @@ class PesertaEvent extends Model
 
     protected $fillable = [
         'event_id',
+        'order_id',
         'nama_peserta',
         'no_hp',
         'asal_instansi',
         'status_pembayaran',
         'bukti_transfer',
+        'snap_token',
         'catatan_admin'
     ];
 

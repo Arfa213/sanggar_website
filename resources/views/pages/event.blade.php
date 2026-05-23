@@ -73,7 +73,7 @@
             <h3 style="color: white; margin: 0; font-size: 1.2rem;">Formulir Pendaftaran</h3>
             <button onclick="tutupModalDaftar()" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
         </div>
-        <form action="{{ route('event.daftar') }}" method="POST" enctype="multipart/form-data" style="padding: 24px;">
+        <form action="{{ route('event.daftar') }}" method="POST" style="padding: 24px;">
             @csrf
             <input type="hidden" name="event_id" id="modalEventId">
             

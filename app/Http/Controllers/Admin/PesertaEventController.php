@@ -28,11 +28,12 @@ class PesertaEventController extends Controller
             'catatan_admin' => $request->catatan_admin
         ]);
 
-        // Opsional: Kirim WA otomatis ke peserta menggunakan integrasi wa.me atau API wa
-        if ($peserta->status_pembayaran === 'lunas') {
-            $waText = urlencode("Halo Kak {$peserta->nama_peserta}, Pembayaran tiket Anda untuk event {$peserta->event->nama} telah kami terima dan *LUNAS*. E-Tiket Anda valid. Sampai jumpa di lokasi!");
+        // Kirim WA otomatis ke peserta dengan link PDF Tiket
+        if ($peserta->status_pembayaran === 'lunas' || $peserta->status_pembayaran === 'gratis') {
+            $tiketUrl = route('event.tiket', $peserta->order_id);
+            $waText = urlencode("Halo Kak {$peserta->nama_peserta}, Pembayaran tiket Anda untuk event *{$peserta->event->nama}* telah LUNAS.\n\nSilakan unduh E-Tiket Anda melalui link berikut:\n{$tiketUrl}\n\nSampai jumpa di lokasi!");
             $waLink = "https://wa.me/" . preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $peserta->no_hp)) . "?text={$waText}";
-            return redirect()->back()->with('wa_link', $waLink)->with('success', 'Status peserta berhasil diupdate menjadi Lunas.');
+            return redirect()->back()->with('wa_link', $waLink)->with('success', 'Status peserta berhasil diupdate. Membuka WhatsApp untuk mengirim E-Tiket...');
         }
 
         return redirect()->back()->with('success', 'Status peserta berhasil diupdate.');
