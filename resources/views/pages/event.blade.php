@@ -28,12 +28,12 @@
         <div class="kegiatan-block">
             <div class="event-upcoming-list">
                 @foreach($mendatang as $ev)
-                <div class="eu-item" style="border-left: 4px solid #C65D2E; background: #fff; margin-bottom: 20px; padding: 20px; border-radius: 12px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="eu-item" style="border-left: 4px solid #C65D2E; background: #fff; margin-bottom: 20px; padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                     <div class="eu-date" style="background: #1e1b4b; color: white; padding: 15px; border-radius: 10px; text-align: center; min-width: 80px;">
                         <span class="eu-day" style="display: block; font-size: 1.8rem; font-weight: 900;">{{ $ev->tanggal->format('d') }}</span>
                         <span class="eu-month" style="display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">{{ $ev->tanggal->isoFormat('MMM YYYY') }}</span>
                     </div>
-                    <div class="eu-info" style="flex: 1;">
+                    <div class="eu-info" style="flex: 1; min-width: 200px;">
                         <h4 style="font-size: 1.3rem; margin-bottom: 5px; color: #1e1b4b;">{{ $ev->nama }}</h4>
                         <span class="eu-meta" style="color: #64748b; font-size: 0.9rem;">📍 {{ $ev->lokasi }}</span>
                         
@@ -43,9 +43,8 @@
                             </div>
                         @endif
                     </div>
-                    <div class="eu-right" style="text-align: right;">
-                        <span class="eu-tipe" style="display: inline-block; padding: 6px 12px; background: #f1f5f9; color: #475569; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px;">{{ ucfirst(str_replace('_',' ',$ev->kategori)) }}</span>
-                        <br>
+                    <div class="eu-right" style="text-align: right; min-width: 150px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+                        <span class="eu-tipe" style="display: inline-block; padding: 6px 12px; background: #f1f5f9; color: #475569; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">{{ ucfirst(str_replace('_',' ',$ev->kategori)) }}</span>
                         @auth
                             <span style="display: inline-block; padding: 8px 16px; background: #f1f5f9; color: #475569; border-radius: 8px; font-size: 0.85rem; font-weight: 700; border: 1px solid #cbd5e1;">Anda Sudah Terdaftar (Anggota)</span>
                         @else
@@ -150,12 +149,12 @@
                 <p style="margin-bottom: 15px; color: #475569; line-height: 1.6;">Sanggar Mulya Bhakti membuka kesempatan luas bagi seniman, profesional, dan penggiat budaya luar untuk mengadakan kelas khusus atau workshop di tempat kami.</p>
                 <p style="margin-bottom: 25px; color: #475569; line-height: 1.6;">Isi formulir pengajuan di samping untuk mendaftarkan acara Anda. Setelah kami review dan setujui, acara Anda akan langsung tayang di halaman ini dan bisa didaftar oleh anggota kami!</p>
                 
-                <div style="display: flex; gap: 15px; margin-bottom: 30px;">
-                    <div style="flex: 1; padding: 15px; background: #fff; border-radius: 12px; border-left: 3px solid #10b981;">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
+                    <div style="flex: 1; min-width: 140px; padding: 15px; background: #fff; border-radius: 12px; border-left: 3px solid #10b981;">
                         <strong style="display: block; font-size: 0.9rem; color: #047857;">Audiens Tersedia</strong>
                         <span style="font-size: 1.2rem; font-weight: 800; color: #1e1b4b;">100+ Anggota Aktif</span>
                     </div>
-                    <div style="flex: 1; padding: 15px; background: #fff; border-radius: 12px; border-left: 3px solid #8b5cf6;">
+                    <div style="flex: 1; min-width: 140px; padding: 15px; background: #fff; border-radius: 12px; border-left: 3px solid #8b5cf6;">
                         <strong style="display: block; font-size: 0.9rem; color: #5b21b6;">Fasilitas</strong>
                         <span style="font-size: 1.2rem; font-weight: 800; color: #1e1b4b;">Aula Luas &amp; Sound</span>
                     </div>
@@ -189,12 +188,12 @@
                         <input type="text" name="nama" required placeholder="Contoh: Workshop Tari Topeng Lanjutan" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                        <div style="flex: 1;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
+                        <div style="flex: 1; min-width: 200px;">
                             <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Rencana Tanggal *</label>
                             <input type="date" name="tanggal" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
                         </div>
-                        <div style="flex: 1;">
+                        <div style="flex: 1; min-width: 200px;">
                             <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Kategori *</label>
                             <select name="kategori" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white;">
                                 <option value="workshop">Workshop / Seminar</option>
