@@ -13,14 +13,19 @@ class EventController extends Controller {
     public function ajukan(\Illuminate\Http\Request $request) {
         $validated = $request->validate([
             'nama_pengaju'    => 'required|string|max:255',
+            'foto_pengaju'    => 'required|image|max:3072',
             'no_hp_pengaju'   => 'required|string|max:20',
             'nama'            => 'required|string|max:255',
-            'tanggal'         => 'required|date',
-            'kategori'        => 'required|string',
             'portofolio_link' => 'nullable|url',
+            'sinopsis_link'   => 'nullable|url',
             'catatan_pengaju' => 'nullable|string',
         ]);
 
+        if ($request->hasFile('foto_pengaju')) {
+            $validated['foto_pengaju'] = $request->file('foto_pengaju')->store('pengaju', 'public');
+        }
+
+        $validated['tanggal'] = now()->addMonth(); // Admin will edit this later
         $validated['status'] = 'pending_approval';
         $validated['is_external'] = true;
         $validated['lokasi'] = 'Sanggar Mulya Bhakti'; // Default location

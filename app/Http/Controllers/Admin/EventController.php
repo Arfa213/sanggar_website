@@ -8,11 +8,16 @@ use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::where('status', '!=', 'pending_approval')->orderByDesc('tanggal')->paginate(15);
+        $kategori = $request->get('kategori');
+        $query = Event::where('status', '!=', 'pending_approval');
+        if ($kategori) {
+            $query->where('kategori', $kategori);
+        }
+        $events = $query->orderByDesc('tanggal')->paginate(15);
         $pendingEvents = Event::where('status', 'pending_approval')->orderByDesc('created_at')->get();
-        return view('admin.event.index', compact('events', 'pendingEvents'));
+        return view('admin.event.index', compact('events', 'pendingEvents', 'kategori'));
     }
 
     public function create()

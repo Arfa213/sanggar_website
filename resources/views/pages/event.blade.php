@@ -130,33 +130,43 @@
                 <form action="{{ route('event.ajukan') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Nama Instruktur / Seniman *</label>
-                        <input type="text" name="nama_pengaju" required placeholder="Contoh: Budi Santoso" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">1. Nama Anda / Komunitas / Kelompok *</label>
+                        <input type="text" name="nama_pengaju" required placeholder="Contoh: Teater Cendrawasih" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">2. Foto Diri / Perwakilan *</label>
+                        <input type="file" name="foto_pengaju" accept="image/*" required style="width: 100%; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px; background: #f8fafc;">
                     </div>
                     
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Nomor WhatsApp *</label>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">3. Logo Komunitas (Link Portofolio) *</label>
+                        <input type="url" name="portofolio_link" required placeholder="https://drive.google.com/... atau https://instagram.com/..." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">4. Nomor WhatsApp *</label>
                         <input type="text" name="no_hp_pengaju" required placeholder="Contoh: 08123456789" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Judul Workshop *</label>
-                        <input type="text" name="nama" required placeholder="Contoh: Workshop Tari Topeng" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">5. Judul Karya / Workshop *</label>
+                        <input type="text" name="nama" required placeholder="Contoh: Eksplorasi Gerak Tari Topeng" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Rencana Tanggal *</label>
-                        <input type="date" name="tanggal" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                    </div>
-
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Link Portofolio / Instagram</label>
-                        <input type="url" name="portofolio_link" placeholder="https://instagram.com/..." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">6. Sinopsis (Link GDrive / Dokumen) *</label>
+                        <input type="url" name="sinopsis_link" required placeholder="https://docs.google.com/..." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
                     <div style="margin-bottom: 20px;">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">Catatan Kebutuhan Fasilitas</label>
-                        <textarea name="catatan_pengaju" rows="2" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical;"></textarea>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">7. Catatan Tambahan</label>
+                        <textarea name="catatan_pengaju" rows="2" placeholder="Ceritakan kebutuhan panggung / peralatan..." style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 20px; padding: 15px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;">
+                        <strong style="color: #d97706; font-size: 0.85rem;">8. Tanggal Pelaksanaan</strong>
+                        <p style="margin: 0; font-size: 0.8rem; color: #92400e; margin-top: 5px;">Tanggal event akan ditentukan kemudian oleh pihak Sanggar Mulya Bhakti setelah proses diskusi dan kurasi selesai.</p>
                     </div>
 
                     <button type="submit" class="btn-cta" style="width: 100%; border-radius: 8px; font-size: 1rem; background: #4338ca;">Kirim Pengajuan 🚀</button>

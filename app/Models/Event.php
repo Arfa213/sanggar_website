@@ -10,7 +10,7 @@ class Event extends Model {
         'nama','lokasi','tanggal','kategori','level','hasil',
         'deskripsi','foto','penghargaan','jumlah_penonton','unggulan','status',
         'is_external','nama_pengaju','no_hp_pengaju','portofolio_link','catatan_pengaju',
-        'is_berbayar','harga_tiket'
+        'is_berbayar','harga_tiket','foto_pengaju','sinopsis_link'
     ];
     protected $casts = [
         'tanggal'     => 'date',

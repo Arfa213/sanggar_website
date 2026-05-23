@@ -2,13 +2,20 @@
 @section('title','Event & Pentas')
 @section('content')
 
+@php
+    $title = 'Semua Event & Pentas';
+    if(request('kategori') == 'midhang_sore') $title = 'Midhang Sore (Workshop)';
+    if(request('kategori') == 'studi_budaya') $title = 'Studi Budaya';
+    if(request('kategori') == 'pagelaran') $title = 'Pagelaran';
+@endphp
+
 <div class="page-header">
     <div class="page-header-text">
-        <h1>Event & Pentas</h1>
-        <p>Kelola semua event, festival, dan pentas yang diikuti sanggar.</p>
+        <h1>{{ $title }}</h1>
+        <p>Kelola daftar event untuk kategori {{ $title }}.</p>
     </div>
     <div class="page-header-actions">
-        <a href="{{ route('admin.event.create') }}" class="btn btn-primary">
+        <a href="{{ route('admin.event.create', ['kategori' => request('kategori')]) }}" class="btn btn-primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Tambah Event
         </a>
@@ -52,10 +59,12 @@
                         </form>
                     </td>
                 </tr>
-                @if($pe->catatan_pengaju || $pe->portofolio_link)
+                @if($pe->catatan_pengaju || $pe->portofolio_link || $pe->sinopsis_link || $pe->foto_pengaju)
                 <tr style="background: #f8fafc;">
                     <td colspan="6" style="padding: 10px 16px; font-size: 0.85rem; color: #475569;">
-                        @if($pe->portofolio_link)<strong>Portofolio:</strong> <a href="{{ $pe->portofolio_link }}" target="_blank">{{ $pe->portofolio_link }}</a><br>@endif
+                        @if($pe->foto_pengaju)<strong>Foto Diri:</strong> <a href="{{ asset('storage/'.$pe->foto_pengaju) }}" target="_blank">Lihat Foto</a><br>@endif
+                        @if($pe->portofolio_link)<strong>Logo Komunitas:</strong> <a href="{{ $pe->portofolio_link }}" target="_blank">Lihat Logo</a><br>@endif
+                        @if($pe->sinopsis_link)<strong>Sinopsis:</strong> <a href="{{ $pe->sinopsis_link }}" target="_blank">Buka Dokumen</a><br>@endif
                         @if($pe->catatan_pengaju)<strong>Catatan:</strong> {{ $pe->catatan_pengaju }}@endif
                     </td>
                 </tr>
