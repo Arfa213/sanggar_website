@@ -4,8 +4,10 @@ use App\Models\Event;
 
 class EventController extends Controller {
     public function index() {
-        $mendatang = Event::where('status','akan_datang')->orderBy('tanggal')->get();
-        return view('pages.event', compact('mendatang'));
+        $midhang = Event::where('status', 'akan_datang')->where('kategori', 'midhang_sore')->orderBy('tanggal')->get();
+        $studi = Event::where('status', 'akan_datang')->where('kategori', 'studi_budaya')->orderBy('tanggal')->get();
+        $pagelaran = Event::where('status', 'akan_datang')->where('kategori', 'pagelaran')->orderBy('tanggal')->get();
+        return view('pages.event', compact('midhang', 'studi', 'pagelaran'));
     }
 
     public function ajukan(\Illuminate\Http\Request $request) {
@@ -22,6 +24,7 @@ class EventController extends Controller {
         $validated['status'] = 'pending_approval';
         $validated['is_external'] = true;
         $validated['lokasi'] = 'Sanggar Mulya Bhakti'; // Default location
+        $validated['kategori'] = 'midhang_sore';
 
         Event::create($validated);
 

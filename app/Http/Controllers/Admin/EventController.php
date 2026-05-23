@@ -79,7 +79,7 @@ class EventController extends Controller
             'nama'            => 'required|string|max:255',
             'lokasi'          => 'required|string|max:255',
             'tanggal'         => 'required|date',
-            'kategori'        => 'required|in:internasional,nasional,festival,pentas,kompetisi,workshop,kelas_khusus',
+            'kategori'        => 'required|string',
             'level'           => 'required|in:Internasional,Nasional,Lokal',
             'hasil'           => 'nullable|string|max:255',
             'deskripsi'       => 'nullable|string',

@@ -46,9 +46,9 @@
                     <div class="form-group">
                         <label>Kategori <span class="required">*</span></label>
                         <select name="kategori" class="form-control" required>
-                            @foreach(['internasional','nasional','festival','pentas','kompetisi'] as $k)
-                            <option value="{{ $k }}" {{ old('kategori',$event->kategori)===$k?'selected':'' }}>{{ ucfirst($k) }}</option>
-                            @endforeach
+                            <option value="midhang_sore" {{ old('kategori',$event->kategori)==='midhang_sore'?'selected':'' }}>Midhang Sore</option>
+                            <option value="studi_budaya" {{ old('kategori',$event->kategori)==='studi_budaya'?'selected':'' }}>Studi Budaya</option>
+                            <option value="pagelaran" {{ old('kategori',$event->kategori)==='pagelaran'?'selected':'' }}>Pagelaran</option>
                         </select>
                     </div>
                     <div class="form-group">

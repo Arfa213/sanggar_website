@@ -228,7 +228,7 @@
                         @endif
                     </div>
                     <div class="eu-right">
-                        <span class="eu-tipe" style="background: #f1f5f9; color: #475569;">{{ ucfirst($ev->kategori) }}</span>
+                        <span class="eu-tipe" style="background: #f1f5f9; color: #475569;">{{ ucfirst(str_replace('_', ' ', $ev->kategori)) }}</span>
                         @if($ev->hasil)<span class="eu-status" style="background: #fef3c7; color: #d97706;">🏆 {{ $ev->hasil }}</span>@endif
                     </div>
                 </div>
