@@ -29,6 +29,20 @@
                             </div>
                             <span class="stat-label">Kehadiran</span>
                         </div>
+                        
+                        <!-- 1. MASA AKTIF KEANGGOTAAN -->
+                        @if($user->tgl_kadaluarsa)
+                            @php
+                                $sisaHari = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($user->tgl_kadaluarsa), false);
+                                $isExpired = $sisaHari < 0;
+                            @endphp
+                            <div class="stat-item expiry-stat">
+                                <span class="stat-value" style="color: {{ $isExpired ? '#dc2626' : ($sisaHari <= 2 ? '#ea580c' : '#15803d') }};">
+                                    {{ $isExpired ? 'Hangus' : floor($sisaHari) . ' Hari' }}
+                                </span>
+                                <span class="stat-label">Sisa Aktif</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="welcome-image">
@@ -77,10 +91,18 @@
                                     <p class="session-note">"{{ $sesi->catatan }}"</p>
                                 @endif
                             </div>
-                            <div class="session-status">
+                            <div class="session-status" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                                 <span class="badge-status {{ $statusClass }}">
                                     {{ $isPassed ? 'Sudah Lewat' : $statusLabel }}
                                 </span>
+                                
+                                <!-- 2. TOMBOL BATALKAN SESI -->
+                                @if(!$isPassed && in_array($sesi->status, ['aktif', 'pending']))
+                                    <form action="{{ route('penjadwalan.batalkan', $sesi->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pendaftaran kelas ini?');">
+                                        @csrf
+                                        <button type="submit" class="btn-cancel-session">Batalkan</button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     @empty
@@ -154,23 +176,34 @@
                     </button>
                 </div>
 
-                <div class="events-card">
-                    <h3>Event Mendatang</h3>
-                    <div class="mini-event-list">
-                        @forelse($eventMendatang as $ev)
-                        <div class="mini-event">
-                            <div class="me-date">{{ \Carbon\Carbon::parse($ev->tanggal)->format('d M') }}</div>
-                            <div class="me-info">
-                                <strong>{{ $ev->nama_event }}</strong>
-                                <small>{{ $ev->lokasi }}</small>
+                    <div class="events-card">
+                        <h3>Event Mendatang</h3>
+                        <div class="mini-event-list">
+                            @forelse($eventMendatang as $ev)
+                            <div class="mini-event">
+                                <div class="me-date">{{ \Carbon\Carbon::parse($ev->tanggal)->format('d M') }}</div>
+                                <div class="me-info">
+                                    <strong>{{ $ev->nama_event }}</strong>
+                                    <small>{{ $ev->lokasi }}</small>
+                                </div>
                             </div>
+                            @empty
+                                <p style="color:var(--muted);font-size:.85rem">Belum ada event mendatang.</p>
+                            @endforelse
                         </div>
-                        @empty
-                            <p style="color:var(--muted);font-size:.85rem">Belum ada event mendatang.</p>
-                        @endforelse
                     </div>
-                </div>
-            </aside>
+
+                    <!-- 3. TOMBOL UPGRADE ANGGOTA TETAP -->
+                    <div class="upgrade-card">
+                        <div class="upgrade-icon">👑</div>
+                        <h3>Suka latihan di sini?</h3>
+                        <p>Dapatkan jadwal latihan rutin tetap, bebas antrean booking, dan prioritas aula dengan menjadi <strong>Anggota Tetap</strong>!</p>
+                        <a href="https://wa.me/6281234567890?text=Halo%20Admin,%20saya%20tertarik%20untuk%20upgrade%20akun%20saya%20menjadi%20Anggota%20Tetap." target="_blank" class="btn-upgrade">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.015c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.052 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                            Hubungi Admin
+                        </a>
+                    </div>
+                </aside>
         </div>
 
     </div>
@@ -374,6 +407,31 @@ function onScanSuccess(decodedText) {
     border-radius: 12px; font-weight: 700; transition: 0.3s;
 }
 .btn-scan:hover { background: #ea580c; transform: scale(1.02); }
+
+.btn-cancel-session {
+    background: transparent; border: 1.5px solid #ef4444; color: #ef4444;
+    padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s ease;
+}
+.btn-cancel-session:hover { background: #ef4444; color: white; }
+
+.upgrade-card {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    padding: 24px; border-radius: 24px; margin-bottom: 24px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+    text-align: center; color: white;
+}
+.upgrade-card .upgrade-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.upgrade-card h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; color: white; }
+.upgrade-card p { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.5; }
+.upgrade-card .btn-upgrade {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 12px; background: #22c55e; color: white;
+    border-radius: 12px; font-weight: 700; transition: 0.3s;
+    text-decoration: none;
+}
+.upgrade-card .btn-upgrade:hover { background: #16a34a; transform: translateY(-2px); }
+
 .mini-event { display: flex; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f5f5f5; }
 .me-date { background: #fdf2f8; color: #db2777; font-size: 0.75rem; font-weight: 800; padding: 5px; border-radius: 8px; }
 @media (max-width: 992px) { .dashboard-grid { grid-template-columns: 1fr; } .welcome-image { display: none; } }
