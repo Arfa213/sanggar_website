@@ -68,7 +68,11 @@
                             <button type="submit" class="btn btn-primary btn-sm" style="background: #10b981; border: none;" data-confirm="Set manual jadi Lunas?">✅ Lunas</button>
                         </form>
                         @elseif($p->status_pembayaran == 'lunas' || $p->status_pembayaran == 'gratis')
-                        <a href="{{ route('event.tiket', $p->order_id) }}" target="_blank" class="btn btn-secondary btn-sm" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">📄 E-Tiket</a>
+                            @if($p->order_id)
+                            <a href="{{ route('event.tiket', $p->order_id) }}" target="_blank" class="btn btn-secondary btn-sm" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">📄 E-Tiket</a>
+                            @else
+                            <span class="btn btn-secondary btn-sm" style="background: #e2e8f0; color: #94a3b8; border: 1px solid #cbd5e1; cursor: not-allowed;" title="Tidak ada Order ID (Data Lama)">📄 E-Tiket</span>
+                            @endif
                         @endif
                         
                         <form method="POST" action="{{ route('admin.event.peserta.destroy', $p->id) }}" style="display:inline">

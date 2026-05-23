@@ -23,9 +23,14 @@ class PesertaEventController extends Controller
             'catatan_admin' => 'nullable|string'
         ]);
 
+        if (!$peserta->order_id) {
+            $peserta->order_id = 'EVT-' . time() . '-' . rand(100, 999);
+        }
+
         $peserta->update([
             'status_pembayaran' => $request->status_pembayaran,
-            'catatan_admin' => $request->catatan_admin
+            'catatan_admin' => $request->catatan_admin,
+            'order_id' => $peserta->order_id
         ]);
 
         // Kirim WA otomatis ke peserta dengan link PDF Tiket
