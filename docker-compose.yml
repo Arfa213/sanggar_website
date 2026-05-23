@@ -5,7 +5,7 @@ services:
     ports:
       - "8182:80"
     environment:
-      - APP_ENV=local
+      - FORCE_HTTPS=true
       - APP_KEY=${APP_KEY}
       - DB_HOST=db
       - DB_DATABASE=${DB_DATABASE}
