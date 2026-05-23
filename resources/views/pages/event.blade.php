@@ -44,9 +44,13 @@
                         @endif
                     </div>
                     <div class="eu-right" style="text-align: right;">
-                        <span class="eu-tipe" style="display: inline-block; padding: 6px 12px; background: #f1f5f9; color: #475569; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px;">{{ ucfirst($ev->kategori) }}</span>
+                        <span class="eu-tipe" style="display: inline-block; padding: 6px 12px; background: #f1f5f9; color: #475569; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px;">{{ ucfirst(str_replace('_',' ',$ev->kategori)) }}</span>
                         <br>
-                        <a href="https://wa.me/6281234567890?text=Halo%20Admin,%20saya%20tertarik%20mendaftar%20event%20{{ urlencode($ev->nama) }}" target="_blank" style="display: inline-block; padding: 8px 16px; background: #C65D2E; color: white; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none;">Daftar Sekarang</a>
+                        @auth
+                            <span style="display: inline-block; padding: 8px 16px; background: #f1f5f9; color: #475569; border-radius: 8px; font-size: 0.85rem; font-weight: 700; border: 1px solid #cbd5e1;">Anda Sudah Terdaftar (Anggota)</span>
+                        @else
+                            <button onclick="bukaModalDaftar({{ $ev->id }}, '{{ addslashes($ev->nama) }}', {{ $ev->is_berbayar ? 'true' : 'false' }}, {{ $ev->harga_tiket ?? 0 }})" style="display: inline-block; padding: 8px 16px; background: #C65D2E; color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s;">Daftar Peserta Umum</button>
+                        @endauth
                     </div>
                 </div>
                 @endforeach
@@ -61,6 +65,80 @@
         @endif
     </div>
 </section>
+
+{{-- MODAL DAFTAR EVENT UMUM --}}
+<div id="modalDaftarEvent" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; width: 100%; max-width: 500px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+        <div style="background: #1e1b4b; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="color: white; margin: 0; font-size: 1.2rem;">Formulir Pendaftaran</h3>
+            <button onclick="tutupModalDaftar()" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ route('event.daftar') }}" method="POST" enctype="multipart/form-data" style="padding: 24px;">
+            @csrf
+            <input type="hidden" name="event_id" id="modalEventId">
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; color: #475569; margin-bottom: 5px;">Event yang dipilih:</label>
+                <div id="modalEventName" style="font-weight: 700; color: #1e1b4b; font-size: 1.1rem;"></div>
+            </div>
+
+            <div id="modalHargaWrap" style="display: none; margin-bottom: 20px; padding: 15px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;">
+                <strong style="display: block; color: #d97706; margin-bottom: 5px;">HTM / Harga Tiket: <span id="modalHargaValue"></span></strong>
+                <p style="margin: 0; font-size: 0.85rem; color: #92400e;">Silakan transfer ke <strong>BCA 1234567890 a.n Sanggar Mulya Bhakti</strong> dan lampirkan buktinya di bawah ini.</p>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px;">Nama Lengkap *</label>
+                <input type="text" name="nama_peserta" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px;">Nomor WhatsApp *</label>
+                <input type="text" name="no_hp" required placeholder="08..." style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px;">Asal Instansi / Sekolah (Opsional)</label>
+                <input type="text" name="asal_instansi" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+            </div>
+
+            <div id="modalBuktiWrap" style="display: none; margin-bottom: 20px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: #b91c1c;">Upload Bukti Transfer *</label>
+                <input type="file" name="bukti_transfer" id="inputBukti" accept="image/*" style="width: 100%; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 6px; background: #f8fafc;">
+            </div>
+
+            <button type="submit" class="btn-cta" style="width: 100%; border-radius: 8px;">Kirim Pendaftaran</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function bukaModalDaftar(id, nama, isBerbayar, harga) {
+        document.getElementById('modalEventId').value = id;
+        document.getElementById('modalEventName').innerText = nama;
+        
+        const wrapHarga = document.getElementById('modalHargaWrap');
+        const wrapBukti = document.getElementById('modalBuktiWrap');
+        const inputBukti = document.getElementById('inputBukti');
+        
+        if(isBerbayar) {
+            wrapHarga.style.display = 'block';
+            wrapBukti.style.display = 'block';
+            inputBukti.required = true;
+            document.getElementById('modalHargaValue').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(harga);
+        } else {
+            wrapHarga.style.display = 'none';
+            wrapBukti.style.display = 'none';
+            inputBukti.required = false;
+        }
+        
+        document.getElementById('modalDaftarEvent').style.display = 'flex';
+    }
+
+    function tutupModalDaftar() {
+        document.getElementById('modalDaftarEvent').style.display = 'none';
+    }
+</script>
 
 {{-- PENGAJUAN EVENT --}}
 <section class="section section--alt" id="pengajuan">

@@ -9,14 +9,20 @@ class Event extends Model {
     protected $fillable = [
         'nama','lokasi','tanggal','kategori','level','hasil',
         'deskripsi','foto','penghargaan','jumlah_penonton','unggulan','status',
-        'is_external','nama_pengaju','no_hp_pengaju','portofolio_link','catatan_pengaju'
+        'is_external','nama_pengaju','no_hp_pengaju','portofolio_link','catatan_pengaju',
+        'is_berbayar','harga_tiket'
     ];
     protected $casts = [
         'tanggal'     => 'date',
         'penghargaan' => 'array',
         'unggulan'    => 'boolean',
         'is_external' => 'boolean',
+        'is_berbayar' => 'boolean',
     ];
+
+    public function peserta() {
+        return $this->hasMany(PesertaEvent::class);
+    }
 
     public function scopeSelesai($q)    { return $q->where('status','selesai')->orderByDesc('tanggal'); }
     public function scopeMendatang($q)  { return $q->where('status','akan_datang')->orderBy('tanggal'); }

@@ -26,6 +26,8 @@ class EventController extends Controller
     {
         $data = $this->validateEvent($request);
         $data['unggulan'] = $request->has('unggulan');
+        $data['is_berbayar'] = $request->has('is_berbayar');
+        if (!$data['is_berbayar']) $data['harga_tiket'] = null;
         $data = $this->handleFoto($request, $data);
         $data['penghargaan'] = $this->parsePenghargaan($request);
         Event::create($data);
@@ -44,6 +46,8 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
         $data  = $this->validateEvent($request);
         $data['unggulan'] = $request->has('unggulan');
+        $data['is_berbayar'] = $request->has('is_berbayar');
+        if (!$data['is_berbayar']) $data['harga_tiket'] = null;
         $data  = $this->handleFoto($request, $data, $event);
         $data['penghargaan'] = $this->parsePenghargaan($request);
         $event->update($data);
@@ -81,6 +85,8 @@ class EventController extends Controller
             'deskripsi'       => 'nullable|string',
             'jumlah_penonton' => 'nullable|integer',
             'unggulan'        => 'nullable|boolean',
+            'is_berbayar'     => 'nullable|boolean',
+            'harga_tiket'     => 'nullable|integer|min:0',
             'status'          => 'required|in:akan_datang,selesai',
             'foto'            => 'nullable|image|max:3072',
         ]);

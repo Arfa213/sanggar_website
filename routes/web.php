@@ -31,6 +31,7 @@ Route::get('/',               [HomeController::class,           'index'])->name(
 Route::get('/profile',        [ProfileController::class,        'index'])->name('profile');
 Route::get('/event',          [EventController::class,          'index'])->name('event');
 Route::post('/event/ajukan',  [EventController::class,          'ajukan'])->name('event.ajukan');
+Route::post('/event/daftar',  [EventController::class,          'daftar'])->name('event.daftar');
 Route::get('/digital-archive',[DigitalArchiveController::class, 'index'])->name('digital-archive');
 Route::get('/galeri/{seksi?}', [App\Http\Controllers\GaleriController::class, 'frontendIndex'])->name('galeri.frontend.index');
 
@@ -107,6 +108,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{id}',          [App\Http\Controllers\Admin\EventController::class, 'update'])->name('update');
         Route::delete('/{id}',       [App\Http\Controllers\Admin\EventController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/approve', [App\Http\Controllers\Admin\EventController::class, 'approve'])->name('approve');
+        
+        // Data Peserta
+        Route::get('/peserta',       [App\Http\Controllers\Admin\PesertaEventController::class, 'index'])->name('peserta.index');
+        Route::put('/peserta/{id}',  [App\Http\Controllers\Admin\PesertaEventController::class, 'updateStatus'])->name('peserta.update');
+        Route::delete('/peserta/{id}',[App\Http\Controllers\Admin\PesertaEventController::class, 'destroy'])->name('peserta.destroy');
     });
 
     // Tarian

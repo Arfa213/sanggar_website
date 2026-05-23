@@ -118,13 +118,22 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><span class="card-title">Pengaturan</span></div>
+            <div class="card-header"><span class="card-title">Pengaturan Tiket & Peserta</span></div>
             <div class="card-body">
                 <label class="form-check">
                     <input type="checkbox" name="unggulan" value="1" {{ old('unggulan',$event->unggulan) ? 'checked' : '' }}>
                     <span class="form-check-label">★ Tampilkan sebagai Event Unggulan</span>
                 </label>
-                <p style="font-size:.78rem;color:var(--muted);margin-top:6px">Event unggulan ditampilkan lebih besar di halaman event.</p>
+                <p style="font-size:.78rem;color:var(--muted);margin-top:6px;margin-bottom:15px;">Event unggulan ditampilkan lebih besar di halaman event.</p>
+
+                <label class="form-check" style="margin-top: 10px;">
+                    <input type="checkbox" id="isBerbayar" name="is_berbayar" value="1" {{ old('is_berbayar', $event->is_berbayar) ? 'checked' : '' }} onchange="document.getElementById('hargaTiketWrap').style.display = this.checked ? 'block' : 'none'">
+                    <span class="form-check-label">💰 Event Berbayar (Tiket/HTM)</span>
+                </label>
+                <div id="hargaTiketWrap" style="margin-top: 10px; display: {{ old('is_berbayar', $event->is_berbayar) ? 'block' : 'none' }};">
+                    <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; display: block;">Harga Tiket (Rp)</label>
+                    <input type="number" name="harga_tiket" class="form-control" value="{{ old('harga_tiket', $event->harga_tiket) }}" placeholder="Contoh: 50000" min="0">
+                </div>
             </div>
         </div>
 
