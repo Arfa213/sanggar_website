@@ -69,6 +69,12 @@ class PenjadwalanController extends Controller
             }
         }
 
+        // Cek kapasitas orang dalam kelompok tarian yang dipilih (Maksimal 5 orang)
+        $countOrangDiTarian = $sessionsAtTime->where('tarian_id', $tarianId)->count();
+        if ($countOrangDiTarian >= 5) {
+            return back()->with('error', "Maaf, kelompok tari yang Anda pilih pada jam ini sudah mencapai batas maksimal (5 orang). Silakan pilih jam lain.");
+        }
+
         // 3. Simpan Pendaftaran
         PendaftaranTari::create([
             'user_id'         => $user->id,

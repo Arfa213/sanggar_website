@@ -107,7 +107,7 @@ Route::prefix('v1')->group(function () {
                 // 2. Cek Kapasitas Aula (Maksimal 2 tarian berbeda per jam)
                 $sessionsAtTime = PendaftaranTari::where('tanggal_latihan', $tanggal)
                     ->where('jam_latihan', $jam)
-                    ->where('status', 'aktif')
+                    ->whereIn('status', ['aktif', 'pending'])
                     ->with('tarian')
                     ->get();
 
@@ -118,6 +118,12 @@ Route::prefix('v1')->group(function () {
                         $names = $distinctDances->implode(' dan ');
                         return response()->json(['success' => false, 'message' => "Maaf, aula sudah penuh pada jam ini oleh kelas: {$names}. Silakan pilih jam atau tanggal lain."], 422);
                     }
+                }
+
+                // 3. Cek kapasitas orang dalam kelompok tarian yang dipilih (Maksimal 5 orang)
+                $countOrangDiTarian = $sessionsAtTime->where('tarian_id', $tarianId)->count();
+                if ($countOrangDiTarian >= 5) {
+                    return response()->json(['success' => false, 'message' => "Maaf, kelompok tari yang Anda pilih pada jam ini sudah mencapai batas maksimal (5 orang). Silakan pilih jam lain."], 422);
                 }
 
                 // 3. Simpan Pendaftaran
@@ -159,6 +165,15 @@ Route::prefix('v1')->group(function () {
                 ])->exists();
                 if ($exists) {
                     return response()->json(['success' => false, 'message' => 'Kamu sudah terdaftar di kelas ini!'], 422);
+                }
+
+                // Cek kapasitas orang dalam kelas jadwal ini (Maksimal 5 orang)
+                $countOrangDiKelas = PendaftaranTari::where('jadwal_id', $req->jadwal_id)
+                    ->where('status', 'aktif')
+                    ->count();
+                
+                if ($countOrangDiKelas >= 5) {
+                    return response()->json(['success' => false, 'message' => "Maaf, kelas ini sudah mencapai batas maksimal (5 orang). Silakan pilih jadwal lain."], 422);
                 }
                 $p = PendaftaranTari::create([
                     'user_id'        => $req->user()->id,

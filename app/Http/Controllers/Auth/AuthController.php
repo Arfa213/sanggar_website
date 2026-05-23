@@ -178,13 +178,31 @@ class AuthController extends Controller
                 $tanggal = $session['tanggal'];
                 $jam     = $session['jam'];
 
-                $count = \App\Models\PendaftaranTari::where('tanggal_latihan', $tanggal)
+                $requestedTarianId = $request->tarian_id;
+
+                // 1. Dapatkan daftar pendaftaran aktif/pending di jam tersebut
+                $existingPendaftaran = \App\Models\PendaftaranTari::with('tarian')
+                    ->where('tanggal_latihan', $tanggal)
                     ->where('jam_latihan', $jam)
                     ->whereIn('status', ['aktif', 'pending'])
-                    ->count();
+                    ->get();
 
-                if ($count >= 2) {
-                    return back()->withInput()->with('error', "Maaf, sesi pada tanggal {$tanggal} jam {$jam} sudah penuh. Silakan pilih jam lain.");
+                // 2. Hitung jumlah jenis tarian yang unik (Maksimal 2 tempat/ruangan)
+                $uniqueTarianIds = $existingPendaftaran->pluck('tarian_id')->unique()->values()->toArray();
+                
+                // 3. Cek kapasitas tempat/ruangan
+                if (!in_array($requestedTarianId, $uniqueTarianIds)) {
+                    // Jika tarian yang diminta belum ada, cek apakah 2 tempat sudah penuh
+                    if (count($uniqueTarianIds) >= 2) {
+                        $namaTarian = $existingPendaftaran->pluck('tarian.nama')->unique()->implode(' dan ');
+                        return back()->withInput()->with('error', "Maaf, seluruh tempat latihan pada {$tanggal} jam {$jam} sudah penuh oleh kelas {$namaTarian}. Silakan pilih jam lain, atau pilih salah satu tarian tersebut jika ingin bergabung.");
+                    }
+                }
+
+                // 4. Cek kapasitas orang dalam kelompok tarian yang dipilih (Maksimal 5 orang)
+                $countOrangDiTarian = $existingPendaftaran->where('tarian_id', $requestedTarianId)->count();
+                if ($countOrangDiTarian >= 5) {
+                    return back()->withInput()->with('error', "Maaf, kelompok tari yang Anda pilih pada {$tanggal} jam {$jam} sudah mencapai batas maksimal (5 orang). Silakan pilih jam lain.");
                 }
 
                 \App\Models\PendaftaranTari::create([

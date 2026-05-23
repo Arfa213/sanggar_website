@@ -120,14 +120,30 @@ class DashboardController extends Controller
             'jam.required'       => 'Harap pilih jam latihan.',
         ]);
 
-        // Cek kapasitas (max 2 sesi berbeda per jam)
-        $count = PendaftaranTari::where('tanggal_latihan', $request->tanggal)
+        $requestedTarianId = $request->tarian_id;
+
+        // 1. Dapatkan daftar pendaftaran aktif/pending di jam tersebut
+        $existingPendaftaran = PendaftaranTari::with('tarian')
+            ->where('tanggal_latihan', $request->tanggal)
             ->where('jam_latihan', $request->jam)
             ->whereIn('status', ['aktif', 'pending'])
-            ->count();
+            ->get();
 
-        if ($count >= 2) {
-            return back()->with('error', "Maaf, sesi pada tanggal {$request->tanggal} jam {$request->jam} sudah penuh. Silakan pilih jam lain.");
+        // 2. Hitung jumlah jenis tarian yang unik (Maksimal 2 tempat)
+        $uniqueTarianIds = $existingPendaftaran->pluck('tarian_id')->unique()->values()->toArray();
+        
+        // 3. Cek kapasitas tempat/ruangan
+        if (!in_array($requestedTarianId, $uniqueTarianIds)) {
+            if (count($uniqueTarianIds) >= 2) {
+                $namaTarian = $existingPendaftaran->pluck('tarian.nama')->unique()->implode(' dan ');
+                return back()->with('error', "Maaf, seluruh tempat latihan pada {$request->tanggal} jam {$request->jam} sudah penuh oleh kelas {$namaTarian}. Silakan pilih jam lain, atau pilih salah satu tarian tersebut jika ingin bergabung.");
+            }
+        }
+
+        // 4. Cek kapasitas orang dalam kelompok tarian yang dipilih (Maksimal 5 orang)
+        $countOrangDiTarian = $existingPendaftaran->where('tarian_id', $requestedTarianId)->count();
+        if ($countOrangDiTarian >= 5) {
+            return back()->with('error', "Maaf, kelompok tari yang Anda pilih pada {$request->tanggal} jam {$request->jam} sudah mencapai batas maksimal (5 orang). Silakan pilih jam lain.");
         }
 
         // Update kadaluarsa jika sesi baru lebih jauh
