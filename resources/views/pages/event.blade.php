@@ -100,11 +100,41 @@
             <p class="section-sub">Wadah bagi para seniman dan pemateri untuk berbagi ilmu melalui workshop dan kelas khusus di Sanggar Mulya Bhakti.</p>
         </div>
         
+        {{-- List Event Midhang Sore --}}
+        <h3 style="font-size: 1.3rem; margin-bottom: 20px; color: #1e1b4b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Jadwal Midhang Sore Mendatang</h3>
+        @if($midhang->count())
+        <div class="kegiatan-block" style="margin-bottom: 40px; border: none; padding: 0; background: transparent;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+                @foreach($midhang as $ev)
+                @include('components.event_card', ['ev' => $ev, 'color' => '#4f46e5'])
+                @endforeach
+            </div>
+        </div>
+        @else
+        <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 40px;">
+            <p style="color: #64748b; margin: 0;">Belum ada jadwal Midhang Sore terdekat.</p>
+        </div>
+        @endif
+
         <div class="split-layout" style="margin-bottom: 60px;">
             <div class="split-text">
+                <span class="badge" style="background: #e0e7ff; color: #4338ca;">Panggilan Kolaborasi</span>
+                <h2 class="section-heading" style="text-align: left; margin-bottom: 15px; color: #1e1b4b;">Bawa Karyamu ke Panggung Kami</h2>
+                <p style="margin-bottom: 15px;">Sanggar Mulya Bhakti membuka ruang seluas-luasnya bagi para seniman, koreografer, dan penggiat budaya untuk berkolaborasi melalui platform <strong>Midhang Sore</strong>.</p>
+                <p style="margin-bottom: 25px;">Ini adalah kesempatan Anda untuk membagikan ilmu, mempresentasikan karya terbaru, atau menggelar workshop eksklusif bersama komunitas kami.</p>
+                
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #4338ca; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 10px; color: #1e1b4b; font-size: 1.1rem;">Syarat & Ketentuan:</h4>
+                    <ul style="padding-left: 20px; margin-bottom: 0;">
+                        <li style="margin-bottom: 8px;">Karya/Workshop berkaitan dengan seni pertunjukan (Tari, Musik, Teater).</li>
+                        <li style="margin-bottom: 8px;">Memiliki portofolio yang jelas.</li>
+                        <li>Jadwal pelaksanaan akan didiskusikan lebih lanjut.</li>
+                    </ul>
+                </div>
+
                 <h3 style="font-size: 1.5rem; color: #1e1b4b; margin-bottom: 16px;">Tertarik Menjadi Pemateri?</h3>
                 <p style="margin-bottom: 15px; color: #475569; line-height: 1.6;">Midhang Sore membuka kesempatan luas bagi seniman, profesional, dan penggiat budaya luar untuk mengadakan kelas khusus atau workshop di tempat kami.</p>
-                <p style="margin-bottom: 25px; color: #475569; line-height: 1.6;">Isi formulir pengajuan di samping untuk mendaftarkan acara Anda. Setelah disetujui, acara Anda akan langsung tayang di bawah ini!</p>
+                <p style="margin-bottom: 25px; color: #475569; line-height: 1.6;">Isi formulir pengajuan di samping untuk mendaftarkan acara Anda. Setelah disetujui, acara Anda akan langsung tayang di atas!</p>
                 
                 <div style="display: flex; flex-wrap: wrap; gap: 15px;">
                     <div style="flex: 1; min-width: 140px; padding: 15px; background: #f8fafc; border-radius: 12px; border-left: 3px solid #10b981;">
@@ -118,8 +148,8 @@
                 </div>
             </div>
             
-            <div class="split-form" style="background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-                <h3 style="margin-bottom: 20px; color: #1e1b4b; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Formulir Pengajuan Midhang Sore</h3>
+            <div class="split-form" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);">
+                <h3 style="font-size: 1.5rem; margin-bottom: 20px; color: #1e1b4b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Formulir Pengajuan Kolaborasi</h3>
                 
                 @if(session('success'))
                     <div style="background:#dcfce7;color:#15803d;padding:15px;border-radius:10px;font-size:0.9rem;font-weight:700;margin-bottom:20px;">
@@ -174,21 +204,6 @@
             </div>
         </div>
 
-        {{-- List Event Midhang Sore --}}
-        <h3 style="font-size: 1.3rem; margin-bottom: 20px; color: #1e1b4b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Jadwal Midhang Sore Mendatang</h3>
-        @if($midhang->count())
-        <div class="kegiatan-block">
-            <div class="event-upcoming-list">
-                @foreach($midhang as $ev)
-                    @include('components.event_card', ['ev' => $ev, 'color' => '#4338ca'])
-                @endforeach
-            </div>
-        </div>
-        @else
-        <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
-            <p style="color: #64748b; margin: 0;">Belum ada jadwal Midhang Sore terdekat.</p>
-        </div>
-        @endif
     </div>
 </section>
 
@@ -202,8 +217,8 @@
         </div>
 
         @if($studi->count())
-        <div class="kegiatan-block" style="border-color: #fbcfe8;">
-            <div class="event-upcoming-list">
+        <div class="kegiatan-block" style="border: none; padding: 0; background: transparent;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
                 @foreach($studi as $ev)
                     @include('components.event_card', ['ev' => $ev, 'color' => '#be185d'])
                 @endforeach
@@ -227,8 +242,8 @@
         </div>
 
         @if($pagelaran->count())
-        <div class="kegiatan-block" style="border-color: #fde68a;">
-            <div class="event-upcoming-list">
+        <div class="kegiatan-block" style="border: none; padding: 0; background: transparent;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
                 @foreach($pagelaran as $ev)
                     @include('components.event_card', ['ev' => $ev, 'color' => '#b45309'])
                 @endforeach

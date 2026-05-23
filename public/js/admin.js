@@ -52,6 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const input   = area.querySelector('input[type="file"]');
         const preview = area.parentElement.querySelector('.file-preview img');
 
+        if(input) {
+            input.addEventListener('click', e => e.stopPropagation());
+        }
+
         area.addEventListener('click', () => input?.click());
         area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
         area.addEventListener('dragleave', ()=> area.classList.remove('dragover'));
@@ -68,7 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = input.files[0];
             if (file && preview && file.type.startsWith('image/')) {
                 const reader = new FileReader();
-                reader.onload = e => { preview.src = e.target.result; preview.parentElement.style.display='block'; };
+                reader.onload = e => { 
+                    preview.src = e.target.result; 
+                    const previewWrapper = preview.closest('.file-preview');
+                    if(previewWrapper) previewWrapper.style.display='block'; 
+                };
                 reader.readAsDataURL(file);
             }
         });

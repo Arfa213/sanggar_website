@@ -70,7 +70,10 @@ class EventController extends Controller
         $waText = urlencode("Halo Kak {$event->nama_pengaju}, kami dari Sanggar Mulya Bhakti ingin mengabarkan bahwa pengajuan workshop/event Anda ({$event->nama}) telah kami setujui! Saat ini event tersebut sudah resmi tayang di website kami. Mari kita diskusikan teknis selanjutnya...");
         $waLink = "https://wa.me/" . preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $event->no_hp_pengaju)) . "?text={$waText}";
 
-        return redirect()->route('admin.event.index')->with('wa_link', $waLink)->with('success', 'Event berhasil disetujui dan ditayangkan!');
+        return redirect()->route('admin.event.index')
+            ->with('wa_link', $waLink)
+            ->with('wa_name', $event->nama_pengaju)
+            ->with('success', 'Event berhasil disetujui dan ditayangkan!');
     }
 
     private function validateEvent(Request $request): array
