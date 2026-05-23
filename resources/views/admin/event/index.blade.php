@@ -2,20 +2,13 @@
 @section('title','Event & Pentas')
 @section('content')
 
-@php
-    $title = 'Semua Event & Pentas';
-    if(request('kategori') == 'midhang_sore') $title = 'Midhang Sore (Workshop)';
-    if(request('kategori') == 'studi_budaya') $title = 'Studi Budaya';
-    if(request('kategori') == 'pagelaran') $title = 'Pagelaran';
-@endphp
-
 <div class="page-header">
     <div class="page-header-text">
-        <h1>{{ $title }}</h1>
-        <p>Kelola daftar event untuk kategori {{ $title }}.</p>
+        <h1>Event & Pentas</h1>
+        <p>Kelola semua event, festival, dan pentas yang diikuti sanggar.</p>
     </div>
     <div class="page-header-actions">
-        <a href="{{ route('admin.event.create', ['kategori' => request('kategori')]) }}" class="btn btn-primary">
+        <a href="{{ route('admin.event.create') }}" class="btn btn-primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Tambah Event
         </a>

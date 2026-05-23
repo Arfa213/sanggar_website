@@ -45,11 +45,11 @@
                     </div>
                     <div class="form-group">
                         <label>Kategori <span class="required">*</span></label>
-                        @php $kategori_val = old('kategori', $mode === 'create' && request('kategori') ? request('kategori') : $event->kategori); @endphp
                         <select name="kategori" class="form-control" required>
-                            <option value="midhang_sore" {{ $kategori_val === 'midhang_sore' ? 'selected' : '' }}>Midhang Sore</option>
-                            <option value="studi_budaya" {{ $kategori_val === 'studi_budaya' ? 'selected' : '' }}>Studi Budaya</option>
-                            <option value="pagelaran" {{ $kategori_val === 'pagelaran' ? 'selected' : '' }}>Pagelaran</option>
+                            <option value="umum" {{ old('kategori',$event->kategori)==='umum'?'selected':'' }}>Umum</option>
+                            <option value="midhang_sore" {{ old('kategori',$event->kategori)==='midhang_sore'?'selected':'' }}>Midhang Sore</option>
+                            <option value="studi_budaya" {{ old('kategori',$event->kategori)==='studi_budaya'?'selected':'' }}>Studi Budaya</option>
+                            <option value="pagelaran" {{ old('kategori',$event->kategori)==='pagelaran'?'selected':'' }}>Pagelaran</option>
                         </select>
                     </div>
                     <div class="form-group">
