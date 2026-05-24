@@ -1,4 +1,4 @@
-<div class="event-card-modern" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease; height: 100%;">
+<div class="event-card-modern" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease; height: 100%; flex: 1 1 320px; max-width: 380px;">
     
     {{-- Gambar Cover & Badge --}}
     <div style="position: relative; width: 100%; aspect-ratio: 16/10; background: {{ $color }}15; overflow: hidden; display: flex; align-items: center; justify-content: center;">

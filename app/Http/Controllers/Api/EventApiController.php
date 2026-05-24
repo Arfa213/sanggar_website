@@ -10,18 +10,26 @@ class EventApiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Event::query();
+        $query = Event::query()->where('status', '!=', 'pending_approval');
 
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
         }
 
-        $selesai   = (clone $query)->where('status', 'selesai')->orderByDesc('tanggal')->get();
+        $selesai = (clone $query)->where(function($q) {
+            $q->where('status', 'selesai')
+              ->orWhereDate('tanggal', '<', now());
+        })->orderByDesc('tanggal')->get();
+        
         $featured  = $selesai->where('unggulan', true)->values();
-        $mendatang = (clone $query)->where('status', 'akan_datang')->orderBy('tanggal')->get();
+        
+        $mendatang = (clone $query)->where('status', '!=', 'selesai')
+                                   ->whereDate('tanggal', '>=', now())
+                                   ->orderBy('tanggal')->get();
 
         $mapFoto = fn($e) => array_merge($e->toArray(), [
-            'foto' => $e->foto ? asset('storage/' . $e->foto) : null,
+            'foto' => $e->foto ? asset('storage/' . $e->foto) : ($e->foto_pengaju ? asset('storage/' . $e->foto_pengaju) : null),
+            'foto_pengaju' => $e->foto_pengaju ? asset('storage/' . $e->foto_pengaju) : null,
         ]);
 
         return response()->json([
@@ -29,9 +37,9 @@ class EventApiController extends Controller
             'selesai'   => $selesai->map($mapFoto)->values(),
             'mendatang' => $mendatang->map($mapFoto)->values(),
             'stats'     => [
-                'total'          => Event::count(),
-                'internasional'  => Event::where('kategori', 'internasional')->count(),
-                'nasional_lokal' => Event::whereIn('kategori', ['nasional', 'festival', 'pentas', 'kompetisi'])->count(),
+                'total'          => Event::where('status', '!=', 'pending_approval')->count(),
+                'internasional'  => Event::where('level', 'Internasional')->count(),
+                'nasional_lokal' => Event::whereIn('level', ['Nasional', 'Lokal'])->count(),
                 'penghargaan'    => Event::whereNotNull('hasil')->where('hasil', '!=', '')->count(),
             ],
         ]);
@@ -43,7 +51,8 @@ class EventApiController extends Controller
 
         return response()->json([
             'data' => array_merge($event->toArray(), [
-                'foto' => $event->foto ? asset('storage/' . $event->foto) : null,
+                'foto' => $event->foto ? asset('storage/' . $event->foto) : ($event->foto_pengaju ? asset('storage/' . $event->foto_pengaju) : null),
+                'foto_pengaju' => $event->foto_pengaju ? asset('storage/' . $event->foto_pengaju) : null,
             ]),
         ]);
     }

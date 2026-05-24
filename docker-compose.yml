@@ -12,7 +12,7 @@ services:
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - app_storage:/var/www/html/storage
+      - public_uploads:/var/www/html/storage/app/public
     depends_on:
       - db
 
@@ -28,4 +28,4 @@ services:
 
 volumes:
   db_data:
-  app_storage:
+  public_uploads:

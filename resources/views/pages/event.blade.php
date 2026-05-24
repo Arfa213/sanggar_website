@@ -104,7 +104,7 @@
         <h3 style="font-size: 1.3rem; margin-bottom: 20px; color: #1e1b4b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Jadwal Midhang Sore Mendatang</h3>
         @if($midhang->count())
         <div class="kegiatan-block" style="margin-bottom: 40px; border: none; padding: 0; background: transparent;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;">
                 @foreach($midhang as $ev)
                 @include('components.event_card', ['ev' => $ev, 'color' => '#4f46e5'])
                 @endforeach
@@ -218,7 +218,7 @@
 
         @if($studi->count())
         <div class="kegiatan-block" style="border: none; padding: 0; background: transparent;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;">
                 @foreach($studi as $ev)
                     @include('components.event_card', ['ev' => $ev, 'color' => '#be185d'])
                 @endforeach
@@ -243,7 +243,7 @@
 
         @if($pagelaran->count())
         <div class="kegiatan-block" style="border: none; padding: 0; background: transparent;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;">
                 @foreach($pagelaran as $ev)
                     @include('components.event_card', ['ev' => $ev, 'color' => '#b45309'])
                 @endforeach

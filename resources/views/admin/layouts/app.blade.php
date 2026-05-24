@@ -78,7 +78,7 @@
             </a>
             <a href="{{ route('admin.booking.index') }}" class="nav-item {{ request()->routeIs('admin.booking*') ? 'active' : '' }}">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Booking Sementara
+                Private Sementara
                 @php 
                     $pendingCount = \App\Models\PendaftaranTari::where('status', 'nonaktif')
                         ->whereHas('user', function($q) { $q->where('tipe_anggota', 'pengunjung'); })
@@ -136,7 +136,7 @@
             </div>
         </div>
         <div class="topbar-right" style="display:flex; align-items:center; gap:20px;">
-            {{-- Lonceng Notifikasi Booking Realtime --}}
+            {{-- Lonceng Notifikasi Private Realtime --}}
             @php
                 $notifCount = \App\Models\PendaftaranTari::where('status', 'nonaktif')
                     ->whereHas('user', function($q) { $q->where('tipe_anggota', 'pengunjung'); })
@@ -190,7 +190,7 @@
 <script src="{{ asset('js/admin.js') }}"></script>
 @stack('scripts')
 
-{{-- Real-time Booking Notification Polling & Effects --}}
+{{-- Real-time Private Notification Polling & Effects --}}
 <style>
 @keyframes bell-shake {
     0% { transform: rotate(0); }
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     sidebarBadge.style.display = count > 0 ? 'inline-block' : 'none';
                 }
                 
-                // Trigger shaking effect & chime if new booking arrives!
+                // Trigger shaking effect & chime if new private request arrives!
                 if (count > lastCount) {
                     const bellSvg = document.getElementById('admin-bell-svg');
                     if (bellSvg) {
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 lastCount = count;
             })
-            .catch(err => console.error('Gagal memuat notifikasi booking:', err));
+            .catch(err => console.error('Gagal memuat notifikasi private:', err));
     }
     
     // Jalankan polling setiap 5 detik

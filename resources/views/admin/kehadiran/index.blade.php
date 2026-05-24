@@ -89,23 +89,22 @@
             <p style="font-size:.8rem;color:var(--muted);margin-top:2px">Satu kode untuk semua anggota tetap & sementara. Scan via Dashboard.</p>
         </div>
         <div style="padding:24px">
-            <table style="width:100%;border-collapse:collapse;font-size:.875rem">
-                <tbody>
-                    @foreach($permanentQR as $qr)
-                    <tr>
-                        <td style="padding:16px 0">
-                            <span style="font-weight:700;color:var(--dark);font-size:1.1rem">🏮 QR Code Universal</span>
-                        </td>
-                        <td style="text-align:right">
-                            <a href="{{ route('admin.kehadiran.permanent.show', $qr->id) }}" 
-                               style="background:var(--primary);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;box-shadow:0 4px 12px var(--primary-pale)">
-                                🖨️ Cetak QR Anggota
-                            </a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div style="display:flex; flex-direction: column; gap: 16px;">
+                @foreach($permanentQR as $qr)
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                    <div>
+                        <h4 style="font-size:1.1rem;font-weight:800">🏮 QR Code Universal</h4>
+                        <p style="font-size:.875rem;color:var(--muted);margin-top:4px">Kode utama untuk dicetak dan ditempel di ruang kelas.</p>
+                    </div>
+                    <div style="display:flex;gap:12px">
+                        <a href="{{ route('admin.kehadiran.permanent.show', $qr->id) }}" 
+                           style="background:var(--dark);color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700">
+                            🖨️ Cetak QR Anggota
+                        </a>
+                    </div>
+                </div>
+                @endforeach
+            </div>
         </div>
     </div>
 </div>

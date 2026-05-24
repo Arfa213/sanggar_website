@@ -46,7 +46,7 @@
                             <span class="type-icon">⭐</span>
                             <div class="type-text">
                                 <strong>Anggota Sementara</strong>
-                                <small>Booking sesi fleksibel</small>
+                                <small>Sesi private fleksibel</small>
                             </div>
                         </div>
                         <input type="hidden" name="tipe_anggota" id="tipe_anggota" value="tetap">

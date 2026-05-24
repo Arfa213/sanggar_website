@@ -1,10 +1,10 @@
 @extends('admin.layouts.app')
-@section('title', 'Booking Anggota Sementara')
+@section('title', 'Private Anggota Sementara')
 
 @section('content')
 <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px">
     <div class="page-header-text">
-        <h1 style="font-family:var(--font-display);font-size:2rem;font-weight:900">Booking Sementara</h1>
+        <h1 style="font-family:var(--font-display);font-size:2rem;font-weight:900">Private Sementara</h1>
         <p style="color:var(--muted);font-size:.875rem">Kelola pendaftaran sesi latihan dari anggota sementara.</p>
     </div>
 </div>
@@ -40,7 +40,7 @@
             <div style="width:44px;height:44px;background:#F0FDF4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem">✅</div>
             <div>
                 <div style="font-size:1.8rem;font-weight:900;color:#22C55E">{{ $countAktif }}</div>
-                <div style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase">Terkonfirmasi</div>
+                <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase">Private Disetujui</div>
             </div>
         </div>
     </a>
@@ -49,13 +49,13 @@
             <div style="width:44px;height:44px;background:#FEF2F2;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem">❌</div>
             <div>
                 <div style="font-size:1.8rem;font-weight:900;color:#EF4444">{{ $countDitolak }}</div>
-                <div style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase">Ditolak</div>
+                <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase">Private Ditolak</div>
             </div>
         </div>
     </a>
 </div>
 
-{{-- FILTER BAR --}}
+{{-- Statistik Private --}}
 <div style="display:flex;gap:8px;margin-bottom:20px;align-items:center;flex-wrap:wrap">
     <span style="font-size:.875rem;font-weight:700;color:var(--muted)">Filter:</span>
     @foreach(['semua'=>'🔍 Semua','pending'=>'⏳ Menunggu','aktif'=>'✅ Terkonfirmasi','ditolak'=>'❌ Ditolak'] as $val=>$label)
@@ -70,7 +70,7 @@
 {{-- TABLE --}}
 <div class="card">
     <div class="card-header">
-        <span class="card-title">Daftar Booking Sesi</span>
+        <span class="card-title">Daftar Private Sesi</span>
         <span style="font-size:.8rem;color:var(--muted)">{{ $bookings->count() }} data ditampilkan</span>
     </div>
     <div class="table-wrap">
@@ -150,7 +150,7 @@
                         @if($b->status !== 'aktif')
                         <form action="{{ route('admin.booking.confirm', $b->id) }}" method="POST" style="display:inline">
                             @csrf
-                            <button type="submit" class="btn btn-primary btn-sm" title="Konfirmasi booking">✅ Konfirmasi</button>
+                            <button type="submit" class="btn btn-primary btn-sm" title="Konfirmasi private">✅ Konfirmasi</button>
                         </form>
                         @endif
 
@@ -158,7 +158,7 @@
                         @if($b->status !== 'ditolak')
                         <form action="{{ route('admin.booking.reject', $b->id) }}" method="POST" style="display:inline">
                             @csrf
-                            <button type="submit" class="btn btn-secondary btn-sm" title="Tolak booking">❌ Tolak</button>
+                            <button type="submit" class="btn btn-secondary btn-sm" title="Tolak private">❌ Tolak</button>
                         </form>
                         @endif
 
@@ -166,7 +166,7 @@
                         <form action="{{ route('admin.booking.destroy', $b->id) }}" method="POST" style="display:inline">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Hapus data booking ini?')" title="Hapus">🗑️</button>
+                                    onclick="return confirm('Hapus data private ini?')" title="Hapus">🗑️</button>
                         </form>
                     </td>
                 </tr>
@@ -174,7 +174,7 @@
                 <tr>
                     <td colspan="7">
                         <div class="empty-state">
-                            <h3>Belum ada booking</h3>
+                            <h3>Belum ada private</h3>
                             <p>Pendaftaran sesi latihan dari anggota sementara akan muncul di sini.</p>
                         </div>
                     </td>

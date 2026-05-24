@@ -7,7 +7,7 @@
 <div class="m-page-header">
     <span class="m-badge">Program Latihan</span>
     <h1>Daftar Kelas Latihan</h1>
-    <p>Kelola pendaftaran rutin mingguan dan booking sesi tambahan Anda.</p>
+    <p>Kelola pendaftaran rutin mingguan dan private sesi tambahan Anda.</p>
 </div>
 
 {{-- LATIHAN RUTIN SECTION (Hanya untuk Anggota Tetap) --}}
@@ -69,7 +69,7 @@
 {{-- BOOKING SECTION --}}
 <div>
     <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 900; color: #111827; margin-bottom: 24px; display: flex; align-items: center; gap: 15px;">
-        Booking Sesi Tambahan
+        Sesi Private Tambahan
         <span style="flex: 1; height: 1px; background: #e5e7eb;"></span>
     </h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 28px;">
@@ -92,7 +92,7 @@
                 <h4 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 800; color: #111827; margin-bottom: 12px;">{{ $t->nama }}</h4>
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f3f4f6; padding-top: 16px;">
                     <div style="font-size: 0.8rem; font-weight: 700; color: #9ca3af;">{{ $t->asal }}</div>
-                    <div style="color: #c65d2e; font-weight: 800; font-size: 0.8rem;">Booking →</div>
+                    <div style="color: #c65d2e; font-weight: 800; font-size: 0.8rem;">Private →</div>
                 </div>
             </div>
         </div>
@@ -105,7 +105,7 @@
     <div style="background:#fff; border-radius:32px; width:100%; max-width:540px; overflow:hidden; animation: modalPop 0.3s ease;" id="daftarModalContent">
         <div style="padding:40px; text-align:center; background: #fafafa; border-bottom: 1px solid #f0f0f0;">
             <h2 id="modalTariTitle" style="font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 900; color: #111827;">Nama Tarian</h2>
-            <p style="color: #6b7280; margin-top: 8px;">Tentukan jadwal booking tambahan Anda.</p>
+            <p style="color: #6b7280; margin-top: 8px;">Tentukan jadwal private tambahan Anda.</p>
         </div>
         <form method="POST" action="{{ route('penjadwalan.daftar') }}" style="padding:32px 40px 40px;">
             @csrf
@@ -126,7 +126,7 @@
 
             <div style="display: flex; gap: 16px;">
                 <button type="button" onclick="closeDaftarModal()" style="flex: 1; padding: 16px; border-radius: 100px; border: 1px solid #e5e7eb; background: #fff; font-weight: 800; cursor: pointer; color: #6b7280;">Batal</button>
-                <button type="submit" style="flex: 1.5; padding: 16px; border-radius: 100px; border: none; background: #c65d2e; color: #fff; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(198,93,46,0.2);">Confirm Booking</button>
+                <button type="submit" style="flex: 1.5; padding: 16px; border-radius: 100px; border: none; background: #c65d2e; color: #fff; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(198,93,46,0.2);">Confirm Private</button>
             </div>
         </form>
     </div>

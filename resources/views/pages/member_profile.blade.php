@@ -155,8 +155,13 @@
                                     </div>
                                 </td>
                                 <td style="padding:16px 15px;">
-                                    <div style="font-size:.85rem; color:var(--text);">{{ $rt->jadwal->hari }}</div>
-                                    <div style="font-size:.75rem; color:var(--muted);">{{ $rt->jadwal->jam_mulai }} – {{ $rt->jadwal->jam_selesai }}</div>
+                                    @if($rt->jadwal)
+                                        <div style="font-size:.85rem; color:var(--text);">{{ $rt->jadwal->hari }}</div>
+                                        <div style="font-size:.75rem; color:var(--muted);">{{ $rt->jadwal->jam_mulai }} – {{ $rt->jadwal->jam_selesai }}</div>
+                                    @else
+                                        <div style="font-size:.85rem; color:var(--text);">{{ \Carbon\Carbon::parse($rt->tanggal_latihan)->isoFormat('D MMM YYYY') }}</div>
+                                        <div style="font-size:.75rem; color:var(--muted);">{{ $rt->jam_latihan }} (Sesi Private)</div>
+                                    @endif
                                 </td>
                                 <td style="padding:16px 15px;">
                                     <div style="font-size:.85rem; color:var(--text);">{{ $rt->tanggal_daftar->isoFormat('D MMMM YYYY') }}</div>
