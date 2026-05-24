@@ -22,6 +22,24 @@
         .nav-user-btn:hover {
             background: var(--primary-pale) !important;
         }
+
+        /* Scroll Reveal Animation CSS */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.5, 0, 0, 1), transform 0.8s cubic-bezier(0.5, 0, 0, 1);
+            will-change: opacity, transform;
+        }
+        .scroll-reveal-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Staggered Delay for Grid Items */
+        .stat-item:nth-child(2), .bento-item:nth-child(2), .topeng-card-3d:nth-child(2) { transition-delay: 0.1s; }
+        .stat-item:nth-child(3), .bento-item:nth-child(3), .topeng-card-3d:nth-child(3) { transition-delay: 0.2s; }
+        .bento-item:nth-child(4), .topeng-card-3d:nth-child(4) { transition-delay: 0.3s; }
+        .topeng-card-3d:nth-child(5) { transition-delay: 0.4s; }
     </style>
 </head>
 <body>
@@ -239,6 +257,53 @@
             menu.style.visibility = 'hidden';
             menu.style.transform = 'translateY(10px)';
         }
+    });
+
+    // Scroll Reveal Animation (Fade In From Bottom)
+    document.addEventListener('DOMContentLoaded', function() {
+        const revealSelectors = [
+            'section > .container > div',
+            'section > .container > h2',
+            'section > .container > p',
+            '.hero-text', '.hero-image',
+            '.about-text', '.about-image',
+            '.stat-item',
+            '.topeng-card-3d',
+            '.archive-header',
+            '.marquee-container',
+            '.bento-item',
+            '.cta-inner',
+            '.page-hero__inner',
+            '.card',
+            '.auth-image',
+            '.auth-form-wrap',
+            '.event-card-modern',
+            '.galeri-item',
+            '.footer-grid > div'
+        ];
+        
+        const revealElements = document.querySelectorAll(revealSelectors.join(', '));
+        
+        revealElements.forEach(function(el) {
+            el.classList.add('scroll-reveal');
+        });
+
+        const revealObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('scroll-reveal-active');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            root: null,
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        });
+
+        revealElements.forEach(function(el) {
+            revealObserver.observe(el);
+        });
     });
     </script>
 </body>
