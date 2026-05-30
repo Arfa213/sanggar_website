@@ -180,6 +180,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/pengumuman',         [AdminPengumuman::class, 'index'])->name('pengumuman.index');
     Route::post('/pengumuman',        [AdminPengumuman::class, 'store'])->name('pengumuman.store');
     Route::delete('/pengumuman/{id}', [AdminPengumuman::class, 'destroy'])->name('pengumuman.destroy');
+
+    // Rapor Pagelaran
+    Route::prefix('rapor')->name('rapor.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\RaporPagelaranController::class, 'index'])->name('index');
+        Route::get('/pagelaran/{eventId}', [\App\Http\Controllers\Admin\RaporPagelaranController::class, 'form'])->name('form');
+        Route::post('/store', [\App\Http\Controllers\Admin\RaporPagelaranController::class, 'store'])->name('store');
+        Route::get('/murid/{userId}', [\App\Http\Controllers\Admin\RaporPagelaranController::class, 'show'])->name('murid');
+    });
 });
 
 // ── CHATBOT AI ────────────────────────────────────────────────────────

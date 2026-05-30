@@ -81,10 +81,15 @@ class User extends Authenticatable {
     return $this->hasMany(\App\Models\PendaftaranTari::class);
 }
 
-public function kehadiran()
-{
-    return $this->hasMany(\App\Models\Kehadiran::class);
-}
+    public function kehadiran()
+    {
+        return $this->hasMany(\App\Models\Kehadiran::class);
+    }
+
+    public function raporPagelaran()
+    {
+        return $this->hasMany(\App\Models\RaporPagelaran::class);
+    }
 
     // ─── RELATIONS ─────────────────────────────────
     // Uncomment saat model terkait sudah dibuat
