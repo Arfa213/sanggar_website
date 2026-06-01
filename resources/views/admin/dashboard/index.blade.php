@@ -75,7 +75,7 @@
 </div>
 
 {{-- Quick Actions + Activity Feed --}}
-<div style="display:grid;grid-template-columns:1fr 1.5fr;gap:20px;margin-bottom:28px">
+<div class="dash-grid-aside" style="display:grid;grid-template-columns:1fr 1.5fr;gap:20px;margin-bottom:28px">
 
     {{-- QUICK ACTIONS --}}
     <div class="card">
@@ -155,7 +155,7 @@
 </div>
 
 {{-- RECENT EVENTS & ANGGOTA --}}
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div class="dash-grid-half" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
     {{-- RECENT ANGGOTA --}}
     <div class="card">
         <div class="card-header">
@@ -290,12 +290,20 @@
 }
 
 @media (max-width: 1024px) {
-    div[style*="grid-template-columns:1fr 1fr"] {
+    .dash-grid-aside,
+    .dash-grid-half {
         grid-template-columns: 1fr !important;
     }
-    div[style*="grid-template-columns:1fr 1.5fr"] {
-        grid-template-columns: 1fr !important;
-    }
+}
+
+@media (max-width: 768px) {
+    .quick-action-btn { padding: 12px 10px; }
+    .quick-action-btn span { font-size: .7rem; }
+    .qa-icon { width: 36px; height: 36px; }
+
+    .activity-item { padding: 12px 14px; gap: 10px; }
+    .activity-text { font-size: .8rem; }
+    .activity-time { display: none; }
 }
 </style>
 @endsection

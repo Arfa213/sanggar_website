@@ -20,25 +20,25 @@
 </div>
 @else
 
-<div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;align-items:start">
+<div class="rapor-layout" style="display:grid;grid-template-columns:1fr 2fr;gap:24px;align-items:start">
     
     {{-- Kiri: List Rapor --}}
     <div style="display:flex;flex-direction:column;gap:16px">
         @foreach($rapors as $rapor)
         <div class="card" style="border-left: 4px solid {{ $rapor->nilai_akhir >= 80 ? '#10B981' : ($rapor->nilai_akhir >= 60 ? '#3B82F6' : '#EF4444') }}">
             <div class="card-body">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-                    <div>
-                        <h3 style="margin:0;font-size:1.1rem;font-weight:700">{{ $rapor->event->nama }}</h3>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                    <div style="min-width:0;flex:1">
+                        <h3 style="margin:0;font-size:1.1rem;font-weight:700;word-break:break-word">{{ $rapor->event->nama }}</h3>
                         <p style="margin:4px 0 0;font-size:0.85rem;color:var(--muted)">{{ $rapor->event->tanggal->format('d M Y') }}</p>
                     </div>
-                    <div style="text-align:right">
+                    <div style="text-align:right;flex-shrink:0">
                         <div style="font-size:1.5rem;font-weight:800;color:{{ $rapor->nilai_akhir >= 80 ? '#10B981' : ($rapor->nilai_akhir >= 60 ? '#3B82F6' : '#EF4444') }}">{{ $rapor->nilai_akhir }}</div>
                         <span class="badge" style="background:#F3F4F6;color:#374151">{{ $rapor->predikat }}</span>
                     </div>
                 </div>
                 
-                <div style="background:#F9FAFB;border-radius:6px;padding:12px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.85rem">
+                <div class="rapor-detail-grid" style="background:#F9FAFB;border-radius:6px;padding:12px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.85rem">
                     <div style="display:flex;justify-content:space-between"><span>Tarian:</span> <strong>{{ $rapor->tarian->nama }}</strong></div>
                     <div style="display:flex;justify-content:space-between"><span>Kehadiran:</span> <strong>{{ $rapor->nilai_kehadiran }}%</strong></div>
                     <div style="display:flex;justify-content:space-between"><span>Teknik:</span> <strong>{{ $rapor->nilai_teknik }}</strong></div>
@@ -61,7 +61,7 @@
     </div>
     
     {{-- Kanan: Grafik --}}
-    <div class="card" style="position:sticky;top:24px">
+    <div class="card rapor-chart" style="position:sticky;top:24px">
         <div class="card-header"><span class="card-title">Grafik Perkembangan Nilai Akhir</span></div>
         <div class="card-body">
             <canvas id="raporChart" height="250"></canvas>

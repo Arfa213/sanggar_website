@@ -16,7 +16,7 @@
     <input type="hidden" name="event_id" value="{{ $pagelaran->id }}">
     
     <div class="card">
-        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card-header">
             <span class="card-title">Daftar Anggota Tetap</span>
             <button type="submit" class="btn btn-primary" onclick="return confirm('Simpan rapor dan kirim notifikasi FCM ke semua murid ini?')">
                 💾 Simpan & Kirim Notifikasi
