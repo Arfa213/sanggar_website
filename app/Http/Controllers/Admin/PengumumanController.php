@@ -14,7 +14,7 @@ class PengumumanController extends Controller
         return view('admin.pengumuman.index', compact('broadcasts'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\FcmService $fcmService)
     {
         $request->validate([
             'judul' => 'required|string|max:150',
@@ -22,7 +22,18 @@ class PengumumanController extends Controller
             'tipe' => 'required|string|in:announcement,event,info',
         ]);
 
-        Pengumuman::create($request->only('judul', 'konten', 'tipe'));
+        $pengumuman = Pengumuman::create($request->only('judul', 'konten', 'tipe'));
+
+        // Kirim Push Notification ke seluruh member (Topic: pengumuman_smb)
+        $fcmService->sendToTopic(
+            'pengumuman_smb',
+            $request->judul,
+            $request->konten,
+            [
+                'type' => 'announcement',
+                'pengumuman_id' => (string)$pengumuman->id
+            ]
+        );
 
         return back()->with('success', 'Pengumuman berhasil disebarkan ke aplikasi mobile anggota!');
     }

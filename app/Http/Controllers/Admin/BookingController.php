@@ -37,10 +37,23 @@ class BookingController extends Controller
         ));
     }
 
-    public function confirm($id)
+    public function confirm($id, \App\Services\FcmService $fcmService)
     {
         $booking = PendaftaranTari::with('user', 'tarian')->findOrFail($id);
         $booking->update(['status' => 'aktif']);
+
+        // Kirim Push Notification ke User jika FCM token ada
+        if ($booking->user && $booking->user->fcm_token) {
+            $fcmService->sendToToken(
+                $booking->user->fcm_token,
+                'Sesi Private Disetujui! ✅',
+                "Sesi latihan '{$booking->tarian->nama}' untuk tanggal {$booking->tanggal_latihan} jam {$booking->jam_latihan} WIB telah DISETUJUI oleh Admin.",
+                [
+                    'type' => 'approval',
+                    'booking_id' => (string)$booking->id
+                ]
+            );
+        }
 
         // Generate WhatsApp link untuk notifikasi
         $waLink = $this->generateWaLink($booking, 'konfirmasi');
@@ -51,10 +64,23 @@ class BookingController extends Controller
             ->with('wa_name', $booking->user->name);
     }
 
-    public function reject($id)
+    public function reject($id, \App\Services\FcmService $fcmService)
     {
         $booking = PendaftaranTari::with('user', 'tarian')->findOrFail($id);
         $booking->update(['status' => 'ditolak']);
+
+        // Kirim Push Notification ke User jika FCM token ada
+        if ($booking->user && $booking->user->fcm_token) {
+            $fcmService->sendToToken(
+                $booking->user->fcm_token,
+                'Booking Private Ditolak ❌',
+                "Sesi latihan '{$booking->tarian->nama}' untuk tanggal {$booking->tanggal_latihan} jam {$booking->jam_latihan} WIB tidak dapat dikonfirmasi.",
+                [
+                    'type' => 'rejection',
+                    'booking_id' => (string)$booking->id
+                ]
+            );
+        }
 
         // Generate WhatsApp link untuk notifikasi
         $waLink = $this->generateWaLink($booking, 'ditolak');
