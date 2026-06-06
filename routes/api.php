@@ -12,7 +12,6 @@ use App\Http\Controllers\Api\TopengApiController;
 use App\Http\Controllers\Api\ArchiveApiController;
 use App\Http\Controllers\Api\GuestApiController;
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\ChatbotController;
 use App\Models\JadwalLatihan;
 use App\Models\PendaftaranTari;
 use App\Models\Kehadiran;
@@ -28,11 +27,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/tarian/{id}', [TarianApiController::class,  'show']);
     Route::get('/galeri',      [GaleriApiController::class,  'index']);
     Route::post('/ai/chat', [GeminiController::class, 'chat']);
+    Route::post('/ai/recommend', [GeminiController::class, 'recommendDance']);
     Route::get('/archive', [ArchiveApiController::class, 'index']);
     Route::get('/topeng', [TopengApiController::class, 'index']);
     Route::get('/topeng/{id}', [TopengApiController::class, 'show']);
     Route::post('/tamu', [GuestApiController::class, 'store']);
-    Route::post('/ai/recommend', [ChatbotController::class, 'recommendDance']);
 
     Route::get('/jadwal', function () {
         $data = JadwalLatihan::where('aktif', true)->orderBy('urutan')->get();
