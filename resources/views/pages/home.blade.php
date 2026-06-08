@@ -128,10 +128,14 @@
                     </div>
 
                     {{-- BACK --}}
-                    <div class="topeng-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: var(--primary); color: white; transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center;">
-                        <h4 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">{{ $t->karakter }}</h4>
-                        <p style="font-size: 0.9rem; line-height: 1.6; opacity: 0.9;">{{ $t->filosofi ?? $t->deskripsi }}</p>
-                        <div style="margin-top: 20px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Watak {{ $t->nama }}</div>
+                    <div class="topeng-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: var(--primary); color: white; transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 15px; text-align: center;">
+                        <h4 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">{{ $t->karakter }}</h4>
+                        
+                        <div style="font-size: 0.85rem; line-height: 1.5; opacity: 0.9; overflow-y: auto; max-height: 200px; padding: 0 5px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.4) transparent;">
+                            <p style="margin: 0;">{{ $t->filosofi ?? $t->deskripsi }}</p>
+                        </div>
+                        
+                        <div style="margin-top: auto; padding-top: 12px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">Watak {{ $t->nama }}</div>
                     </div>
 
                 </div>
