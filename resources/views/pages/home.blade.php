@@ -202,7 +202,17 @@
         
         <div class="marquee-track">
             @php 
-                $archiveFotos = $galeri->where('seksi','digital_archive'); 
+                $archiveFotos = collect();
+                if(isset($tarian)) {
+                    foreach($tarian as $t) {
+                        if($t->foto) $archiveFotos->push((object)['file' => $t->foto, 'judul' => $t->nama]);
+                    }
+                }
+                if(isset($topeng)) {
+                    foreach($topeng as $tp) {
+                        if($tp->foto) $archiveFotos->push((object)['file' => $tp->foto, 'judul' => $tp->nama]);
+                    }
+                }
                 // Jika foto kurang dari 6, kita perbanyak sementara agar efek marquee-nya tidak putus
                 $displayFotos = collect();
                 if($archiveFotos->count() > 0) {
