@@ -162,7 +162,7 @@ jobs:
 
             # Tunggu container siap
             echo "⏳ Menunggu container ready..."
-            sleep 10
+            sleep 20
 
             # Jalankan migrasi database
             docker-compose exec -T app php artisan migrate --force --no-interaction
