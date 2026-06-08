@@ -34,11 +34,12 @@ class ChatbotController extends Controller
             'content'    => $request->message,
         ]);
 
-        // Riwayat percakapan (max 10 pesan terakhir, tidak termasuk pesan baru)
+        // Riwayat percakapan (max 4 pesan terakhir agar hemat kuota token gratis)
         $history = ChatbotMessage::where('session_id', $sessionId)
-            ->orderBy('created_at')
-            ->take(10)
+            ->orderByDesc('created_at')
+            ->take(4)
             ->get(['role', 'content'])
+            ->reverse()
             ->map(fn($m) => ['role' => $m->role, 'content' => $m->content])
             ->toArray();
 

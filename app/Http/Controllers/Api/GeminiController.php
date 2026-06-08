@@ -44,9 +44,10 @@ class GeminiController extends Controller
         $history = [];
         if ($sessionId) {
             $msgs = ChatbotMessage::where('session_id', $sessionId)
-                ->orderBy('created_at')
-                ->take(10)
-                ->get(['role', 'content']);
+                ->orderByDesc('created_at')
+                ->take(4)
+                ->get(['role', 'content'])
+                ->reverse();
 
             $history = $msgs->map(fn($m) => [
                 'role'    => $m->role,
