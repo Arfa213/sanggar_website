@@ -165,10 +165,10 @@ jobs:
             sleep 20
 
             # Jalankan migrasi database
-            docker-compose exec -T app php artisan migrate --force --no-interaction
+            docker exec senidrai php artisan migrate --force --no-interaction
 
             # Bersihkan cache website agar perubahan kodingan langsung terlihat
-            docker-compose exec -T app php artisan optimize:clear
+            docker exec senidrai php artisan optimize:clear
 
             echo "✅ Deployment selesai!"
 

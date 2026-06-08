@@ -4,13 +4,8 @@ services:
     build: .
     ports:
       - "8182:80"
-    environment:
-      - FORCE_HTTPS=true
-      - APP_KEY=${APP_KEY}
-      - DB_HOST=db
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
+    env_file:
+      - .env
     volumes:
       - public_uploads:/var/www/html/storage/app/public
     depends_on:
