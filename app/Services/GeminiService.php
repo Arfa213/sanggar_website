@@ -9,7 +9,7 @@ use App\Models\Tarian;
 class GeminiService
 {
     protected string $apiKey;
-    protected string $model = 'gemini-1.5-flash';
+    protected string $model = 'gemini-2.0-flash';
     protected string $apiUrl;
 
     public function __construct()
@@ -25,36 +25,40 @@ class GeminiService
 
     /**
      * Bangun system instruction yang kaya konteks dari database
+     * Jika DB tidak tersedia, gunakan data statis default
      */
     private function buildSystemInstruction(): string
     {
-        // Ambil profil sanggar dari database
+        // Data default (fallback jika DB tidak tersedia)
+        $namaSanggar  = 'Sanggar Mulya Bhakti';
+        $tahunBerdiri = '2005';
+        $alamat       = 'Indramayu, Jawa Barat';
+        $noHp         = '-';
+        $email        = '-';
+        $instagram    = '-';
+        $daftarTarian = "- Tari Topeng Kelana\n- Tari Sintren\n- Tari Ronggeng Bugis\n- Tari Baladewa\n- Tari Buyung";
+
+        // Coba ambil dari database (boleh gagal)
         try {
             $profil = SanggarProfile::getInstance();
-            $namaSanggar   = $profil->nama_sanggar  ?? 'Sanggar Mulya Bhakti';
-            $tahunBerdiri  = $profil->tahun_berdiri ?? '2005';
-            $alamat        = $profil->alamat        ?? 'Indramayu, Jawa Barat';
-            $noHp          = $profil->no_hp         ?? '-';
-            $email         = $profil->email         ?? '-';
-            $instagram     = $profil->instagram     ?? '-';
-        } catch (\Exception $e) {
-            $namaSanggar  = 'Sanggar Mulya Bhakti';
-            $tahunBerdiri = '2005';
-            $alamat       = 'Indramayu, Jawa Barat';
-            $noHp         = '-';
-            $email        = '-';
-            $instagram    = '-';
+            $namaSanggar  = $profil->nama_sanggar  ?: $namaSanggar;
+            $tahunBerdiri = $profil->tahun_berdiri ?: $tahunBerdiri;
+            $alamat       = $profil->alamat        ?: $alamat;
+            $noHp         = $profil->no_hp         ?: $noHp;
+            $email        = $profil->email         ?: $email;
+            $instagram    = $profil->instagram     ?: $instagram;
+        } catch (\Throwable $e) {
+            // DB tidak tersedia — gunakan data default di atas
         }
 
-        // Ambil daftar tarian dari database
+        // Coba ambil daftar tarian dari database
         try {
             $tarian = Tarian::where('aktif', true)->get();
-            $daftarTarian = $tarian->map(fn($t) => "- {$t->nama}: {$t->deskripsi_singkat}")->implode("\n");
-            if (!$daftarTarian) {
-                $daftarTarian = "- Tari Topeng Kelana\n- Tari Sintren\n- Tari Ronggeng Bugis\n- Tari Baladewa\n- Tari Buyung";
+            if ($tarian->isNotEmpty()) {
+                $daftarTarian = $tarian->map(fn($t) => "- {$t->nama}" . ($t->deskripsi_singkat ? ": {$t->deskripsi_singkat}" : ''))->implode("\n");
             }
-        } catch (\Exception $e) {
-            $daftarTarian = "- Tari Topeng Kelana\n- Tari Sintren\n- Tari Ronggeng Bugis\n- Tari Baladewa\n- Tari Buyung";
+        } catch (\Throwable $e) {
+            // DB tidak tersedia — gunakan data default di atas
         }
 
         return <<<INSTRUCTION

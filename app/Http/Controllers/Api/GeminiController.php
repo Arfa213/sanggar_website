@@ -73,7 +73,7 @@ class GeminiController extends Controller
                 Chat::create([
                     'pesan_user' => $userMessage,
                     'jawaban_ai' => $jawaban,
-                    'model_used' => 'gemini-1.5-flash',
+                    'model_used' => 'gemini-2.0-flash',
                 ]);
             } catch (\Exception $e) {
                 // Log saja, jangan hentikan response
