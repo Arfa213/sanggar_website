@@ -69,8 +69,8 @@ jobs:
         run: |
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d text="⚠️ *[CICD REPORT]* %0A❌ *Build / Test Gagal!* %0A%0AProses build dihentikan karena ada error pada tahap setup, migrasi, atau testing.%0ACommit: ${{ github.sha }}" \
-            -d parse_mode="Markdown"
+            -d parse_mode="Markdown" \
+            -d text="⚠️ *[CICD REPORT]* %0A❌ *Build / Test Gagal!* %0A%0AProses build dihentikan karena ada error pada tahap setup, migrasi, atau testing.%0ACommit: ${{ github.sha }}"
 
   # ─── JOB 2: BUILD & PUSH IMAGE ────────────────────────────
   build-and-push:
@@ -124,8 +124,8 @@ jobs:
         run: |
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d text="⚠️ *[CICD REPORT]* %0A❌ *Build Docker Image Gagal!* %0AGagal melakukan push ke GitHub Packages (GHCR).%0ACommit: ${{ github.sha }}" \
-            -d parse_mode="Markdown"
+            -d parse_mode="Markdown" \
+            -d text="⚠️ *[CICD REPORT]* %0A❌ *Build Docker Image Gagal!* %0AGagal melakukan push ke GitHub Packages (GHCR).%0ACommit: ${{ github.sha }}"
 
   # ─── JOB 3: DEPLOY KE VPS ────────────────────────────────
   deploy:
@@ -146,15 +146,16 @@ jobs:
 
             echo "🚀 Mulai deployment..."
 
-            # Login ke GHCR
+            # Login ke GHCR di dalam VPS
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            # Masuk ke folder project
+            # Masuk ke folder project di VPS
             cd /home/${{ secrets.SERVER_USER }}/RPL2B-kelompok-2
 
-            # Pull image terbaru (lowercase)
-            IMAGE=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-            docker pull $IMAGE:latest
+            # Pull image menggunakan variabel env yang konsisten (diubah ke lowercase)
+            TARGET_IMAGE=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+            echo "Pulling image: $TARGET_IMAGE:latest"
+            docker pull $TARGET_IMAGE:latest
 
             # Update container tanpa downtime besar
             docker-compose up -d --remove-orphans
@@ -166,12 +167,12 @@ jobs:
             # Jalankan migrasi database
             docker-compose exec -T app php artisan migrate --force --no-interaction
 
-            # Bersihkan cache website (ini yang menyebabkan tampilan web tidak berubah!)
+            # Bersihkan cache website agar perubahan kodingan langsung terlihat
             docker-compose exec -T app php artisan optimize:clear
 
             echo "✅ Deployment selesai!"
 
-      # ─── NOTIFIKASI FINAL DEPLOY SUCCESS (SUDAH DIPERBAIKI) ───
+      # ─── NOTIFIKASI FINAL DEPLOY SUCCESS ───
       - name: 📢 Telegram Notification (Deploy Success)
         if: success()
         run: |
@@ -187,5 +188,5 @@ jobs:
         run: |
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d text="⚠️ *[CICD REPORT]* %0A❌ *DEPLOYMENT KE VPS GAGAL!* %0A%0AProses SSH atau migrasi database di VPS mengalami kendala.%0ACommit: ${{ github.sha }}" \
+            -d text="⚠️ *[CICD REPORT]* %0A❌ *DEPLOYMENT KE VPS GAGAL!* %0A%0AProses SSH, pull image, atau migrasi database di VPS mengalami kendala.%0ACommit: ${{ github.sha }}" \
             -d parse_mode="Markdown"
