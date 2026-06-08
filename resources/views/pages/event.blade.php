@@ -116,9 +116,9 @@
         </div>
         @endif
 
-        <div class="split-layout" style="margin-bottom: 60px;">
-            <div class="split-text">
-                <span class="badge" style="background: #e0e7ff; color: #4338ca;">Panggilan Kolaborasi</span>
+        <div class="split-layout" style="margin-bottom: 60px; align-items: stretch; gap: 40px;">
+            <div class="split-text" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: center;">
+                <span class="badge" style="background: #e0e7ff; color: #4338ca; align-self: flex-start;">Panggilan Kolaborasi</span>
                 <h2 class="section-heading" style="text-align: left; margin-bottom: 15px; color: #1e1b4b;">Bawa Karyamu ke Panggung Kami</h2>
                 <p style="margin-bottom: 15px;">Sanggar Mulya Bhakti membuka ruang seluas-luasnya bagi para seniman, koreografer, dan penggiat budaya untuk berkolaborasi melalui platform <strong>Midhang Sore</strong>.</p>
                 <p style="margin-bottom: 25px;">Ini adalah kesempatan Anda untuk membagikan ilmu, mempresentasikan karya terbaru, atau menggelar workshop eksklusif bersama komunitas kami.</p>

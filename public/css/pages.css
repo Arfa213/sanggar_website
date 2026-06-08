@@ -251,11 +251,14 @@
 
 /* ── PELATIH CARDS ─────────────────────── */
 .people-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 24px;
 }
 .person-card {
+    flex: 1 1 260px;
+    max-width: 320px;
     background: var(--white);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
@@ -283,11 +286,14 @@
 
 /* ── PENGELOLA / ORG ────────────────────── */
 .org-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 20px;
 }
 .org-card {
+    flex: 1 1 180px;
+    max-width: 260px;
     background: var(--white);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
@@ -329,8 +335,16 @@
 }
 .kb-icon--purple { background: #6C63FF; }
 
-.jadwal-grid { padding: 20px 28px; display: flex; flex-direction: column; gap: 12px; }
+.jadwal-grid { 
+    display: flex; 
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px 28px; 
+    gap: 12px; 
+}
 .jadwal-card {
+    flex: 1 1 300px;
+    max-width: 480px;
     display: flex;
     align-items: center;
     gap: 20px;
@@ -591,11 +605,14 @@
 
 /* tarian grid */
 .tarian-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 28px;
 }
 .tari-card {
+    flex: 1 1 300px;
+    max-width: 380px;
     background: var(--white);
     border-radius: var(--radius);
     border: 1.5px solid var(--border);
