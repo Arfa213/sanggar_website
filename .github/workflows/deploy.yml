@@ -157,8 +157,8 @@ jobs:
             echo "Pulling image: $TARGET_IMAGE:latest"
             docker pull $TARGET_IMAGE:latest
 
-            # Update container tanpa downtime besar
-            docker-compose up -d --remove-orphans
+            # Update container menggunakan image terbaru dari GHCR (--pull always mencegah foto hilang)
+            docker-compose up -d --pull always --remove-orphans
 
             # Tunggu container siap
             echo "⏳ Menunggu container ready..."
