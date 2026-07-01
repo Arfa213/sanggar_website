@@ -38,19 +38,21 @@
         <thead>
             <tr>
                 <th width="4%">No</th>
-                <th width="22%">Nama Lengkap</th>
-                <th width="22%">Email</th>
-                <th width="13%">No. HP</th>
-                <th width="12%">Tipe</th>
-                <th width="10%">Status</th>
-                <th width="9%">Bergabung</th>
-                <th width="8%">Keluar</th>
+                <th width="12%">NIS</th>
+                <th width="20%">Nama Lengkap</th>
+                <th width="20%">Email</th>
+                <th width="12%">No. HP</th>
+                <th width="10%">Tipe</th>
+                <th width="8%">Status</th>
+                <th width="7%">Bergabung</th>
+                <th width="7%">Keluar</th>
             </tr>
         </thead>
         <tbody>
             @foreach($anggota as $index => $a)
             <tr>
                 <td style="text-align: center;">{{ $index + 1 }}</td>
+                <td style="text-align: center; font-weight: bold;">{{ $a->nomor_induk ?? '-' }}</td>
                 <td class="nama">{{ $a->name }}</td>
                 <td>{{ $a->email }}</td>
                 <td>{{ $a->no_hp ?? '-' }}</td>

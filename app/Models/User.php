@@ -26,6 +26,7 @@ class User extends Authenticatable {
         'tipe_anggota',
         'tgl_kadaluarsa',
         'catatan_keanggotaan',
+        'nomor_induk',
     ];
 
     /**
@@ -45,6 +46,38 @@ class User extends Authenticatable {
         'tgl_kadaluarsa'    => 'date',
     ];
     
+    // ─── BOOT ──────────────────────────────────────
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            // Jika user adalah anggota dan nomor_induk belum diset
+            if ($user->role === 'anggota' && empty($user->nomor_induk)) {
+                $user->nomor_induk = self::generateNomorInduk();
+            }
+        });
+    }
+
+    public static function generateNomorInduk(): string
+    {
+        $datePrefix = now()->format('ymd'); // format: YYMMDD
+        
+        // Cari user terakhir yang didaftarkan pada hari yang sama
+        $lastUser = self::where('nomor_induk', 'like', $datePrefix . '%')
+                        ->orderBy('nomor_induk', 'desc')
+                        ->first();
+                        
+        if ($lastUser && !empty($lastUser->nomor_induk)) {
+            // Ambil 3 digit terakhir
+            $lastSequence = (int) substr($lastUser->nomor_induk, -3);
+            $newSequence = $lastSequence + 1;
+        } else {
+            $newSequence = 1;
+        }
+        
+        return $datePrefix . str_pad($newSequence, 3, '0', STR_PAD_LEFT);
+    }
 
     // ─── HELPERS ───────────────────────────────────
     public function isAdmin(): bool

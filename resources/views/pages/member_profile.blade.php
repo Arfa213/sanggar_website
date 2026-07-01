@@ -44,6 +44,15 @@
 
             {{-- Bagian Bawah: Form Inputs --}}
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px; margin-bottom:30px;">
+                @if($user->nomor_induk)
+                <div style="grid-column: 1 / -1; margin-bottom:0;">
+                    <label style="font-size:.85rem; font-weight:700; color:var(--dark); display:block; margin-bottom:8px;">Nomor Induk Siswa (NIS)</label>
+                    <input type="text" value="{{ $user->nomor_induk }}" readonly
+                        style="width:100%; padding:12px 16px; border:1.5px solid var(--border); border-radius:12px; font-size:1.1rem; font-weight:800; letter-spacing:2px; color:var(--primary); outline:none; background:#FDF0EA; text-align:center;">
+                    <p style="font-size:.75rem; color:var(--muted); margin-top:6px; text-align:center;">Nomor identitas ini akan digunakan untuk keperluan pendataan dan absensi.</p>
+                </div>
+                @endif
+
                 <div style="margin-bottom:16px;">
                     <label style="font-size:.85rem; font-weight:700; color:var(--dark); display:block; margin-bottom:8px;">Nama Lengkap <span style="color:#C65D2E">*</span></label>
                     <input type="text" name="name" value="{{ old('name', $user->name) }}" required

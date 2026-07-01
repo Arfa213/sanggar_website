@@ -243,4 +243,16 @@ class KehadiranController extends Controller
         KelasBarcode::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'QR Code Permanen berhasil dihapus.');
     }
+
+    public function generateDynamicToken()
+    {
+        // Token format: DYN-QR|timestamp|signature
+        $timestamp = time();
+        $payload = "DYN-QR|" . $timestamp;
+        $signature = hash_hmac('sha256', $payload, config('app.key'));
+        
+        $token = base64_encode($payload . "|" . $signature);
+        
+        return response()->json(['token' => $token]);
+    }
 }

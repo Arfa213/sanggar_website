@@ -52,11 +52,12 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>Nama</th><th>Email</th><th>No. HP</th><th>Tipe</th><th>Terdaftar</th><th>Keluar</th><th>Status</th><th>Aksi</th></tr>
+                <tr><th>NIS</th><th>Nama</th><th>Email</th><th>No. HP</th><th>Tipe</th><th>Terdaftar</th><th>Keluar</th><th>Status</th><th>Aksi</th></tr>
             </thead>
             <tbody>
                 @forelse($anggota as $a)
                 <tr>
+                    <td style="font-size:.875rem; font-weight:600; color:#2E7D32;">{{ $a->nomor_induk ?? '-' }}</td>
                     <td>
                         <div style="display:flex;align-items:center;gap:10px">
                             @if($a->foto)
@@ -104,7 +105,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8"><div class="empty-state"><h3>Tidak ada anggota ditemukan</h3><p>Coba ubah filter pencarian.</p></div></td></tr>
+                <tr><td colspan="9"><div class="empty-state"><h3>Tidak ada anggota ditemukan</h3><p>Coba ubah filter pencarian.</p></div></td></tr>
                 @endforelse
             </tbody>
         </table>

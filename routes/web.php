@@ -164,6 +164,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/kehadiran/laporan/anggota',    [AdminKehadiran::class, 'laporanAnggota'])->name('kehadiran.laporan.anggota');
     Route::get('/kehadiran/laporan/pengunjung', [AdminKehadiran::class, 'laporanPengunjung'])->name('kehadiran.laporan.pengunjung');
     Route::get('/kehadiran/laporan/export-pdf', [AdminKehadiran::class, 'exportPdf'])->name('kehadiran.pdf');
+    Route::get('/kehadiran/dynamic-qr-token',   [AdminKehadiran::class, 'generateDynamicToken'])->name('kehadiran.dynamic-qr-token');
 
     // Permanent QR (Kelas Barcode)
     Route::get('/kehadiran/permanent/{id}',     [AdminKehadiran::class, 'showPermanentQR'])->name('kehadiran.permanent.show');

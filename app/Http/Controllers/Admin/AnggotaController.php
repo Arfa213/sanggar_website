@@ -11,7 +11,11 @@ class AnggotaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::where('role', 'anggota');
+        $query = User::where('role', 'anggota')
+            ->where(function($q) {
+                $q->whereNotNull('email_verified_at')
+                  ->orWhere('created_at', '<', '2026-05-21');
+            });
         if ($request->filled('search')) {
             $q = $request->search;
             $query->where(fn($w) => $w->where('name','like',"%$q%")->orWhere('email','like',"%$q%"));
@@ -27,7 +31,12 @@ class AnggotaController extends Controller
     public function downloadPdf(Request $request)
     {
         $tipe = $request->tipe ?? 'semua';
-        $query = User::where('role', 'anggota')->orderBy('name');
+        $query = User::where('role', 'anggota')
+            ->where(function($q) {
+                $q->whereNotNull('email_verified_at')
+                  ->orWhere('created_at', '<', '2026-05-21');
+            })
+            ->orderBy('name');
         if ($tipe !== 'semua') $query->where('tipe_anggota', $tipe);
         $anggota = $query->get();
 
@@ -44,7 +53,12 @@ class AnggotaController extends Controller
     public function downloadExcel(Request $request)
     {
         $tipe = $request->tipe ?? 'semua';
-        $query = User::where('role', 'anggota')->orderBy('name');
+        $query = User::where('role', 'anggota')
+            ->where(function($q) {
+                $q->whereNotNull('email_verified_at')
+                  ->orWhere('created_at', '<', '2026-05-21');
+            })
+            ->orderBy('name');
         if ($tipe !== 'semua') $query->where('tipe_anggota', $tipe);
         $anggota = $query->get();
 
@@ -67,11 +81,12 @@ class AnggotaController extends Controller
             fwrite($handle, "\xEF\xBB\xBF");
 
             // Header kolom
-            fputcsv($handle, ['No', 'Nama', 'Email', 'No. HP', 'Alamat', 'Tipe', 'Status', 'Terdaftar', 'Berlaku Hingga', 'Catatan']);
+            fputcsv($handle, ['No', 'NIS', 'Nama', 'Email', 'No. HP', 'Alamat', 'Tipe', 'Status', 'Terdaftar', 'Berlaku Hingga', 'Catatan']);
 
             foreach ($anggota as $i => $a) {
                 fputcsv($handle, [
                     $i + 1,
+                    $a->nomor_induk ?? '-',
                     $a->name,
                     $a->email,
                     $a->no_hp ?? '-',
@@ -122,6 +137,7 @@ class AnggotaController extends Controller
             'tipe_anggota'        => $request->tipe_anggota,
             'tgl_kadaluarsa'      => $request->tgl_kadaluarsa,
             'catatan_keanggotaan' => $request->catatan_keanggotaan,
+            'email_verified_at'   => now(),
         ];
 
         if ($request->hasFile('foto')) {

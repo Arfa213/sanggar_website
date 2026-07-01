@@ -47,10 +47,14 @@ class RaporPagelaranController extends Controller
         $startDate = $previousPagelaran ? $previousPagelaran->tanggal : null;
         $endDate = $pagelaran->tanggal;
 
-        // Ambil semua anggota tetap yang aktif
+        // Ambil semua anggota tetap yang aktif dan sudah terverifikasi
         $anggotaTetap = User::where('role', 'anggota')
             ->where('tipe_anggota', 'anggota_tetap')
             ->where('status', 'aktif')
+            ->where(function($q) {
+                $q->whereNotNull('email_verified_at')
+                  ->orWhere('created_at', '<', '2026-05-21');
+            })
             ->orderBy('name')
             ->get();
 
