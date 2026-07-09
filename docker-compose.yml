@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sanggar-web
+    container_name: sanggar-web
+    restart: always
+    ports:
+      - "8090:80"
+    volumes:
+      # Persist storage directory for uploads/logs
+      - ./storage:/var/www/html/storage
+      # Mount environment file to prevent losing settings
+      - ./.env:/var/www/html/.env
+    networks:
+      - sanggar-network
+      # Menghubungkan ke network bimbelrbs untuk akses database bersama
+      - bimbelrbs-web_bimbelrbs-network
+
+networks:
+  sanggar-network:
+    driver: bridge
+  bimbelrbs-web_bimbelrbs-network:
+    external: true

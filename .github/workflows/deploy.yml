@@ -1,192 +1,29 @@
-name: Deploy Website Laravel CICD
+name: Sanggar Web Auto Deploy CI/CD
 
 on:
   push:
     branches:
-      - main
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: arfa213/sanggar_website
+      - miomidev
 
 jobs:
-  # ─── JOB 1: TESTING ───────────────────────────────────────
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: pdo, pdo_sqlite, pdo_mysql, bcmath
-
-      - name: Install Composer dependencies
-        run: composer install --no-progress --prefer-dist
-
-      - name: Dump autoload
-        run: composer dump-autoload
-
-      - name: Debug classmap
-        run: |
-          echo "=== Cek RegistrationTest di classmap ==="
-          grep -i "RegistrationTest" vendor/composer/autoload_classmap.php || echo "tidak ditemukan"
-          echo "=== Cek AuthController di classmap ==="
-          grep -i "AuthController" vendor/composer/autoload_classmap.php || echo "tidak ditemukan"
-          echo "=== List semua file di Controllers ==="
-          find app/Http/Controllers -name "*.php" | sort
-
-      - name: Copy .env
-        run: cp .env.example .env
-
-      - name: Generate app key
-        run: php artisan key:generate
-
-      - name: Create SQLite database
-        run: touch database/database.sqlite
-
-      - name: Run migrations
-        run: php artisan migrate --force
-
-      - name: Debug - cek isi AuthController
-        run: |
-          echo "=== Isi AuthController.php ==="
-          cat app/Http/Controllers/Auth/AuthController.php
-          echo "=== List folder Auth ==="
-          ls -la app/Http/Controllers/Auth/
-
-      - name: Run PHPUnit tests
-        continue-on-error: true
-        run: php artisan test
-
-      # ─── NOTIFIKASI JIKA TESTING GAGAL ───
-      - name: ❌ Telegram Notification (Test Failed)
-        if: failure()
-        run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode="Markdown" \
-            -d text="⚠️ *[CICD REPORT]* %0A❌ *Build / Test Gagal!* %0A%0AProses build dihentikan karena ada error pada tahap setup, migrasi, atau testing.%0ACommit: ${{ github.sha }}"
-
-  # ─── JOB 2: BUILD & PUSH IMAGE ────────────────────────────
-  build-and-push:
-    name: Build & Push Docker Image
-    runs-on: ubuntu-latest
-    needs: test
-
-    permissions:
-      contents: read
-      packages: write
-
-    outputs:
-      image: ${{ steps.meta.outputs.tags }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Login ke GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Extract metadata Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=sha,prefix=sha-
-            type=raw,value=latest
-
-      - name: Build & Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # ─── NOTIFIKASI JIKA BUILD GAGAL ───
-      - name: ❌ Telegram Notification (Build Image Failed)
-        if: failure()
-        run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode="Markdown" \
-            -d text="⚠️ *[CICD REPORT]* %0A❌ *Build Docker Image Gagal!* %0AGagal melakukan push ke GitHub Packages (GHCR).%0ACommit: ${{ github.sha }}"
-
-  # ─── JOB 3: DEPLOY KE VPS ────────────────────────────────
   deploy:
-    name: Deploy ke VPS
     runs-on: ubuntu-latest
-    needs: build-and-push
 
     steps:
-      - name: Deploy via SSH
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 8022
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
           script: |
-            set -e
-
-            echo "🚀 Mulai deployment..."
-
-            # Login ke GHCR di dalam VPS
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Masuk ke folder project di VPS
-            cd /home/${{ secrets.SERVER_USER }}/RPL2B-kelompok-2
-
-            # Pull image menggunakan variabel env yang konsisten (diubah ke lowercase)
-            TARGET_IMAGE=$(echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-            echo "Pulling image: $TARGET_IMAGE:latest"
-            docker pull $TARGET_IMAGE:latest
-
-            # Update container menggunakan image terbaru dari GHCR (--pull always mencegah foto hilang)
-            docker-compose up -d --pull always --remove-orphans
-
-            # Tunggu container siap
-            echo "⏳ Menunggu container ready..."
-            sleep 20
-
-            # Jalankan migrasi database
-            docker exec senidrai php artisan migrate --force --no-interaction
-
-            # Bersihkan cache website agar perubahan kodingan langsung terlihat
-            docker exec senidrai php artisan optimize:clear
-
-            echo "✅ Deployment selesai!"
-
-      # ─── NOTIFIKASI FINAL DEPLOY SUCCESS ───
-      - name: 📢 Telegram Notification (Deploy Success)
-        if: success()
-        run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode="Markdown" \
-            -d disable_web_page_preview=true \
-            -d text="🚀 *[CICD REPORT]* %0A✅ *DEPLOYMENT BERHASIL!* %0A%0AAplikasi Laravel terbaru sudah aktif di VPS.%0AAktor: *${{ github.actor }}* %0ACommit: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
-
-      # ─── NOTIFIKASI FINAL DEPLOY FAILED ───
-      - name: ❌ Telegram Notification (Deploy Failed)
-        if: failure()
-        run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d text="⚠️ *[CICD REPORT]* %0A❌ *DEPLOYMENT KE VPS GAGAL!* %0A%0AProses SSH, pull image, atau migrasi database di VPS mengalami kendala.%0ACommit: ${{ github.sha }}" \
-            -d parse_mode="Markdown"
+            git config --global --add safe.directory /home/miomideveloper/sanggar-web
+            cd /home/miomideveloper/sanggar-web
+            git fetch --all
+            git reset --hard origin/miomidev
+            chmod +x deploy.sh
+            ./deploy.sh
