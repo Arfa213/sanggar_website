@@ -35,12 +35,6 @@ Route::post('/event/daftar',  [EventController::class,          'daftar'])->name
 Route::get('/event/tiket/{order_id}', [EventController::class,  'tiketPdf'])->name('event.tiket');
 Route::get('/digital-archive',[DigitalArchiveController::class, 'index'])->name('digital-archive');
 Route::get('/galeri/{seksi?}', [App\Http\Controllers\GaleriController::class, 'frontendIndex'])->name('galeri.frontend.index');
-Route::get('/lang/{locale}', function ($locale) {
-    if (in_array($locale, ['id', 'en'])) {
-        session()->put('locale', $locale);
-    }
-    return redirect()->back();
-})->name('lang.switch');
 
 // ── TAMU (Public Guest Log) ──────────────────────────────────
 Route::get('/tamu',           [\App\Http\Controllers\TamuController::class, 'index'])->name('tamu.index');
