@@ -7,23 +7,31 @@ class EventController extends Controller {
         $midhang = Event::where('status', '!=', 'pending_approval')->where('status', '!=', 'selesai')->whereDate('tanggal', '>=', now())->where('kategori', 'midhang_sore')->orderBy('tanggal')->get();
         $studi = Event::where('status', '!=', 'pending_approval')->where('status', '!=', 'selesai')->whereDate('tanggal', '>=', now())->where('kategori', 'studi_budaya')->orderBy('tanggal')->get();
         $pagelaran = Event::where('status', '!=', 'pending_approval')->where('status', '!=', 'selesai')->whereDate('tanggal', '>=', now())->where('kategori', 'pagelaran')->orderBy('tanggal')->get();
-        return view('pages.event', compact('midhang', 'studi', 'pagelaran'));
+        $tarianList = \App\Models\Tarian::where('aktif', true)->orderBy('nama')->get();
+        return view('pages.event', compact('midhang', 'studi', 'pagelaran', 'tarianList'));
     }
 
     public function ajukan(\Illuminate\Http\Request $request) {
         $validated = $request->validate([
-            'nama_pengaju'    => 'required|string|max:255',
-            'foto_pengaju'    => 'required|image|max:3072',
-            'no_hp_pengaju'   => 'required|string|max:20',
-            'nama'            => 'required|string|max:255',
-            'portofolio_link' => 'nullable|url',
-            'sinopsis_link'   => 'nullable|url',
-            'catatan_pengaju' => 'nullable|string',
+            'nama_pengaju'      => 'required|string|max:255',
+            'foto_pengaju'      => 'required|image|max:3072',
+            'no_hp_pengaju'     => 'required|string|max:20',
+            'nama'              => 'required|string|max:255',
+            'portofolio_link'   => 'nullable|url',
+            'sinopsis_link'     => 'nullable|url',
+            'catatan_pengaju'   => 'nullable|string',
+            'bulan_pelaksanaan' => 'required|string|in:Juli,Desember',
         ]);
 
         if ($request->hasFile('foto_pengaju')) {
             $validated['foto_pengaju'] = $request->file('foto_pengaju')->store('pengaju', 'public');
         }
+
+        $bulan = $request->input('bulan_pelaksanaan');
+        $catatan = $request->input('catatan_pengaju');
+        $validated['catatan_pengaju'] = "Bulan Pilihan: " . $bulan . ($catatan ? "\nCatatan: " . $catatan : "");
+
+        unset($validated['bulan_pelaksanaan']);
 
         $validated['tanggal'] = now()->addMonth(); // Admin will edit this later
         $validated['status'] = 'pending_approval';

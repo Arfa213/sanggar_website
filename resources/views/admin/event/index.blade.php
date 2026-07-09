@@ -114,6 +114,9 @@
                     <td><span class="chip {{ $ev->unggulan ? 'chip--orange' : 'chip--gray' }}">{{ $ev->unggulan ? '★ Ya' : 'Tidak' }}</span></td>
                     <td><span class="chip {{ $ev->status==='selesai' ? 'chip--green' : 'chip--orange' }}">{{ $ev->status==='selesai' ? 'Selesai' : 'Mendatang' }}</span></td>
                     <td class="td-actions">
+                        @if($ev->kategori === 'midhang_sore')
+                            <a href="{{ route('admin.ujian.index', $ev->id) }}" class="btn btn-primary btn-sm" style="background:#4f46e5;border:none;">👥 Peserta Ujian</a>
+                        @endif
                         <a href="{{ route('admin.event.edit',$ev->id) }}" class="btn btn-secondary btn-sm">Edit</a>
                         <form method="POST" action="{{ route('admin.event.destroy',$ev->id) }}" style="display:inline">
                             @csrf @method('DELETE')

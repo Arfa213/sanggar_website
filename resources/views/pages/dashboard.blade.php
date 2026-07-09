@@ -456,6 +456,70 @@ function onScanSuccess(decodedText) {
     </div>
     @endif
 
+    {{-- UJIAN SAYA --}}
+    @if($ujianSaya->count() > 0)
+    <div style="background:#fff;border-radius:16px;border:1px solid #E8E0D8;overflow:hidden;margin-bottom:16px">
+        <div style="padding:14px 18px;border-bottom:1px solid #F0EBE5;background: linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff">
+            <div style="font-size:.65rem;font-weight:700;letter-spacing:1px;opacity:.8;text-transform:uppercase;margin-bottom:2px">UJIAN MIDHANG SORE</div>
+            <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin:0">Status Pendaftaran Ujian</h3>
+        </div>
+        <div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px">
+            @foreach($ujianSaya as $uj)
+            <div style="padding:12px;background:#FAFAF8;border:1px solid #F0EBE5;border-radius:10px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+                    <div>
+                        <div style="font-size:.825rem;font-weight:700;color:#1A1A1A">{{ $uj->tarian->nama }}</div>
+                        <div style="font-size:.7rem;color:#7A7A7A">{{ $uj->event->nama }}</div>
+                    </div>
+                    @php
+                        $badgeStyle = match($uj->status) {
+                            'menunggu' => 'background:#FFF3E0;color:#E65100',
+                            'diterima' => 'background:#E8F5E9;color:#2E7D32',
+                            'ditolak'  => 'background:#FEF2F2;color:#DC2626',
+                            default    => 'background:#F5F5F5;color:#666',
+                        };
+                        $badgeLabel = match($uj->status) {
+                            'menunggu' => '⏳ Menunggu',
+                            'diterima' => '✓ Diterima',
+                            'ditolak'  => '✗ Ditolak',
+                            default    => $uj->status,
+                        };
+                    @endphp
+                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:20px;{{ $badgeStyle }}">{{ $badgeLabel }}</span>
+                </div>
+
+                {{-- Tampilkan nilai jika sudah ada rapor --}}
+                @if($uj->rapor)
+                <div style="margin-top:8px;padding:8px 10px;background:{{ $uj->rapor->lulus ? '#E8F5E9' : '#FFF8E1' }};border-radius:8px">
+                    <div style="font-size:.72rem;color:#555;margin-bottom:2px">Nilai Ujian</div>
+                    <div style="font-size:1rem;font-weight:900;color:{{ $uj->rapor->lulus ? '#2E7D32' : '#E65100' }}">
+                        {{ $uj->rapor->nilai_akhir }} — {{ $uj->rapor->predikat }}
+                    </div>
+                    <div style="font-size:.7rem;color:{{ $uj->rapor->lulus ? '#2E7D32' : '#E65100' }};font-weight:700">
+                        {{ $uj->rapor->lulus ? '🎉 LULUS' : '📚 Belum Lulus' }}
+                    </div>
+                    @if($uj->rapor->lulus)
+                    <a href="{{ route('ujian.sertifikat', $uj->rapor->id) }}" target="_blank"
+                       style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:.75rem;font-weight:700;color:#4f46e5;text-decoration:none;padding:5px 10px;background:#EEF2FF;border-radius:6px">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download Sertifikat
+                    </a>
+                    @endif
+                </div>
+                @endif
+
+                {{-- Catatan admin jika ditolak --}}
+                @if($uj->status === 'ditolak' && $uj->catatan_admin)
+                <div style="margin-top:6px;font-size:.72rem;color:#b91c1c;padding:6px 8px;background:#FEF2F2;border-radius:6px">
+                    <strong>Catatan Admin:</strong> {{ $uj->catatan_admin }}
+                </div>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     {{-- Quick actions --}}
     <div style="background:#fff;border-radius:16px;border:1px solid #E8E0D8;overflow:hidden">
         <div style="padding:14px 18px;border-bottom:1px solid #F0EBE5">

@@ -124,6 +124,11 @@ class User extends Authenticatable {
         return $this->hasMany(\App\Models\RaporPagelaran::class);
     }
 
+    public function ujianPendaftaran()
+    {
+        return $this->hasMany(\App\Models\UjianPendaftaran::class);
+    }
+
     // ─── RELATIONS ─────────────────────────────────
     // Uncomment saat model terkait sudah dibuat
     // public function kegiatan() { return $this->belongsToMany(Kegiatan::class); }

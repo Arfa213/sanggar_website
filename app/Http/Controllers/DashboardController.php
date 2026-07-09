@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{PendaftaranTari, Kehadiran, Event, Tarian, User};
+use App\Models\{PendaftaranTari, Kehadiran, Event, Tarian, User, UjianPendaftaran, RaporPagelaran};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -65,11 +65,25 @@ class DashboardController extends Controller
         $totalKehadiranAll = Kehadiran::where('user_id', $user->id)->count();
         $totalHadirAll     = Kehadiran::where('user_id', $user->id)->where('status', 'hadir')->count();
 
+        // Ujian Midhang Sore saya (untuk anggota tetap)
+        $ujianSaya = UjianPendaftaran::with(['event', 'tarian'])
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($item) use ($user) {
+                $item->rapor = RaporPagelaran::where([
+                    'event_id'  => $item->event_id,
+                    'user_id'   => $user->id,
+                    'tarian_id' => $item->tarian_id,
+                ])->first();
+                return $item;
+            });
+
         return view('pages.dashboard', compact(
             'user', 'jadwalAktif', 'kehadiranBulanIni',
             'totalLatihan', 'hadir', 'izin', 'alpa', 'persenHadir',
             'eventMendatang', 'tarianRekomendasi', 'absensiTerakhir',
-            'totalKehadiranAll', 'totalHadirAll'
+            'totalKehadiranAll', 'totalHadirAll', 'ujianSaya'
         ));
     }
 

@@ -35,6 +35,12 @@ Route::post('/event/daftar',  [EventController::class,          'daftar'])->name
 Route::get('/event/tiket/{order_id}', [EventController::class,  'tiketPdf'])->name('event.tiket');
 Route::get('/digital-archive',[DigitalArchiveController::class, 'index'])->name('digital-archive');
 Route::get('/galeri/{seksi?}', [App\Http\Controllers\GaleriController::class, 'frontendIndex'])->name('galeri.frontend.index');
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['id', 'en'])) {
+        session()->put('locale', $locale);
+    }
+    return redirect()->back();
+})->name('lang.switch');
 
 // ── TAMU (Public Guest Log) ──────────────────────────────────
 Route::get('/tamu',           [\App\Http\Controllers\TamuController::class, 'index'])->name('tamu.index');
@@ -76,6 +82,10 @@ Route::middleware('auth')->group(function () {
     // Member Profile
     Route::get('/my-profile',                 [DashboardController::class, 'editProfile'])->name('member.profile');
     Route::post('/my-profile/update',         [DashboardController::class, 'updateProfile'])->name('member.profile.update');
+
+    // Ujian Midhang Sore
+    Route::post('/ujian/daftar',              [\App\Http\Controllers\UjianController::class, 'daftar'])->name('ujian.daftar');
+    Route::get('/ujian/sertifikat/{id}',      [\App\Http\Controllers\UjianController::class, 'downloadSertifikat'])->name('ujian.sertifikat');
 });
 
 
@@ -188,6 +198,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/pagelaran/{eventId}', [\App\Http\Controllers\Admin\RaporPagelaranController::class, 'form'])->name('form');
         Route::post('/store', [\App\Http\Controllers\Admin\RaporPagelaranController::class, 'store'])->name('store');
         Route::get('/murid/{userId}', [\App\Http\Controllers\Admin\RaporPagelaranController::class, 'show'])->name('murid');
+    });
+
+    // Admin Ujian
+    Route::prefix('ujian')->name('ujian.')->group(function () {
+        Route::get('/{eventId}',                  [\App\Http\Controllers\Admin\AdminUjianController::class, 'index'])->name('index');
+        Route::patch('/{id}/status',              [\App\Http\Controllers\Admin\AdminUjianController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{eventId}/nilai',            [\App\Http\Controllers\Admin\AdminUjianController::class, 'formNilai'])->name('form-nilai');
+        Route::post('/nilai/simpan',              [\App\Http\Controllers\Admin\AdminUjianController::class, 'simpanNilai'])->name('simpan-nilai');
     });
 });
 

@@ -78,7 +78,13 @@
             </div>
 
             @auth
-                <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 6px 12px; background: #f1f5f9; border-radius: 20px;">Anggota</span>
+                @if($ev->kategori === 'midhang_sore' && Auth::user()->tipe_anggota === 'anggota_tetap')
+                    <button onclick="bukaModalUjian({{ $ev->id }}, '{{ addslashes($ev->nama) }}')" style="padding: 6px 14px; background: {{ $color }}; color: white; border: none; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px {{ $color }}44;">
+                        Daftar Ujian
+                    </button>
+                @else
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 6px 12px; background: #f1f5f9; border-radius: 20px;">Anggota</span>
+                @endif
             @else
                 <button onclick="bukaModalDaftar({{ $ev->id }}, '{{ addslashes($ev->nama) }}', {{ $ev->is_berbayar ? 'true' : 'false' }}, {{ $ev->harga_tiket ?? 0 }})" style="padding: 6px 14px; background: {{ $color }}; color: white; border: none; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px {{ $color }}44;">
                     Daftar

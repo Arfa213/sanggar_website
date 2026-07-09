@@ -22,6 +22,9 @@
         .nav-user-btn:hover {
             background: var(--primary-pale) !important;
         }
+        .nav-lang-switcher:hover .nav-lang-menu {
+            display: block !important;
+        }
 
         /* Scroll Reveal Animation CSS */
         .scroll-reveal {
@@ -53,16 +56,33 @@
             </a>
 
             <ul class="navbar-menu">
-                <li><a href="{{ route('home') }}"           class="{{ request()->routeIs('home')            ? 'active' : '' }}">Beranda</a></li>
-                <li><a href="{{ route('profile') }}"        class="{{ request()->routeIs('profile')         ? 'active' : '' }}">Profil</a></li>
-                <li><a href="{{ route('event') }}"          class="{{ request()->routeIs('event')           ? 'active' : '' }}">Event</a></li>
-                <li><a href="{{ route('digital-archive') }}" class="{{ request()->routeIs('digital-archive') ? 'active' : '' }}">Arsip Digital</a></li>
+                <li><a href="{{ route('home') }}"           class="{{ request()->routeIs('home')            ? 'active' : '' }}">{{ __('Beranda') }}</a></li>
+                <li><a href="{{ route('profile') }}"        class="{{ request()->routeIs('profile')         ? 'active' : '' }}">{{ __('Profil') }}</a></li>
+                <li><a href="{{ route('event') }}"          class="{{ request()->routeIs('event')           ? 'active' : '' }}">{{ __('Event') }}</a></li>
+                <li><a href="{{ route('digital-archive') }}" class="{{ request()->routeIs('digital-archive') ? 'active' : '' }}">{{ __('Arsip Digital') }}</a></li>
             </ul>
 
             <div class="navbar-actions">
+                {{-- Language Switcher --}}
+                <div class="nav-lang-switcher" style="position:relative; margin-right: 12px; display:inline-block;">
+                    @php $currLocale = app()->getLocale(); @endphp
+                    <button class="nav-lang-btn" style="background:none; border:1px solid var(--border); display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:50px; transition:all .2s; font-size:0.8rem; font-weight:700; color:var(--dark);">
+                        @if($currLocale === 'en')
+                            🇬🇧 EN
+                        @else
+                            🇮🇩 ID
+                        @endif
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="opacity:.6;"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="nav-lang-menu" style="position:absolute; top:100%; right:0; width:100px; background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.08); margin-top:5px; display:none; z-index:1000; overflow:hidden;">
+                        <a href="{{ route('lang.switch', 'id') }}" style="display:flex; align-items:center; gap:8px; padding:10px 12px; text-decoration:none; color:var(--dark); font-size:.8rem; font-weight:600; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'" onmouseout="this.style.background='none'">🇮🇩 ID</a>
+                        <a href="{{ route('lang.switch', 'en') }}" style="display:flex; align-items:center; gap:8px; padding:10px 12px; text-decoration:none; color:var(--dark); font-size:.8rem; font-weight:600; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'" onmouseout="this.style.background='none'">🇬🇧 EN</a>
+                    </div>
+                </div>
+
                 @auth
                     {{-- DROPDOWN USER --}}
-                    <div class="nav-user-dropdown" style="position:relative; margin-left: 10px;">
+                    <div class="nav-user-dropdown" style="position:relative; margin-left: 5px;">
                         <button class="nav-user-btn" style="background:none; border:none; display:flex; align-items:center; gap:12px; cursor:pointer; padding:6px 12px; border-radius:50px; transition:all .2s;">
                             @if(Auth::user()->foto)
                                 <img src="{{ asset('storage/'.Auth::user()->foto) }}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-pale)">
@@ -88,20 +108,20 @@
                                 @if(Auth::user()->role !== 'admin')
                                 <a href="{{ route('dashboard') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                                    Dashboard Member
+                                    {{ __('Dashboard Member') }}
                                 </a>
                                 @endif
                                 @if(Auth::user()->role === 'admin')
                                 <a href="{{ route('admin.dashboard') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                                    Admin Panel
+                                    {{ __('Admin Panel') }}
                                 </a>
                                 @endif
 
                                 @if(Auth::user()->tipe_anggota !== 'pengunjung' && Auth::user()->role !== 'admin')
                                 <a href="{{ route('member.profile') }}" style="display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; color:var(--dark); font-size:.875rem; font-weight:500; transition:all .2s;" onmouseover="this.style.background='var(--primary-pale)'; this.style.color='var(--primary)'" onmouseout="this.style.background='none'; this.style.color='var(--dark)'">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                    Pengaturan Profil
+                                    {{ __('Pengaturan Profil') }}
                                 </a>
                                 @endif
                             </div>
@@ -110,15 +130,15 @@
                                     @csrf
                                     <button type="submit" style="width:100%; display:flex; align-items:center; gap:12px; padding:10px 16px; border:none; background:none; color:#DC2626; font-size:.875rem; font-weight:800; cursor:pointer; text-align:left; transition:all .2s;" onmouseover="this.style.background='rgba(220,38,38,0.05)'" onmouseout="this.style.background='none'">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                                        Keluar Akun
+                                        {{ __('Keluar Akun') }}
                                     </button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('login') }}"    class="btn-masuk">Masuk</a>
-                    <a href="{{ route('register') }}" class="btn-daftar">Daftar Anggota</a>
+                    <a href="{{ route('login') }}"    class="btn-masuk">{{ __('Masuk') }}</a>
+                    <a href="{{ route('register') }}" class="btn-daftar">{{ __('Daftar Anggota') }}</a>
                 @endauth
             </div>
 
@@ -131,27 +151,32 @@
     {{-- MOBILE MENU --}}
     <div class="mobile-menu" id="mobileMenu">
         <ul>
-            <li><a href="{{ route('home') }}">Beranda</a></li>
-            <li><a href="{{ route('profile') }}">Profil</a></li>
-            <li><a href="{{ route('event') }}">Event</a></li>
-            <li><a href="{{ route('digital-archive') }}">Arsip Digital</a></li>
+            <li><a href="{{ route('home') }}">{{ __('Beranda') }}</a></li>
+            <li><a href="{{ route('profile') }}">{{ __('Profil') }}</a></li>
+            <li><a href="{{ route('event') }}">{{ __('Event') }}</a></li>
+            <li><a href="{{ route('digital-archive') }}">{{ __('Arsip Digital') }}</a></li>
             @auth
             @if(Auth::user()->role !== 'admin')
-            <li><a href="{{ route('dashboard') }}">Dashboard Saya</a></li>
+            <li><a href="{{ route('dashboard') }}">{{ __('Dashboard Saya') }}</a></li>
             @endif
             @if(Auth::user()->role === 'admin')
-            <li><a href="{{ route('admin.dashboard') }}">Admin Panel</a></li>
+            <li><a href="{{ route('admin.dashboard') }}">{{ __('Admin Panel') }}</a></li>
             @endif
             <li>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" style="background:none;border:none;font-size:1rem;cursor:pointer;color:inherit;padding:0">Keluar</button>
+                    <button type="submit" style="background:none;border:none;font-size:1rem;cursor:pointer;color:inherit;padding:0">{{ __('Keluar') }}</button>
                 </form>
             </li>
             @else
-            <li><a href="{{ route('login') }}">Masuk</a></li>
-            <li><a href="{{ route('register') }}" class="btn-daftar">Daftar Anggota</a></li>
+            <li><a href="{{ route('login') }}">{{ __('Masuk') }}</a></li>
+            <li><a href="{{ route('register') }}" class="btn-daftar">{{ __('Daftar Anggota') }}</a></li>
             @endauth
+            {{-- Mobile Lang Switcher --}}
+            <li style="border-top:1px solid #f1f5f9; margin-top:10px; padding-top:10px; display:flex; gap:15px; justify-content:center;">
+                <a href="{{ route('lang.switch', 'id') }}" style="font-weight:bold; font-size:0.9rem;">🇮🇩 ID</a>
+                <a href="{{ route('lang.switch', 'en') }}" style="font-weight:bold; font-size:0.9rem;">🇬🇧 EN</a>
+            </li>
         </ul>
     </div>
 

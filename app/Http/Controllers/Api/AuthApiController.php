@@ -192,7 +192,27 @@ class AuthApiController extends Controller
     // ── GET USER ─────────────────────────────────────────────
     public function me(Request $request)
     {
-        return response()->json(['data' => $request->user()]);
+        return response()->json(['data' => $this->getUserWithLencana($request->user())]);
+    }
+
+    private function getUserWithLencana($user)
+    {
+        $lencana = \App\Models\RaporPagelaran::with('tarian')
+            ->where('user_id', $user->id)
+            ->where('lulus', true)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'tarian_id'     => $item->tarian_id,
+                    'nama_tarian'   => $item->tarian->nama ?? 'Tarian',
+                    'tanggal_lulus' => $item->created_at ? $item->created_at->toDateString() : null,
+                    'foto_tarian'   => ($item->tarian && $item->tarian->foto) ? asset('storage/' . $item->tarian->foto) : null,
+                ];
+            });
+
+        $userData = $user->toArray();
+        $userData['lencana'] = $lencana;
+        return $userData;
     }
 
     // ── LOGOUT ───────────────────────────────────────────────
@@ -231,7 +251,7 @@ class AuthApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Profil berhasil diperbarui.',
-            'user'    => $user,
+            'user'    => $this->getUserWithLencana($user),
         ]);
     }
 
@@ -257,7 +277,7 @@ class AuthApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Foto profil berhasil diperbarui.',
-            'user'    => $user,
+            'user'    => $this->getUserWithLencana($user),
         ]);
     }
 

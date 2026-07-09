@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\GeminiController;
 use App\Http\Controllers\Api\TopengApiController;
 use App\Http\Controllers\Api\ArchiveApiController;
 use App\Http\Controllers\Api\GuestApiController;
+use App\Http\Controllers\Api\UjianApiController;
 use App\Http\Controllers\AttendanceController;
 use App\Models\JadwalLatihan;
 use App\Models\PendaftaranTari;
@@ -253,5 +254,9 @@ Route::prefix('v1')->group(function () {
             $data = \App\Models\Pengumuman::orderBy('created_at', 'desc')->get();
             return response()->json(['data' => $data]);
         });
+
+        // Ujian Midhang Sore API
+        Route::post('/ujian/daftar', [UjianApiController::class, 'daftar']);
+        Route::get('/ujian/status-saya', [UjianApiController::class, 'statusSaya']);
     });
 });
