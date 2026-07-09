@@ -15,11 +15,11 @@ services:
       - ./.env:/var/www/html/.env
     networks:
       - sanggar-network
-      # Menghubungkan ke network bimbelrbs untuk akses database bersama
-      - bimbelrbs-web_bimbelrbs-network
+      # Menghubungkan ke network miomidev untuk akses database
+      - miomidev-web_miomidev-network
 
 networks:
   sanggar-network:
     driver: bridge
-  bimbelrbs-web_bimbelrbs-network:
+  miomidev-web_miomidev-network:
     external: true
