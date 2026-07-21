@@ -553,7 +553,7 @@
         appendLoading();
 
         try {
-            const res = await fetch('/chatbot/chat', {
+            const res = await fetch('{{ route("chatbot.chat") }}', {
                 method:  'POST',
                 headers: {
                     'Content-Type': 'application/json',
