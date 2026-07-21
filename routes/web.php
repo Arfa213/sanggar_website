@@ -201,6 +201,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{eventId}/nilai',            [\App\Http\Controllers\Admin\AdminUjianController::class, 'formNilai'])->name('form-nilai');
         Route::post('/nilai/simpan',              [\App\Http\Controllers\Admin\AdminUjianController::class, 'simpanNilai'])->name('simpan-nilai');
     });
+
+    // Backup & Restore
+    Route::prefix('backup')->name('backup.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('index');
+        Route::post('/run', [\App\Http\Controllers\Admin\BackupController::class, 'backup'])->name('run');
+        Route::get('/download/{file_name}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('download');
+        Route::post('/restore/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'restore'])->name('restore');
+        Route::delete('/delete/{file_name}', [\App\Http\Controllers\Admin\BackupController::class, 'delete'])->name('delete');
+    });
 });
 
 // ── CHATBOT AI ────────────────────────────────────────────────────────

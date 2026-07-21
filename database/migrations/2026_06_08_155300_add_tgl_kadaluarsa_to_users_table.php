@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->date('tgl_kadaluarsa')->nullable()->after('tipe_anggota');
-        });
+        if (!Schema::hasColumn('users', 'tgl_kadaluarsa')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->date('tgl_kadaluarsa')->nullable()->after('tipe_anggota');
+            });
+        }
     }
 
     /**

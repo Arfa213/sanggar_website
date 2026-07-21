@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder {
             'sejarah'=>'Sanggar Mulya Bhakti lahir dari kecintaan mendalam terhadap seni tari tradisional Indramayu. Bermula dari sekelompok kecil penari muda yang berkumpul di sebuah halaman rumah pada tahun 2005, sanggar ini tumbuh menjadi salah satu pusat pelestarian budaya terkemuka di Jawa Barat.',
             'visi'=>'Menjadi sanggar seni tari tradisional terdepan di Indonesia yang mampu melestarikan dan memperkenalkan budaya Indramayu kepada dunia.',
             'misi'=>['Melestarikan seni tari tradisional Indramayu melalui pendidikan berkelanjutan.','Mengembangkan bakat generasi muda dalam bidang seni tari.','Memperkenalkan kekayaan budaya lokal ke tingkat nasional dan internasional.','Membangun komunitas pecinta seni yang solid.','Berkolaborasi dengan lembaga pendidikan dan pemerintah.'],
-            'tahun_berdiri'=>'2005','alamat'=>'Jl. Kebudayaan No. 17, Indramayu, Jawa Barat',
+            'tahun_berdiri'=>'2005','alamat'=>'Jl. Raya Jatibarang-Karangampel, km. 3, Desa Tambi, Kec. Sliyeg, Indramayu Jawa Barat',
             'no_hp'=>'+62 812 3456 7890','email'=>'info@sanggarmulya.id',
             'instagram'=>'@sanggarmulya_bhakti','jumlah_anggota'=>200,'jumlah_penghargaan'=>49,'jumlah_event'=>100,
         ]);

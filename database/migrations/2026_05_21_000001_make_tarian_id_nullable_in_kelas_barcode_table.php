@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('kelas_barcode', function (Blueprint $table) {
             // Drop foreign key first
-            $table->dropForeign(['tarian_id']);
+           // $table->dropForeign(['tarian_id']);
         });
 
         Schema::table('kelas_barcode', function (Blueprint $table) {

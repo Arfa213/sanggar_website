@@ -11,9 +11,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    // Gemini AI untuk chatbot
+    // Gemini AI untuk chatbot (support Google API langsung ATAU LiteLLM proxy)
     'gemini' => [
-        'key' => env('GEMINI_API_KEY', ''),
+        'key'      => env('GEMINI_API_KEY', ''),
+        'base_url' => env('GEMINI_BASE_URL', ''),   // Kosong = pakai Google API langsung
+        'model'    => env('GEMINI_MODEL', 'gemini-2.0-flash'),
     ],
 
     // Google OAuth (Socialite) — isi GOOGLE_CLIENT_ID dll di .env
