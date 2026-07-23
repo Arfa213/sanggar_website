@@ -13,6 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn?.addEventListener('click', closeSidebar);
     overlay?.addEventListener('click', closeSidebar);
 
+    // ── Simpan & pulihkan posisi scroll sidebar antar halaman ──
+    const SIDEBAR_SCROLL_KEY = 'sidebar_scroll_pos';
+    if (sidebar) {
+        // Pulihkan posisi scroll sidebar yang tersimpan
+        const savedScroll = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
+        if (savedScroll) {
+            sidebar.scrollTop = parseInt(savedScroll, 10);
+        }
+
+        // Simpan posisi scroll sidebar setiap kali berubah
+        sidebar.addEventListener('scroll', () => {
+            sessionStorage.setItem(SIDEBAR_SCROLL_KEY, sidebar.scrollTop);
+        });
+
+        // Simpan posisi sesaat sebelum link sidebar diklik
+        sidebar.querySelectorAll('a.nav-item').forEach(link => {
+            link.addEventListener('click', () => {
+                sessionStorage.setItem(SIDEBAR_SCROLL_KEY, sidebar.scrollTop);
+            });
+        });
+    }
+
     // ── Flash auto dismiss ──────────────────────────
     const flash = document.getElementById('flashMsg');
     if (flash) setTimeout(() => flash.style.opacity='0', 4000);

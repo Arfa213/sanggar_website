@@ -70,7 +70,7 @@
                 <ul>
                     <li>📍 Indramayu, Jawa Barat</li>
                     <li>📞 +62 812 3456 7890</li>
-                    <li>✉️ info@sanggarmulya.id</li>
+                    <li>✉️ wangiindriyaantahamahadi@gmail.com</li>
                 </ul>
             </div>
             <div class="footer-sosmed">
