@@ -11,11 +11,7 @@ class AnggotaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::where('role', 'anggota')
-            ->where(function($q) {
-                $q->whereNotNull('email_verified_at')
-                  ->orWhere('created_at', '<', '2026-05-21');
-            });
+        $query = User::anggotaVerified();
         if ($request->filled('search')) {
             $q = $request->search;
             $query->where(fn($w) => $w->where('name','like',"%$q%")->orWhere('email','like',"%$q%"));
@@ -31,12 +27,7 @@ class AnggotaController extends Controller
     public function downloadPdf(Request $request)
     {
         $tipe = $request->tipe ?? 'semua';
-        $query = User::where('role', 'anggota')
-            ->where(function($q) {
-                $q->whereNotNull('email_verified_at')
-                  ->orWhere('created_at', '<', '2026-05-21');
-            })
-            ->orderBy('name');
+        $query = User::anggotaVerified()->orderBy('name');
         if ($tipe !== 'semua') $query->where('tipe_anggota', $tipe);
         $anggota = $query->get();
 
@@ -53,12 +44,7 @@ class AnggotaController extends Controller
     public function downloadExcel(Request $request)
     {
         $tipe = $request->tipe ?? 'semua';
-        $query = User::where('role', 'anggota')
-            ->where(function($q) {
-                $q->whereNotNull('email_verified_at')
-                  ->orWhere('created_at', '<', '2026-05-21');
-            })
-            ->orderBy('name');
+        $query = User::anggotaVerified()->orderBy('name');
         if ($tipe !== 'semua') $query->where('tipe_anggota', $tipe);
         $anggota = $query->get();
 
