@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Google\Client as GoogleClient;
 use Google\Service\Drive as GoogleDrive;
+use Carbon\Carbon;
 use ZipArchive;
 use Exception;
 
@@ -16,25 +18,24 @@ class BackupController extends Controller
 {
     private function getGoogleClient()
     {
-        $serviceAccountPath = env('GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON');
+        $clientId = env('GOOGLE_DRIVE_CLIENT_ID');
+        $clientSecret = env('GOOGLE_DRIVE_CLIENT_SECRET');
+        $refreshToken = env('GOOGLE_DRIVE_REFRESH_TOKEN');
 
-        if (!$serviceAccountPath || !file_exists($serviceAccountPath)) {
-            // Cek di root project jika file ditaruh di root
-            $rootPath = base_path($serviceAccountPath ?: 'service-account.json');
-            if (file_exists($rootPath)) {
-                $serviceAccountPath = $rootPath;
-            } else {
-                return null;
-            }
+        if (!$clientId || !$clientSecret || !$refreshToken) {
+            return null;
         }
 
         try {
             $client = new GoogleClient();
-            $client->setAuthConfig($serviceAccountPath);
+            $client->setClientId($clientId);
+            $client->setClientSecret($clientSecret);
+            $client->refreshToken($refreshToken);
             $client->addScope(GoogleDrive::DRIVE);
+
             return $client;
         } catch (Exception $e) {
-            Log::error('Gagal inisialisasi Google Client: ' . $e->getMessage());
+            Log::error('Gagal inisialisasi Google Client OAuth2: ' . $e->getMessage());
             return null;
         }
     }
@@ -62,22 +63,24 @@ class BackupController extends Controller
                 ]);
 
                 foreach ($results->getFiles() as $file) {
+                    $createdTime = Carbon::parse($file->getCreatedTime())->locale('id')->setTimezone('Asia/Jakarta');
+
                     $backups[] = [
                         'id' => $file->getId(),
                         'name' => $file->getName(),
+                        'display_title' => $file->getName(),
                         'size' => $this->formatBytes($file->getSize()),
-                        'created_at' => date('Y-m-d H:i:s', strtotime($file->getCreatedTime())),
+                        'created_at' => $createdTime->format('Y-m-d H:i:s'),
                         'source' => 'Google Drive'
                     ];
                 }
                 $googleDriveConnected = true;
             } catch (Exception $e) {
                 Log::error('Error list file Google Drive: ' . $e->getMessage());
-                session()->now('warning', 'Gagal memuat daftar backup dari Google Drive: ' . $e->getMessage());
             }
         }
 
-        // Fallback/gabungkan dengan local backup
+        // Backup Server Lokal
         $localPath = storage_path('app/backups');
         if (!file_exists($localPath)) {
             mkdir($localPath, 0755, true);
@@ -86,20 +89,23 @@ class BackupController extends Controller
         $localFiles = glob($localPath . '/*.zip');
         foreach ($localFiles as $file) {
             $filename = basename($file);
-            // Hindari duplikat jika namanya sama
             $existsInGoogle = collect($backups)->contains('name', $filename);
+            
             if (!$existsInGoogle) {
+                $fileTime = Carbon::createFromTimestamp(filemtime($file))->locale('id')->setTimezone('Asia/Jakarta');
+
                 $backups[] = [
                     'id' => $filename,
                     'name' => $filename,
+                    'display_title' => $filename,
                     'size' => $this->formatBytes(filesize($file)),
-                    'created_at' => date('Y-m-d H:i:s', filemtime($file)),
+                    'created_at' => $fileTime->format('Y-m-d H:i:s'),
                     'source' => 'Lokal (Server)'
                 ];
             }
         }
 
-        // Sort descending by date
+        // Urutkan data terbaru di paling atas
         usort($backups, function ($a, $b) {
             return strcmp($b['created_at'], $a['created_at']);
         });
@@ -107,9 +113,16 @@ class BackupController extends Controller
         return view('admin.dashboard.backup', compact('backups', 'googleDriveConnected'));
     }
 
+    public function run()
+    {
+        return $this->backup();
+    }
+
     public function backup()
     {
         try {
+            set_time_limit(300);
+
             $timestamp = date('Y-m-d_H-i-s');
             $filename = "backup-{$timestamp}.zip";
             
@@ -128,10 +141,8 @@ class BackupController extends Controller
                 throw new Exception("Gagal membuat file zip backup.");
             }
 
-            // Tambahkan database SQL ke zip
             $zip->addFromString('database.sql', $sqlContent);
 
-            // Tambahkan folder storage/app/public ke zip
             $publicStorage = storage_path('app/public');
             if (file_exists($publicStorage)) {
                 $files = new \RecursiveIteratorIterator(
@@ -150,7 +161,7 @@ class BackupController extends Controller
 
             $zip->close();
 
-            // 3. Upload ke Google Drive jika dikonfigurasi
+            // 3. Upload ke Google Drive 
             $client = $this->getGoogleClient();
             $uploadedToDrive = false;
             
@@ -171,43 +182,70 @@ class BackupController extends Controller
 
                 if ($file->id) {
                     $uploadedToDrive = true;
-                    // Hapus file zip lokal setelah di-upload agar hemat space jika mau, 
-                    // tapi biarkan local backup tersimpan juga sebagai cadangan ganda.
                 }
             }
 
             $message = $uploadedToDrive 
                 ? "Backup berhasil dibuat dan diunggah ke Google Drive!" 
-                : "Backup berhasil dibuat secara lokal! (Google Drive tidak terhubung)";
+                : "Backup berhasil dibuat secara lokal di server!";
 
-            return redirect()->back()->with('success', $message);
+            session()->flash('success', $message);
+            session()->regenerate();
+            return redirect()->route('admin.backup.index');
 
         } catch (Exception $e) {
             Log::error('Backup failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal membuat backup: ' . $e->getMessage());
+            
+            session()->flash('error', 'Gagal membuat backup: ' . $e->getMessage());
+            session()->regenerate();
+            return redirect()->route('admin.backup.index');
         }
     }
 
-    public function download($file_name)
+    public function download($filename)
     {
-        // Sesuaikan nama disk dengan config laravel-backup kamu (biasanya 'local' atau 'public')
-        $disk = Storage::disk('local'); 
-        $filePath = config('backup.backup.name') . '/' . $file_name;
+        $filename = urldecode($filename);
+        $backupPath = storage_path("app/backups/" . basename($filename));
 
-        if ($disk->exists($filePath)) {
-            return Storage::download($filePath);
+        if (file_exists($backupPath)) {
+            return response()->download($backupPath);
         }
 
-        return back()->with('error', 'File cadangan tidak ditemukan.');
+        $client = $this->getGoogleClient();
+        if ($client) {
+            try {
+                $service = new GoogleDrive($client);
+                $query = "name = '{$filename}' and trashed = false";
+                $results = $service->files->listFiles(['q' => $query]);
+
+                if (count($results->getFiles()) > 0) {
+                    $fileId = $results->getFiles()[0]->getId();
+                    $response = $service->files->get($fileId, ['alt' => 'media']);
+                    $content = $response->getBody()->getContents();
+
+                    return response($content)
+                        ->header('Content-Type', 'application/zip')
+                        ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+                }
+            } catch (Exception $e) {
+                Log::error('Gagal download dari Drive: ' . $e->getMessage());
+            }
+        }
+
+        session()->flash('error', 'File cadangan tidak ditemukan.');
+        session()->regenerate();
+        return redirect()->route('admin.backup.index');
     }
-    
+
     public function restore($filename)
     {
         try {
+            set_time_limit(300);
+
+            $filename = urldecode($filename);
             $backupPath = storage_path("app/backups");
             $zipPath = $backupPath . '/' . basename($filename);
 
-            // 1. Download dari Google Drive jika file tidak ada di lokal
             if (!file_exists($zipPath)) {
                 $client = $this->getGoogleClient();
                 if (!$client) {
@@ -215,7 +253,6 @@ class BackupController extends Controller
                 }
 
                 $service = new GoogleDrive($client);
-                // Cari file ID dari Google Drive berdasarkan nama file
                 $query = "name = '{$filename}' and mimeType = 'application/zip' and trashed = false";
                 $results = $service->files->listFiles([
                     'q' => $query,
@@ -237,57 +274,94 @@ class BackupController extends Controller
                 file_put_contents($zipPath, $content);
             }
 
-            // 2. Ekstrak file Zip
             $zip = new ZipArchive();
             if ($zip->open($zipPath) !== true) {
                 throw new Exception("Gagal membuka file backup zip.");
             }
 
-            // Dapatkan isi database.sql
             $sqlContent = $zip->getFromName('database.sql');
             if (!$sqlContent) {
+                $zip->close();
                 throw new Exception("File database.sql tidak ditemukan di dalam backup.");
             }
 
-            // Ekstrak folder storage/ ke storage/app/public
             for ($i = 0; $i < $zip->numFiles; $i++) {
                 $stat = $zip->statIndex($i);
                 if (str_starts_with($stat['name'], 'storage/')) {
-                    $relativePath = substr($stat['name'], 8); // potong 'storage/'
+                    $relativePath = substr($stat['name'], 8);
                     $destPath = storage_path('app/public/' . $relativePath);
-                    
+
                     $dir = dirname($destPath);
                     if (!file_exists($dir)) {
                         mkdir($dir, 0755, true);
                     }
-                    
+
                     file_put_contents($destPath, $zip->getFromIndex($i));
                 }
             }
             $zip->close();
 
-            // 3. Impor Database SQL secara native (Aman dari pembatasan server)
+            // Simpan ID user login aktif sebelum Restore
+            $currentUserId = Auth::id();
+
             $this->importDatabaseSql($sqlContent);
 
-            return redirect()->back()->with('success', "Restore berhasil! Database dan folder storage lokal telah dikembalikan.");
+            // Pulihkan kembali login user
+            if ($currentUserId) {
+                Auth::loginUsingId($currentUserId);
+            }
+
+            return redirect()->route('admin.backup.index')->with('success', 'Data database dan media berhasil dipulihkan!');
 
         } catch (Exception $e) {
             Log::error('Restore failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memulihkan backup: ' . $e->getMessage());
+
+            return redirect()->route('admin.backup.index')->with('error', 'Gagal memulihkan data: ' . $e->getMessage());
         }
     }
 
-    public function delete($file_name)
+    public function delete($filename)
     {
-        $disk = Storage::disk('local');
-        $filePath = config('backup.backup.name') . '/' . $file_name;
+        try {
+            $deleted = false;
+            $filename = urldecode($filename);
+            $localPath = storage_path("app/backups/" . basename($filename));
 
-        if ($disk->exists($filePath)) {
-            $disk->delete($filePath);
-            return back()->with('success', 'File cadangan berhasil dihapus.');
+            if (file_exists($localPath)) {
+                if (@unlink($localPath)) {
+                    $deleted = true;
+                }
+            }
+
+            $client = $this->getGoogleClient();
+            if ($client) {
+                try {
+                    $service = new GoogleDrive($client);
+                    $query = "name = '{$filename}' and trashed = false";
+                    $results = $service->files->listFiles(['q' => $query]);
+
+                    foreach ($results->getFiles() as $file) {
+                        $service->files->delete($file->getId());
+                        $deleted = true;
+                    }
+                } catch (Exception $e) {
+                    Log::error('Gagal hapus file dari Drive: ' . $e->getMessage());
+                }
+            }
+
+            if ($deleted) {
+                session()->flash('success', 'File cadangan berhasil dihapus.');
+            } else {
+                session()->flash('error', 'File cadangan tidak ditemukan atau sedang digunakan.');
+            }
+            session()->regenerate();
+            return redirect()->route('admin.backup.index');
+        } catch (Exception $e) {
+            Log::error('Delete failed: ' . $e->getMessage());
+            session()->flash('error', 'Gagal menghapus file: ' . $e->getMessage());
+            session()->regenerate();
+            return redirect()->route('admin.backup.index');
         }
-
-        return back()->with('error', 'File cadangan gagal dihapus atau tidak ditemukan.');
     }
 
     private function exportDatabaseSql(): string
@@ -300,14 +374,20 @@ class BackupController extends Controller
             $tables[] = $row[0];
         }
 
-        $sql = "-- Backup Database Sanggar Mulya Bhakti\n";
+        $sql = "-- Backup Database System\n";
         $sql .= "-- Generated: " . date('Y-m-d H:i:s') . "\n\n";
         $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
+        // Kecualikan tabel session & cache agar login/session user tidak hancur saat restore
+        $excludedTables = ['sessions', 'cache', 'cache_locks', 'jobs', 'failed_jobs', 'job_batches'];
+
         foreach ($tables as $table) {
-            // Skip tables that hold sessions or cache if you want, but backup everything by default
+            if (in_array($table, $excludedTables)) {
+                continue;
+            }
+
             $createTableResult = $pdo->query("SHOW CREATE TABLE `{$table}`")->fetch(\PDO::FETCH_ASSOC);
-            $sql .= "\n\n-- Table structure for table `{$table}`\n";
+            $sql .= "\n\n-- Structure table `{$table}`\n";
             $sql .= "DROP TABLE IF EXISTS `{$table}`;\n";
             $sql .= $createTableResult['Create Table'] . ";\n\n";
 
@@ -334,25 +414,14 @@ class BackupController extends Controller
 
     private function importDatabaseSql(string $sql)
     {
-        $pdo = DB::connection()->getPdo();
-        $pdo->exec("SET FOREIGN_KEY_CHECKS=0");
+        // Hapus query yang menyentuh tabel sessions jika menggunakan file backup lama
+        $sql = preg_replace('/DROP TABLE IF EXISTS `sessions`;/i', '', $sql);
+        $sql = preg_replace('/CREATE TABLE `sessions` [^;]+;/i', '', $sql);
+        $sql = preg_replace('/INSERT INTO `sessions` [^;]+;/i', '', $sql);
 
-        // Pisahkan query berdasarkan titik koma (;)
-        // Gunakan regex agar meminimalkan pemisahan di dalam string values
-        $queries = preg_split("/;(?=(?:[^'\"]|'[^']*'|\"[^\"]*\")*$)/", $sql);
-
-        foreach ($queries as $query) {
-            $query = trim($query);
-            if ($query) {
-                try {
-                    $pdo->exec($query);
-                } catch (Exception $e) {
-                    Log::warning("Gagal eksekusi query restore: " . $query . ". Error: " . $e->getMessage());
-                }
-            }
-        }
-
-        $pdo->exec("SET FOREIGN_KEY_CHECKS=1");
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::unprepared($sql);
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 
     private function formatBytes($bytes, $precision = 2)

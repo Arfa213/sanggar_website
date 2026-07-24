@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\{
     TopengController         as AdminTopeng,
     BookingController        as AdminBooking,
     PengumumanController     as AdminPengumuman,
+    BackupController,
 };
 
 // ── PUBLIC ────────────────────────────────────────────────────
@@ -203,13 +204,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // Backup & Restore
-    Route::prefix('backup')->name('backup.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('index');
-        Route::post('/run', [\App\Http\Controllers\Admin\BackupController::class, 'backup'])->name('run');
-        Route::get('/download/{file_name}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('download');
-        Route::post('/restore/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'restore'])->name('restore');
-        Route::delete('/delete/{file_name}', [\App\Http\Controllers\Admin\BackupController::class, 'delete'])->name('delete');
-    });
+    Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
+    Route::post('/backup/run', [BackupController::class, 'backup'])->name('backup.run');
+    Route::post('/backup/restore/{filename}', [BackupController::class, 'restore'])->name('backup.restore')->where('filename', '.*');
+    Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete')->where('filename', '.*');
+    Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download')->where('filename', '.*');
 });
 
 // ── CHATBOT AI ────────────────────────────────────────────────────────
@@ -220,18 +219,15 @@ Route::post('/chatbot/recommend', [ChatbotController::class, 'recommendDance'])-
 // Helper untuk membuat symbolic link storage di live server
 Route::get('/link-storage', function () {
     try {
-        // Hapus folder/symlink storage yang mungkin sudah ada (biasanya rusak atau folder kosong)
         $publicStoragePath = public_path('storage');
         if (file_exists($publicStoragePath) || is_link($publicStoragePath)) {
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                // Windows
                 if (is_link($publicStoragePath)) {
                     unlink($publicStoragePath);
                 } else {
                     rmdir($publicStoragePath);
                 }
             } else {
-                // Linux / Unix
                 exec('rm -rf ' . escapeshellarg($publicStoragePath));
             }
         }
@@ -243,11 +239,10 @@ Route::get('/link-storage', function () {
     }
 });
 
-// Fallback route jika symbolic link dinonaktifkan oleh penyedia hosting (Permission Denied)
+// Fallback route jika symbolic link dinonaktifkan oleh penyedia hosting
 Route::get('/storage/{path}', function ($path) {
     $fullPath = storage_path('app/public/' . $path);
     
-    // Cegah directory traversal attacks untuk keamanan
     if (strpos($path, '..') !== false) {
         abort(404);
     }
@@ -258,5 +253,3 @@ Route::get('/storage/{path}', function ($path) {
     
     return response()->file($fullPath);
 })->where('path', '.*');
-
-
