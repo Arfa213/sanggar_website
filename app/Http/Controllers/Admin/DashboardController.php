@@ -11,7 +11,7 @@ class DashboardController extends Controller
     {
         // Basic Stats
         $stats = [
-            'anggota'     => User::where('role','anggota')->count(),
+            'anggota'     => User::anggotaVerified()->count(),
             'event'       => Event::count(),
             'tarian'      => Tarian::count(),
             'pelatih'     => Pelatih::where('aktif', true)->count(),
@@ -32,7 +32,7 @@ class DashboardController extends Controller
             return $e;
         });
 
-        $recentAnggota = User::where('role','anggota')->orderByDesc('created_at')->limit(5)->get()->map(function($u) {
+        $recentAnggota = User::anggotaVerified()->orderByDesc('created_at')->limit(3)->get()->map(function($u) {
             $u->type = 'anggota';
             $u->icon = '👤';
             $u->color = '#16A34A';
@@ -60,7 +60,7 @@ class DashboardController extends Controller
             ->take(8);
 
         $recentEvents  = Event::orderByDesc('tanggal')->limit(5)->get();
-        $recentAnggota = User::where('role','anggota')->orderByDesc('created_at')->limit(5)->get();
+        $recentAnggota = User::anggotaVerified()->orderByDesc('created_at')->limit(3)->get();
 
         return view('admin.dashboard.index', compact(
             'stats','recentEvents','recentAnggota','activities','weeklyAttendance','weeklyHadir'

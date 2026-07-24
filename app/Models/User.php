@@ -129,6 +129,15 @@ class User extends Authenticatable {
         return $this->hasMany(\App\Models\UjianPendaftaran::class);
     }
 
+    public function scopeAnggotaVerified($query)
+    {
+        return $query->where('role', 'anggota')
+            ->where(function($q) {
+                $q->whereNotNull('email_verified_at')
+                  ->orWhere('created_at', '<', '2026-05-21');
+            });
+    }
+
     // ─── RELATIONS ─────────────────────────────────
     // Uncomment saat model terkait sudah dibuat
     // public function kegiatan() { return $this->belongsToMany(Kegiatan::class); }
